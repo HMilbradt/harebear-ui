@@ -30,7 +30,7 @@ export interface ConversationListProps extends Omit<React.ComponentProps<"nav">,
   groups: ConversationGroup[]
   activeId?: string
   onSelect?: (id: string) => void
-  /** Trailing control per row, e.g. a delete button. Shown on hover and focus on desktop, always on touch. */
+  /** Trailing control per row, e.g. a delete button. On devices that can hover it shows on hover and focus; on touch it is always visible. */
   renderAction?: (conversation: Conversation) => React.ReactNode
   /** Shown when there are no conversations. Default "No conversations yet". */
   empty?: React.ReactNode
@@ -96,7 +96,7 @@ function ConversationList({
                   )}
                 </button>
                 {action && (
-                  <div className="mr-1 flex shrink-0 items-center md:opacity-0 md:group-hover/conversation:opacity-100 md:focus-within:opacity-100">
+                  <div className="mr-1 flex shrink-0 items-center [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/conversation:opacity-100 [@media(hover:hover)]:group-focus-within/conversation:opacity-100">
                     {action}
                   </div>
                 )}
@@ -114,8 +114,6 @@ function ConversationList({
   )
 }
 
-const DAY = 24 * 60 * 60 * 1000
-
 /**
  * Buckets items into Today / Yesterday / Previous 7 days / Earlier by a timestamp (ms or Date),
  * newest first, and drops empty groups. Pass `now` for deterministic tests.
@@ -126,7 +124,10 @@ function groupByDate<T>(
   toConversation: (item: T) => Conversation,
   now: number | Date = Date.now(),
 ): ConversationGroup[] {
-  const today = new Date(now).setHours(0, 0, 0, 0)
+  // Local calendar midnights, so daylight-saving days (23 or 25 hours) bucket correctly.
+  const d = new Date(now)
+  const midnight = (daysAgo: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - daysAgo).getTime()
+  const [today, yesterday, weekAgo] = [midnight(0), midnight(1), midnight(7)]
   const groups: ConversationGroup[] = [
     { label: "Today", items: [] },
     { label: "Yesterday", items: [] },
@@ -136,7 +137,7 @@ function groupByDate<T>(
   const sorted = [...items].sort((a, b) => +getDate(b) - +getDate(a))
   for (const item of sorted) {
     const t = +getDate(item)
-    const i = t >= today ? 0 : t >= today - DAY ? 1 : t >= today - 7 * DAY ? 2 : 3
+    const i = t >= today ? 0 : t >= yesterday ? 1 : t >= weekAgo ? 2 : 3
     groups[i]?.items.push(toConversation(item))
   }
   return groups.filter((g) => g.items.length)

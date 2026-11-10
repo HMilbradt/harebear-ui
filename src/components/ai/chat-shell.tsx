@@ -32,15 +32,17 @@ interface ChatShellContextValue {
 
 const ChatShellContext = React.createContext<ChatShellContextValue | null>(null)
 
-function readStored(key: string | undefined, fallback: boolean) {
-  if (!key || typeof window === "undefined") return fallback
+function readStored(key: string) {
   try {
     const v = window.localStorage.getItem(key)
-    return v === null ? fallback : v !== "collapsed"
+    return v === null ? null : v !== "collapsed"
   } catch {
-    return fallback
+    return null
   }
 }
+
+// Layout effect on the client so a stored state applies before paint; plain effect on the server (no warning).
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? React.useEffect : React.useLayoutEffect
 
 export interface ChatShellProps {
   /** Sidebar top, usually <AppBrand />. Collapses to its logo tile in the icon rail. */
@@ -83,7 +85,13 @@ function ChatShell({
   className,
   children,
 }: ChatShellProps) {
-  const [open, setOpen] = React.useState(() => readStored(storageKey, defaultOpen))
+  // Start from defaultOpen on both server and client, then restore the stored state after hydration.
+  const [open, setOpen] = React.useState(defaultOpen)
+  useIsomorphicLayoutEffect(() => {
+    if (!storageKey) return
+    const stored = readStored(storageKey)
+    if (stored !== null) setOpen(stored)
+  }, [storageKey])
   const onOpenChange = (next: boolean) => {
     setOpen(next)
     if (!storageKey) return

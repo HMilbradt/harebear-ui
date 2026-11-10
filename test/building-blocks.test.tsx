@@ -46,6 +46,25 @@ describe("groupByDate", () => {
       ),
     ).toEqual([])
   })
+
+  it("uses calendar days across a daylight-saving change", () => {
+    const tz = process.env.TZ
+    process.env.TZ = "America/New_York"
+    try {
+      // Nov 1 2026 is 25 hours long in New York (clocks fall back at 02:00).
+      const now = new Date(2026, 10, 2, 12).getTime()
+      const items = [{ id: "nov1-early", t: new Date(2026, 10, 1, 0, 30).getTime() }]
+      const groups = groupByDate(
+        items,
+        (i) => i.t,
+        (i) => ({ id: i.id, title: i.id }),
+        now,
+      )
+      expect(groups.map((g) => g.label)).toEqual(["Yesterday"])
+    } finally {
+      process.env.TZ = tz
+    }
+  })
 })
 
 describe("ConversationList", () => {
