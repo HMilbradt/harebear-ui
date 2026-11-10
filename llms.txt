@@ -27,7 +27,7 @@
 ## Component index
 
 Theme: ThemeProvider, useTheme, ThemeToggle, ThemeScript
-Layout/admin: AppShell, AppBrand, PageHeader, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, Callout, LinkTile, ConfirmDialog, CopyField
+Layout/admin: AppShell, AppBrand, PageHeader, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, UserMenu, Callout, LinkTile, ConfirmDialog, CopyField
 Data: DataTable, createDataTableColumnHelper, TrendChart, TrendLegend, BarList, Sparkline, StatusBars
 AI/chat composites: ChatShell, ChatPanel, ChatThread, ChatMessage, AssistantAvatar, MessageActions, PromptInput, PromptInputChip, PromptInputSelect, ModelPicker, ConversationList, NewConversationButton, groupByDate, ToolCall, ToolGroup, ToolStep, ToolStatusIcon, ApprovalCard, ApprovalResult, TypingIndicator, CodeSnippet, InlineCode, Prose
 AI/chat primitives (shadcn): Message, Bubble, MessageScroller, Attachment, Trace, Marker, Questionnaire, CodeBlock

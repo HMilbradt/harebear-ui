@@ -195,6 +195,19 @@ Label-over-value pairs as a `<dl>`. Props: `items: { label; value }[]`, `columns
 
 Avatar + name + subtitle. Props: `name`, `subtitle?`, `avatarUrl?`, `action?`, `size?`. In a sidebar icon rail only the avatar shows. Also exports `initials(name)`.
 
+### `UserMenu`
+
+The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. In a sidebar icon rail the trigger is just the avatar and the menu opens to the side. Props: `name`, `subtitle?`, `avatarUrl?`, `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`.
+
+```tsx
+;<UserMenu name={email} subtitle="Signed in" onSignOut={signOut}>
+  <DropdownMenuItem onSelect={() => setSettingsOpen(true)}>
+    <SettingsIcon />
+    Settings
+  </DropdownMenuItem>
+</UserMenu>
+```
+
 ### `ConfirmDialog`
 
 Controlled "are you sure" dialog. Props: `open`, `onOpenChange`, `title`, `description?`, `confirmLabel?`, `cancelLabel?`, `destructive?` (red confirm), `onConfirm`.
@@ -257,7 +270,7 @@ Mini bar history (pings, uptime). Props: `data: (number | { value; tone?; label?
 
 ## AI and chat
 
-A chat screen is `ChatShell` (sidebar with `AppBrand`, `NewConversationButton`, `ConversationList`, `UserChip`; optional details panel) around a `ChatPanel` (header, thread, `PromptInput`). Agent apps add `ToolGroup`/`ToolStep` for tool calls and `ApprovalCard`/`ApprovalResult` for permission prompts. See `playground/screens/chat.tsx` and `playground/screens/agent.tsx`.
+A chat screen is `ChatShell` (sidebar with `AppBrand`, `NewConversationButton`, `ConversationList`, `UserMenu`; optional details panel) around a `ChatPanel` (header, thread, `PromptInput`). Agent apps add `ToolGroup`/`ToolStep` for tool calls and `ApprovalCard`/`ApprovalResult` for permission prompts. See `playground/screens/chat.tsx` and `playground/screens/agent.tsx`.
 
 ### `ChatShell`
 
@@ -269,7 +282,7 @@ Full-height chat layout. The sidebar collapses to an icon rail on desktop (logo,
   brand={<AppBrand name="netadmin" subtitle="Home network agent" icon={<TerminalIcon />} />}
   sidebarActions={<NewConversationButton onClick={newChat} />}
   sidebar={<ConversationList groups={groupByDate(chats, (c) => c.updated, toRow)} activeId={id} onSelect={open} />}
-  sidebarFooter={<UserChip name={email} subtitle="Signed in" action={<ThemeToggle />} />}
+  sidebarFooter={<UserMenu name={email} subtitle="Signed in" onSignOut={signOut} />}
   details={<Card size="sm">…</Card>}
   detailsTitle="Conversation details"
 >

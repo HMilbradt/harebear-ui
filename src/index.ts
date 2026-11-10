@@ -409,6 +409,8 @@ export { UsageMeter } from "./components/admin/usage-meter"
 export type { UsageMeterProps } from "./components/admin/usage-meter"
 export { UserChip, initials } from "./components/admin/user-chip"
 export type { UserChipProps } from "./components/admin/user-chip"
+export { UserMenu } from "./components/admin/user-menu"
+export type { UserMenuProps } from "./components/admin/user-menu"
 
 // Data display
 export { BarList } from "./components/data/bar-list"

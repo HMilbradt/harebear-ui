@@ -7,11 +7,14 @@ import {
   ChatShell,
   ConfirmDialog,
   ConversationList,
+  DropdownMenuItem,
   groupByDate,
   PromptInputSelect,
   ToolGroup,
+  ThemeProvider,
   ToolStep,
   type ToolStatus,
+  UserMenu,
 } from "@/index"
 
 describe("groupByDate", () => {
@@ -192,5 +195,31 @@ describe("ChatShell", () => {
     // jsdom's matchMedia never matches, so details open as a sheet.
     await user.click(screen.getByRole("button", { name: "Toggle conversation details" }))
     expect(await screen.findByText("Model: x")).toBeInTheDocument()
+  })
+})
+
+describe("UserMenu", () => {
+  it("switches theme, runs app items and signs out", async () => {
+    const user = userEvent.setup()
+    const onSignOut = vi.fn()
+    const onSettings = vi.fn()
+    render(
+      <ThemeProvider defaultMode="light" storageKey={null}>
+        <UserMenu name="pat@example.com" subtitle="Signed in" onSignOut={onSignOut}>
+          <DropdownMenuItem onSelect={onSettings}>Settings</DropdownMenuItem>
+        </UserMenu>
+      </ThemeProvider>,
+    )
+    const trigger = screen.getByRole("button", { name: "Account menu for pat@example.com" })
+    await user.click(trigger)
+    await user.click(await screen.findByRole("menuitemradio", { name: "Dark" }))
+    expect(document.documentElement).toHaveClass("dark")
+    // Choosing a theme keeps the menu open.
+    expect(screen.getByRole("menuitemradio", { name: "Dark" })).toHaveAttribute("aria-checked", "true")
+    await user.click(screen.getByRole("menuitem", { name: "Settings" }))
+    expect(onSettings).toHaveBeenCalledOnce()
+    await user.click(trigger)
+    await user.click(await screen.findByRole("menuitem", { name: "Sign out" }))
+    expect(onSignOut).toHaveBeenCalledOnce()
   })
 })
