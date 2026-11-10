@@ -1,0 +1,34 @@
+# harebear-ui
+
+> Opinionated, pre-themed React component library: shadcn/ui primitives restyled to one design system, plus admin, data, and AI chat components. React 19, Tailwind CSS v4, Radix, TypeScript. Ships its Tailwind theme.
+
+## Setup in an app
+
+1. `npm i harebear-ui` (peers: react, react-dom 19; tailwindcss 4).
+2. `npx harebear-ui init` wires the CSS import and agent docs, or do it by hand: in the main CSS file, `@import "tailwindcss";` then `@import "harebear-ui/styles.css";`.
+3. Wrap the app: `<ThemeProvider><TooltipProvider>{app}<Toaster /></TooltipProvider></ThemeProvider>`.
+4. Import everything from the root: `import { Button, Card, DataTable } from "harebear-ui"`.
+
+## Rules
+
+- Use harebear-ui components before writing new UI. Primitives keep shadcn/ui names and props.
+- Style with theme tokens only: bg-background, bg-card, bg-muted, text-muted-foreground, bg-primary, bg-primary-soft, text-success, text-warning, text-destructive, border-border, shadow-card, rounded-md/lg/xl. No hex colors or Tailwind palette colors.
+- Status is a tone: success | warning | danger | info | neutral.
+- Icons: lucide-react elements, e.g. `<SearchIcon />`. Icon-only buttons need aria-label.
+- Change the brand with `<ThemeProvider accent="#hex" radius={14}>` or `--brand` / `--radius` in CSS.
+
+## Docs
+
+- [Component catalog](docs/COMPONENTS.md): every export with props and examples. In an installed app: node_modules/harebear-ui/docs/COMPONENTS.md
+- [Agent skill](skills/harebear-ui/SKILL.md): Claude Code skill, installed by `npx harebear-ui init`.
+- [Example screens](https://github.com/hmilbradt/harebear-ui/tree/main/playground/screens): admin dashboard, AI chat, data table + detail panel, status home page.
+- [Source](https://github.com/hmilbradt/harebear-ui)
+
+## Component index
+
+Theme: ThemeProvider, useTheme, ThemeToggle, ThemeScript
+Layout/admin: AppShell, AppBrand, PageHeader, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, Callout, LinkTile
+Data: DataTable, createDataTableColumnHelper, TrendChart, TrendLegend, BarList, Sparkline, StatusBars
+AI/chat: ChatThread, ChatMessage, AssistantAvatar, MessageActions, PromptInput, PromptInputChip, ModelPicker, ConversationList, ToolCall, TypingIndicator, CodeBlock, InlineCode, Prose
+Primitives (shadcn/ui): Accordion, Alert, AlertDialog, AspectRatio, Avatar, Badge, Breadcrumb, Button, ButtonGroup, Calendar, Card, Carousel, Chart, Checkbox, Collapsible, Command, ContextMenu, Dialog, Drawer, DropdownMenu, Empty, Field, HoverCard, Input, InputGroup, InputOTP, Item, Kbd, Label, Menubar, NavigationMenu, Pagination, Popover, Progress, RadioGroup, Resizable, ScrollArea, Select, Separator, Sheet, Sidebar, Skeleton, Slider, Spinner, Switch, Table, Tabs, Textarea, Toaster, Toggle, ToggleGroup, Tooltip
+Hooks/utils: useCopyToClipboard, useIsMobile, cn
