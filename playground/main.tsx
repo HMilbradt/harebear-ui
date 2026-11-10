@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client"
 import { ThemeProvider, Toaster, TooltipProvider } from "@/index"
 import "./styles.css"
 import { AdminScreen } from "./screens/admin"
+import { AgentScreen } from "./screens/agent"
 import { AuthScreen } from "./screens/auth"
 import { CatalogScreen } from "./screens/catalog"
 import { ChatScreen } from "./screens/chat"
@@ -12,6 +13,7 @@ import { RecordsScreen } from "./screens/records"
 const screens = {
   admin: AdminScreen,
   chat: ChatScreen,
+  agent: AgentScreen,
   records: RecordsScreen,
   home: HomeScreen,
   auth: AuthScreen,

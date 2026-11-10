@@ -85,7 +85,7 @@ function Prose({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="prose"
       className={cn(
-        "flex flex-col gap-3.5 text-[15px] leading-[1.65] text-foreground",
+        "flex min-w-0 flex-col gap-3.5 text-[15px] leading-[1.65] wrap-anywhere text-foreground",
         "[&_ol]:flex [&_ol]:list-decimal [&_ol]:flex-col [&_ol]:gap-2 [&_ol]:pl-5.5",
         "[&_ul]:flex [&_ul]:list-disc [&_ul]:flex-col [&_ul]:gap-2 [&_ul]:pl-5.5",
         "[&_strong]:font-semibold [&_a]:text-primary [&_a]:underline-offset-4 hover:[&_a]:underline",

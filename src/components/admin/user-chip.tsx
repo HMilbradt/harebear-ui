@@ -23,19 +23,23 @@ export interface UserChipProps extends React.ComponentProps<"div"> {
   size?: "sm" | "default" | "lg"
 }
 
-/** Avatar + name + secondary line. */
+/** Avatar + name + secondary line. In a sidebar collapsed to its icon rail, only the avatar shows. */
 function UserChip({ name, subtitle, avatarUrl, action, size = "default", className, ...props }: UserChipProps) {
   return (
-    <div data-slot="user-chip" className={cn("flex min-w-0 items-center gap-3", className)} {...props}>
+    <div
+      data-slot="user-chip"
+      className={cn("flex min-w-0 items-center gap-3 group-data-[collapsible=icon]:justify-center", className)}
+      {...props}
+    >
       <Avatar size={size}>
         {avatarUrl && <AvatarImage src={avatarUrl} alt="" />}
         <AvatarFallback>{initials(name)}</AvatarFallback>
       </Avatar>
-      <div className="min-w-0 flex-1 leading-snug">
+      <div className="min-w-0 flex-1 leading-snug group-data-[collapsible=icon]:hidden">
         <div className={cn("truncate font-medium", size === "lg" && "text-lg font-semibold")}>{name}</div>
         {subtitle && <div className="truncate text-xs font-medium text-muted-foreground">{subtitle}</div>}
       </div>
-      {action}
+      {action && <div className="contents group-data-[collapsible=icon]:hidden">{action}</div>}
     </div>
   )
 }

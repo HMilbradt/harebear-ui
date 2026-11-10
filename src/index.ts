@@ -348,6 +348,7 @@ export {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
+  useSidebarOptional,
 } from "./components/ui/sidebar"
 export { Skeleton } from "./components/ui/skeleton"
 export { Slider } from "./components/ui/slider"
@@ -386,6 +387,10 @@ export type { ActivityItem } from "./components/admin/activity-feed"
 export { AppShell, AppBrand } from "./components/admin/app-shell"
 export type { AppNavItem, AppNavSection, AppBrandProps, AppShellProps } from "./components/admin/app-shell"
 export { Callout } from "./components/admin/callout"
+export { ConfirmDialog } from "./components/admin/confirm-dialog"
+export type { ConfirmDialogProps } from "./components/admin/confirm-dialog"
+export { CopyField } from "./components/admin/copy-field"
+export type { CopyFieldProps } from "./components/admin/copy-field"
 export { KeyValueGrid } from "./components/admin/key-value-grid"
 export type { KeyValueItem } from "./components/admin/key-value-grid"
 export { LinkTile } from "./components/admin/link-tile"
@@ -397,7 +402,7 @@ export type { SearchInputProps } from "./components/admin/search-input"
 export { StatCard } from "./components/admin/stat-card"
 export type { StatCardProps } from "./components/admin/stat-card"
 export { StatusDot, StatusBadge } from "./components/admin/status"
-export type { StatusTone } from "./components/admin/status"
+export type { StatusTone, StatusDotProps, StatusBadgeProps } from "./components/admin/status"
 export { Timeline } from "./components/admin/timeline"
 export type { TimelineItem } from "./components/admin/timeline"
 export { UsageMeter } from "./components/admin/usage-meter"
@@ -418,6 +423,10 @@ export { TrendChart, TrendLegend } from "./components/data/trend-chart"
 export type { TrendSeries, TrendChartProps } from "./components/data/trend-chart"
 
 // AI and chat
+export { ApprovalCard, ApprovalResult } from "./components/ai/approval"
+export type { ApprovalCardProps, ApprovalResultProps } from "./components/ai/approval"
+export { ChatShell, ChatPanel } from "./components/ai/chat-shell"
+export type { ChatShellProps, ChatPanelProps } from "./components/ai/chat-shell"
 export {
   ChatThread,
   ChatMessage,
@@ -426,15 +435,33 @@ export {
   TypingIndicator,
   ToolCall,
 } from "./components/ai/chat"
-export type { ChatThreadProps, ChatMessageProps, MessageActionsProps, ToolCallProps } from "./components/ai/chat"
+export type {
+  ChatThreadProps,
+  ChatMessageProps,
+  MessageActionsProps,
+  TypingIndicatorProps,
+  ToolCallProps,
+} from "./components/ai/chat"
 export { CodeSnippet, InlineCode, Prose } from "./components/ai/code-block"
 export type { CodeSnippetProps } from "./components/ai/code-block"
-export { ConversationList } from "./components/ai/conversation-list"
-export type { Conversation, ConversationGroup, ConversationListProps } from "./components/ai/conversation-list"
+export { ConversationList, NewConversationButton, groupByDate } from "./components/ai/conversation-list"
+export type {
+  Conversation,
+  ConversationGroup,
+  ConversationListProps,
+  NewConversationButtonProps,
+} from "./components/ai/conversation-list"
 export { ModelPicker } from "./components/ai/model-picker"
 export type { ModelOption, ModelPickerProps } from "./components/ai/model-picker"
-export { PromptInput, PromptInputChip } from "./components/ai/prompt-input"
-export type { PromptInputProps } from "./components/ai/prompt-input"
+export { PromptInput, PromptInputChip, PromptInputSelect } from "./components/ai/prompt-input"
+export type {
+  PromptInputProps,
+  PromptInputChipProps,
+  PromptInputSelectOption,
+  PromptInputSelectProps,
+} from "./components/ai/prompt-input"
+export { ToolGroup, ToolStep, ToolStatusIcon } from "./components/ai/tool-steps"
+export type { ToolStatus, ToolGroupProps, ToolStepProps } from "./components/ai/tool-steps"
 
 // Auth
 export { AuthLayout, LoginForm, SignupForm, GitHubIcon, GoogleIcon, AppleIcon } from "./components/auth/auth"
@@ -450,6 +477,7 @@ export type {
 // Hooks
 export { useCopyToClipboard } from "./hooks/use-copy-to-clipboard"
 export { useHighlightedCode } from "./hooks/use-highlighted-code"
+export { useMediaQuery } from "./hooks/use-media-query"
 export { useIsMobile } from "./hooks/use-mobile"
 
 // Utilities
