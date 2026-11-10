@@ -1,19 +1,14 @@
 "use client"
 
 import type * as React from "react"
+import { SidebarLayout, type SidebarLayoutProps } from "@/components/admin/sidebar-layout"
 import { Badge } from "@/components/ui/badge"
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
@@ -71,47 +66,68 @@ function AppBrand({ name, subtitle, icon, action, className, ...props }: AppBran
 export interface AppShellProps {
   /** Sidebar header content, usually <AppBrand />. */
   brand?: React.ReactNode
+  /** Under the brand, e.g. a primary "New" button. */
+  sidebarActions?: React.ReactNode
   nav?: AppNavSection[]
-  /** Extra sidebar content under the nav (e.g. a usage card). */
+  /** Extra sidebar content under the nav (e.g. a usage card). Hidden in the icon rail. */
   sidebarExtra?: React.ReactNode
-  /** Sidebar bottom content, usually <UserChip />. */
+  /** Sidebar bottom content, usually <UserMenu />. */
   sidebarFooter?: React.ReactNode
   /** Top bar content inside the main area (search, actions). */
   header?: React.ReactNode
   /** Component used for nav links. Default "a". Pass Next.js Link or React Router Link. */
   linkComponent?: React.ElementType
+  /** How the sidebar collapses on desktop. Default "icon": a collapse button shrinks it to an icon rail. */
+  collapsible?: SidebarLayoutProps["collapsible"]
+  /** Remember the sidebar's expanded or collapsed state in localStorage under this key. */
+  storageKey?: string
   defaultOpen?: boolean
   className?: string
   children?: React.ReactNode
 }
 
 /**
- * Full admin layout: collapsible sidebar (sheet on mobile) + main column.
- * Built on the Sidebar primitives; drop to those for anything custom.
+ * Full admin layout on SidebarLayout: nav sidebar that collapses to an icon rail (a sheet on mobile) + main column.
+ * Nav items show their label as a tooltip in the rail. Drop to SidebarLayout or the Sidebar primitives for anything custom.
  */
 function AppShell({
   brand,
+  sidebarActions,
   nav = [],
   sidebarExtra,
   sidebarFooter,
   header,
   linkComponent: Link = "a",
+  collapsible,
+  storageKey,
   defaultOpen = true,
   className,
   children,
 }: AppShellProps) {
   return (
-    <SidebarProvider defaultOpen={defaultOpen} style={{ "--sidebar-width": "15.75rem" } as React.CSSProperties}>
-      <Sidebar>
-        {brand && <SidebarHeader className="px-4 pt-6 pb-2">{brand}</SidebarHeader>}
-        <SidebarContent className="gap-5 px-2">
+    <SidebarLayout
+      brand={brand}
+      sidebarActions={sidebarActions}
+      sidebarFooter={sidebarFooter}
+      collapsible={collapsible}
+      storageKey={storageKey}
+      defaultOpen={defaultOpen}
+      width="15.75rem"
+      className={className}
+      sidebar={
+        <div className="flex flex-1 flex-col gap-5">
           {nav.map((section, i) => (
             <SidebarGroup key={section.label ?? i}>
               {section.label && <SidebarGroupLabel className="text-xs font-medium">{section.label}</SidebarGroupLabel>}
-              <SidebarMenu className="gap-1">
+              <SidebarMenu className="gap-1 group-data-[collapsible=icon]:items-center">
                 {section.items.map((item) => (
                   <SidebarMenuItem key={item.label}>
-                    <SidebarMenuButton asChild={!!item.href} isActive={item.active} onClick={item.onSelect}>
+                    <SidebarMenuButton
+                      asChild={!!item.href}
+                      isActive={item.active}
+                      onClick={item.onSelect}
+                      tooltip={item.label}
+                    >
                       {item.href ? (
                         <Link href={item.href}>
                           {item.icon}
@@ -131,28 +147,26 @@ function AppShell({
               </SidebarMenu>
             </SidebarGroup>
           ))}
-          {sidebarExtra && <div className="mt-auto px-2">{sidebarExtra}</div>}
-        </SidebarContent>
-        {sidebarFooter && <SidebarFooter className="px-4 pb-6">{sidebarFooter}</SidebarFooter>}
-      </Sidebar>
-      <SidebarInset className={cn("min-w-0", className)}>
-        {header !== undefined && (
-          <header data-slot="app-header" className="flex flex-wrap items-center gap-3 px-4 pt-5 md:px-8">
-            <SidebarTrigger className="md:hidden" />
-            {header}
-          </header>
-        )}
-        <div data-slot="app-content" className="flex min-w-0 flex-col gap-7 px-4 pt-7 pb-12 md:px-8">
-          {children}
+          {sidebarExtra && <div className="mt-auto px-2 group-data-[collapsible=icon]:hidden">{sidebarExtra}</div>}
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      }
+    >
+      {header !== undefined && (
+        <header data-slot="app-header" className="flex flex-wrap items-center gap-3 px-4 pt-5 md:px-8">
+          <SidebarTrigger className="md:hidden" />
+          {header}
+        </header>
+      )}
+      <div data-slot="app-content" className="flex min-w-0 flex-col gap-7 px-4 pt-7 pb-12 md:px-8">
+        {children}
+      </div>
+    </SidebarLayout>
   )
 }
 
 function NavBadge({ children }: { children: React.ReactNode }) {
   return (
-    <Badge variant="soft" className="h-5 px-2">
+    <Badge variant="soft" className="h-5 px-2 group-data-[collapsible=icon]:hidden">
       {children}
     </Badge>
   )

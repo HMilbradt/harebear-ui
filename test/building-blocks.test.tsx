@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 import {
+  AppShell,
   ChatPanel,
   ChatShell,
   ConfirmDialog,
@@ -221,5 +222,37 @@ describe("UserMenu", () => {
     await user.click(trigger)
     await user.click(await screen.findByRole("menuitem", { name: "Sign out" }))
     expect(onSignOut).toHaveBeenCalledOnce()
+  })
+})
+
+describe("AppShell", () => {
+  it("collapses to the icon rail and remembers it", async () => {
+    const user = userEvent.setup()
+    localStorage.removeItem("test-admin")
+    render(
+      <AppShell
+        storageKey="test-admin"
+        nav={[{ label: "Workspace", items: [{ label: "Orders", href: "/orders", badge: 3 }] }]}
+      >
+        <p>page</p>
+      </AppShell>,
+    )
+    const sidebar = () => document.querySelector("[data-slot=sidebar]")
+    expect(sidebar()).toHaveAttribute("data-state", "expanded")
+    await user.click(screen.getByRole("button", { name: "Collapse sidebar" }))
+    expect(sidebar()).toHaveAttribute("data-state", "collapsed")
+    expect(sidebar()).toHaveAttribute("data-collapsible", "icon")
+    expect(localStorage.getItem("test-admin")).toBe("collapsed")
+    expect(screen.getByRole("link", { name: /Orders/ })).toHaveAttribute("href", "/orders")
+    expect(screen.getByRole("button", { name: "Expand sidebar" })).toBeInTheDocument()
+  })
+
+  it("has no collapse button when collapsible is none", () => {
+    render(
+      <AppShell collapsible="none" nav={[]}>
+        <p>page</p>
+      </AppShell>,
+    )
+    expect(screen.queryByRole("button", { name: "Collapse sidebar" })).not.toBeInTheDocument()
   })
 })

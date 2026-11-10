@@ -105,11 +105,29 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 
 ## Admin and layout
 
+### `SidebarLayout`, `SidebarCollapseButton`
+
+The base layout every shell is built on: a sidebar (brand, actions, scrolling body, footer) next to the main column. On desktop a collapse button shrinks the sidebar to an icon rail (logo tile, icon actions, avatar); on mobile it is a sheet opened with a `SidebarTrigger`. Harebear parts adapt to the rail by themselves (`AppBrand`, `UserChip`, `UserMenu`, `NewConversationButton`, `SearchInput`, `ConversationList`, nav `SidebarMenuButton`s with `tooltip`).
+
+Props: `brand?`, `sidebarActions?`, `sidebar?` (body), `sidebarFooter?`, `collapsible?` (`"icon"` default, `"offcanvas"` hides it entirely, `"none"` always expanded on desktop), `storageKey?` (remember collapsed state in localStorage, applied after hydration so SSR matches), `defaultOpen?`, `width?` (default `"16rem"`; the rail is `4.25rem`), `className?` (main column), `children` (main column).
+`SidebarCollapseButton`: the collapse/expand button with a tooltip, for custom `Sidebar` layouts. Renders nothing on mobile.
+
+```tsx
+;<SidebarLayout
+  storageKey="app-sidebar"
+  brand={<AppBrand name="Console" icon={<SparklesIcon />} />}
+  sidebar={<MyNav />}
+  sidebarFooter={<UserMenu name={user.name} onSignOut={signOut} />}
+>
+  <MyPage />
+</SidebarLayout>
+```
+
 ### `AppShell`
 
-Full app layout: collapsible sidebar (a sheet on mobile) plus a main column with a top bar.
+Admin layout on `SidebarLayout`: nav sidebar that collapses to an icon rail (nav items show their label as a tooltip there; badges and `sidebarExtra` hide) plus a main column with a top bar.
 
-Props: `brand` (node, usually `AppBrand`), `nav: AppNavSection[]`, `sidebarExtra` (node under the nav), `sidebarFooter` (node, usually `UserChip`), `header` (top bar content), `linkComponent` (e.g. Next.js `Link`; default `"a"`), `defaultOpen`, `children` (page content, laid out in a column with 28px gaps).
+Props: `brand` (node, usually `AppBrand`), `sidebarActions?`, `nav: AppNavSection[]`, `sidebarExtra` (node under the nav), `sidebarFooter` (node, usually `UserMenu`), `header` (top bar content), `linkComponent` (e.g. Next.js `Link`; default `"a"`), `collapsible?` (default `"icon"`), `storageKey?`, `defaultOpen`, `children` (page content, laid out in a column with 28px gaps).
 
 `AppNavSection = { label?: string; items: AppNavItem[] }`
 `AppNavItem = { label: string; icon?: ReactNode; href?: string; onSelect?: () => void; active?: boolean; badge?: ReactNode }`
@@ -274,7 +292,7 @@ A chat screen is `ChatShell` (sidebar with `AppBrand`, `NewConversationButton`, 
 
 ### `ChatShell`
 
-Full-height chat layout. The sidebar collapses to an icon rail on desktop (logo, actions, expand button, avatar) and is a sheet on mobile. Props: `brand?`, `sidebarActions?` (stays in the rail), `sidebar?` (hidden in the rail), `sidebarFooter?`, `details?` (right panel: inline at 1280px and up, a sheet below; `ChatPanel` gets a toggle button), `detailsTitle?` (default "Details"), `defaultDetailsOpen?`, `storageKey?` (remember collapsed state in localStorage), `defaultOpen?`, `children` (a `ChatPanel`). Includes a `TooltipProvider`.
+Full-height chat layout on `SidebarLayout`, so the sidebar collapses to an icon rail on desktop (logo, actions, expand button, avatar) and is a sheet on mobile. Props: `brand?`, `sidebarActions?` (stays in the rail), `sidebar?` (hidden in the rail), `sidebarFooter?`, `collapsible?`, `details?` (right panel: inline at 1280px and up, a sheet below; `ChatPanel` gets a toggle button), `detailsTitle?` (default "Details"), `defaultDetailsOpen?`, `storageKey?` (remember collapsed state in localStorage), `defaultOpen?`, `children` (a `ChatPanel`). Includes a `TooltipProvider`.
 
 ```tsx
 ;<ChatShell

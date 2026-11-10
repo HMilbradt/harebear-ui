@@ -22,7 +22,7 @@ This project uses `harebear-ui` for all UI. Its theme, tokens, and components ar
 - Status uses a tone prop: `success | warning | danger | info | neutral` (StatusBadge, StatusDot, Timeline, StatusBars, LinkTile).
 - Icons are lucide-react elements passed as nodes: `icon={<UsersIcon />}`. Icon-only buttons need `aria-label`.
 - Compose `className` with `cn()` from harebear-ui.
-- Lay out pages as columns of `Card`s with `gap-5`, page sections with `gap-7`. Use `PageHeader` for page titles and `AppShell` for sidebar apps.
+- Lay out pages as columns of `Card`s with `gap-5`, page sections with `gap-7`. Use `PageHeader` for page titles and `AppShell` for sidebar apps. Every shell (`AppShell`, `ChatShell`) is built on `SidebarLayout`, which gives the collapsible icon rail; use it directly for other sidebar layouts instead of the raw Sidebar primitives.
 - DataTable columns: define with `createDataTableColumnHelper<Row>()` at module scope, pass `getRowId`.
 - Chat apps: `ChatShell` (sidebar: `AppBrand`, `NewConversationButton`, `ConversationList` + `groupByDate`, `UserMenu`; optional `details` panel) around a `ChatPanel` (title, actions, `notice`, `composer`). Don't hand-build the sidebar, rail or panel.
 - Chat content: `ChatMessage role="user" | "assistant"`; render model output inside `Prose`; composer is `PromptInput` (+ `PromptInputChip`, `PromptInputSelect`); code is `CodeSnippet`; agent tool calls are `ToolGroup`/`ToolStep` (or the lighter `Trace`); permission prompts are `ApprovalCard`/`ApprovalResult`; working state is `TypingIndicator label`; clarifying questions are `Questionnaire`.
