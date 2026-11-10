@@ -51,7 +51,7 @@ export interface ChatShellProps {
   sidebarActions?: React.ReactNode
   /** Scrolling sidebar body, usually <ConversationList />. Hidden in the icon rail. */
   sidebar?: React.ReactNode
-  /** Sidebar bottom, usually <UserChip /> with a ThemeToggle as its action. */
+  /** Sidebar bottom, usually <UserMenu /> (or a <UserChip /> with a ThemeToggle as its action). */
   sidebarFooter?: React.ReactNode
   /** Right-hand panel, e.g. Cards with details about the open conversation. Inline at 1280px and up, a sheet below. */
   details?: React.ReactNode
@@ -138,7 +138,9 @@ function ChatShell({
             <SidebarContent className="px-3.5 pt-2">{sidebar}</SidebarContent>
             {sidebarFooter && (
               <SidebarFooter className="px-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))] group-data-[collapsible=icon]:px-0">
-                <div className="px-2 group-data-[collapsible=icon]:px-0">{sidebarFooter}</div>
+                <div className="px-2 group-data-[collapsible=icon]:px-0 has-data-[slot=user-menu-trigger]:px-0">
+                  {sidebarFooter}
+                </div>
               </SidebarFooter>
             )}
           </Sidebar>

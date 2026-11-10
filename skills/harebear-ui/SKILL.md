@@ -24,7 +24,7 @@ This project uses `harebear-ui` for all UI. Its theme, tokens, and components ar
 - Compose `className` with `cn()` from harebear-ui.
 - Lay out pages as columns of `Card`s with `gap-5`, page sections with `gap-7`. Use `PageHeader` for page titles and `AppShell` for sidebar apps.
 - DataTable columns: define with `createDataTableColumnHelper<Row>()` at module scope, pass `getRowId`.
-- Chat apps: `ChatShell` (sidebar: `AppBrand`, `NewConversationButton`, `ConversationList` + `groupByDate`, `UserChip`; optional `details` panel) around a `ChatPanel` (title, actions, `notice`, `composer`). Don't hand-build the sidebar, rail or panel.
+- Chat apps: `ChatShell` (sidebar: `AppBrand`, `NewConversationButton`, `ConversationList` + `groupByDate`, `UserMenu`; optional `details` panel) around a `ChatPanel` (title, actions, `notice`, `composer`). Don't hand-build the sidebar, rail or panel.
 - Chat content: `ChatMessage role="user" | "assistant"`; render model output inside `Prose`; composer is `PromptInput` (+ `PromptInputChip`, `PromptInputSelect`); code is `CodeSnippet`; agent tool calls are `ToolGroup`/`ToolStep` (or the lighter `Trace`); permission prompts are `ApprovalCard`/`ApprovalResult`; working state is `TypingIndicator label`; clarifying questions are `Questionnaire`.
 - Notices: `Alert variant="warning" | "success" | "info" | "destructive"`. Confirmations: `ConfirmDialog`. Copyable IDs: `CopyField`. Live status: `StatusDot`/`StatusBadge` with `pulse`.
 - If you need a className to fix spacing, color, wrapping or borders on a harebear component, that is a library gap: report it instead of overriding.

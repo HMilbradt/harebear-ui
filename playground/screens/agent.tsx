@@ -1,8 +1,8 @@
 import {
   CheckIcon,
   FileTextIcon,
-  LogOutIcon,
   PencilIcon,
+  SettingsIcon,
   ShieldCheckIcon,
   ShieldIcon,
   ShieldOffIcon,
@@ -27,6 +27,7 @@ import {
   ConfirmDialog,
   ConversationList,
   CopyField,
+  DropdownMenuItem,
   groupByDate,
   InlineCode,
   Item,
@@ -44,11 +45,10 @@ import {
   Prose,
   StatusBadge,
   StatusDot,
-  ThemeToggle,
   ToolGroup,
   ToolStep,
   TypingIndicator,
-  UserChip,
+  UserMenu,
 } from "@/index"
 
 const now = Date.now()
@@ -140,18 +140,12 @@ export function AgentScreen() {
         />
       }
       sidebarFooter={
-        <UserChip
-          name="harrison@example.com"
-          subtitle="Signed in"
-          action={
-            <div className="flex shrink-0 items-center">
-              <ThemeToggle />
-              <Button variant="ghost" size="icon" aria-label="Sign out">
-                <LogOutIcon />
-              </Button>
-            </div>
-          }
-        />
+        <UserMenu name="harrison@example.com" subtitle="Signed in" onSignOut={() => {}}>
+          <DropdownMenuItem>
+            <SettingsIcon />
+            Settings
+          </DropdownMenuItem>
+        </UserMenu>
       }
       detailsTitle="Conversation details"
       details={<Details mode={modes.find((m) => m.value === mode)?.label ?? ""} />}
