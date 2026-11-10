@@ -58,7 +58,8 @@
           "a11y": {
             "useFocusableInteractive": "off",
             "useKeyWithClickEvents": "off",
-            "noLabelWithoutControl": "off"
+            "noLabelWithoutControl": "off",
+            "noNoninteractiveTabindex": "off"
           },
           "correctness": {
             "noComponentHookFactories": "off",

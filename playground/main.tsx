@@ -3,11 +3,20 @@ import { createRoot } from "react-dom/client"
 import { ThemeProvider, Toaster, TooltipProvider } from "@/index"
 import "./styles.css"
 import { AdminScreen } from "./screens/admin"
+import { AuthScreen } from "./screens/auth"
+import { CatalogScreen } from "./screens/catalog"
 import { ChatScreen } from "./screens/chat"
 import { HomeScreen } from "./screens/home"
 import { RecordsScreen } from "./screens/records"
 
-const screens = { admin: AdminScreen, chat: ChatScreen, records: RecordsScreen, home: HomeScreen }
+const screens = {
+  admin: AdminScreen,
+  chat: ChatScreen,
+  records: RecordsScreen,
+  home: HomeScreen,
+  auth: AuthScreen,
+  catalog: CatalogScreen,
+}
 type Key = keyof typeof screens
 
 const read = (): Key => (location.hash.slice(1) in screens ? (location.hash.slice(1) as Key) : "admin")

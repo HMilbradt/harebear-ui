@@ -119,18 +119,19 @@ function MessageActions({
   return (
     <div data-slot="message-actions" className={cn("-ml-2 flex gap-0.5", className)} {...props}>
       {copyText !== undefined && (
-        <Button variant="ghost" size="icon-sm" aria-label="Copy response" onClick={() => copy(copyText)}>
+        <Button type="button" variant="ghost" size="icon-sm" aria-label="Copy response" onClick={() => copy(copyText)}>
           {copied ? <CheckIcon /> : <CopyIcon />}
         </Button>
       )}
       {onRegenerate && (
-        <Button variant="ghost" size="icon-sm" aria-label="Regenerate" onClick={onRegenerate}>
+        <Button type="button" variant="ghost" size="icon-sm" aria-label="Regenerate" onClick={onRegenerate}>
           <RefreshCwIcon />
         </Button>
       )}
       {onFeedback && (
         <>
           <Button
+            type="button"
             variant="ghost"
             size="icon-sm"
             aria-label="Good response"
@@ -141,6 +142,7 @@ function MessageActions({
             <ThumbsUpIcon />
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="icon-sm"
             aria-label="Bad response"

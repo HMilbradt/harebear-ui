@@ -28,6 +28,17 @@ export {
 } from "./components/ui/alert-dialog"
 export { Alert, AlertTitle, AlertDescription, AlertAction } from "./components/ui/alert"
 export { AspectRatio } from "./components/ui/aspect-ratio"
+export {
+  Attachment,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentContent,
+  AttachmentTitle,
+  AttachmentDescription,
+  AttachmentActions,
+  AttachmentAction,
+  AttachmentTrigger,
+} from "./components/ui/attachment"
 export { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarBadge } from "./components/ui/avatar"
 export { Badge, badgeVariants } from "./components/ui/badge"
 export {
@@ -39,6 +50,7 @@ export {
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
 } from "./components/ui/breadcrumb"
+export { BubbleGroup, Bubble, BubbleContent, BubbleReactions } from "./components/ui/bubble"
 export { ButtonGroup, ButtonGroupSeparator, ButtonGroupText, buttonGroupVariants } from "./components/ui/button-group"
 export { Button, buttonVariants } from "./components/ui/button"
 export { Calendar, CalendarDayButton } from "./components/ui/calendar"
@@ -62,7 +74,35 @@ export {
 } from "./components/ui/chart"
 export type { ChartConfig } from "./components/ui/chart"
 export { Checkbox } from "./components/ui/checkbox"
+export {
+  CodeBlock,
+  CodeBlockHeader,
+  CodeBlockTitle,
+  CodeBlockActions,
+  CodeBlockCopyButton,
+  CodeBlockContent,
+  CodeBlockLine,
+  CodeBlockFooter,
+} from "./components/ui/code-block"
 export { Collapsible, CollapsibleTrigger, CollapsibleContent } from "./components/ui/collapsible"
+export {
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxGroup,
+  ComboboxLabel,
+  ComboboxCollection,
+  ComboboxEmpty,
+  ComboboxSeparator,
+  ComboboxChips,
+  ComboboxChip,
+  ComboboxChipsInput,
+  ComboboxTrigger,
+  ComboboxValue,
+  useComboboxAnchor,
+} from "./components/ui/combobox"
 export {
   Command,
   CommandDialog,
@@ -103,6 +143,7 @@ export {
   DialogTitle,
   DialogTrigger,
 } from "./components/ui/dialog"
+export { DirectionProvider, useDirection } from "./components/ui/direction"
 export {
   Drawer,
   DrawerPortal,
@@ -170,6 +211,7 @@ export {
 } from "./components/ui/item"
 export { Kbd, KbdGroup } from "./components/ui/kbd"
 export { Label } from "./components/ui/label"
+export { Marker, MarkerIcon, MarkerContent, markerVariants } from "./components/ui/marker"
 export {
   Menubar,
   MenubarPortal,
@@ -188,6 +230,26 @@ export {
   MenubarSubTrigger,
   MenubarSubContent,
 } from "./components/ui/menubar"
+export {
+  MessageScrollerProvider,
+  MessageScroller,
+  MessageScrollerViewport,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerButton,
+  useMessageScroller,
+  useMessageScrollerScrollable,
+  useMessageScrollerVisibility,
+} from "./components/ui/message-scroller"
+export {
+  MessageGroup,
+  Message,
+  MessageAvatar,
+  MessageContent,
+  MessageFooter,
+  MessageHeader,
+} from "./components/ui/message"
+export { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "./components/ui/native-select"
 export {
   NavigationMenu,
   NavigationMenuList,
@@ -218,6 +280,23 @@ export {
   PopoverTrigger,
 } from "./components/ui/popover"
 export { Progress } from "./components/ui/progress"
+export {
+  Questionnaire,
+  QuestionnaireActions,
+  QuestionnaireChoice,
+  QuestionnaireChoiceDescription,
+  QuestionnaireChoices,
+  QuestionnaireDescription,
+  QuestionnaireError,
+  QuestionnaireInput,
+  QuestionnaireItem,
+  QuestionnaireNext,
+  QuestionnairePrevious,
+  QuestionnaireProgress,
+  QuestionnaireSkip,
+  QuestionnaireSubmit,
+  QuestionnaireTitle,
+} from "./components/ui/questionnaire"
 export { RadioGroup, RadioGroupItem } from "./components/ui/radio-group"
 export { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./components/ui/resizable"
 export { ScrollArea, ScrollBar } from "./components/ui/scroll-area"
@@ -290,6 +369,16 @@ export { Textarea } from "./components/ui/textarea"
 export { ToggleGroup, ToggleGroupItem } from "./components/ui/toggle-group"
 export { Toggle, toggleVariants } from "./components/ui/toggle"
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip"
+export {
+  Trace,
+  TraceLine,
+  TraceIcon,
+  TraceTitle,
+  TraceDescription,
+  TraceCollapsible,
+  TraceCollapsibleTrigger,
+  TraceCollapsibleContent,
+} from "./components/ui/trace"
 
 // Admin and layout
 export { ActivityFeed } from "./components/admin/activity-feed"
@@ -338,8 +427,8 @@ export {
   ToolCall,
 } from "./components/ai/chat"
 export type { ChatThreadProps, ChatMessageProps, MessageActionsProps, ToolCallProps } from "./components/ai/chat"
-export { CodeBlock, InlineCode, Prose } from "./components/ai/code-block"
-export type { CodeBlockProps } from "./components/ai/code-block"
+export { CodeSnippet, InlineCode, Prose } from "./components/ai/code-block"
+export type { CodeSnippetProps } from "./components/ai/code-block"
 export { ConversationList } from "./components/ai/conversation-list"
 export type { Conversation, ConversationGroup, ConversationListProps } from "./components/ai/conversation-list"
 export { ModelPicker } from "./components/ai/model-picker"
@@ -347,9 +436,22 @@ export type { ModelOption, ModelPickerProps } from "./components/ai/model-picker
 export { PromptInput, PromptInputChip } from "./components/ai/prompt-input"
 export type { PromptInputProps } from "./components/ai/prompt-input"
 
+// Auth
+export { AuthLayout, LoginForm, SignupForm, GitHubIcon, GoogleIcon, AppleIcon } from "./components/auth/auth"
+export type {
+  AuthLayoutProps,
+  AuthProvider,
+  LoginValues,
+  LoginFormProps,
+  SignupValues,
+  SignupFormProps,
+} from "./components/auth/auth"
+
 // Hooks
 export { useCopyToClipboard } from "./hooks/use-copy-to-clipboard"
+export { useHighlightedCode } from "./hooks/use-highlighted-code"
 export { useIsMobile } from "./hooks/use-mobile"
 
 // Utilities
+export { loadHighlighter, highlightCode } from "./lib/highlighter"
 export { cn } from "./lib/utils"

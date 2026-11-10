@@ -12,6 +12,7 @@ const groups = [
   ["Admin and layout", "components/admin"],
   ["Data display", "components/data"],
   ["AI and chat", "components/ai"],
+  ["Auth", "components/auth"],
   ["Hooks", "hooks"],
   ["Utilities", "lib"],
 ]
