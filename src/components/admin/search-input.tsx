@@ -27,7 +27,10 @@ function SearchInput({
   const lg = size === "lg"
   return (
     // biome-ignore lint/a11y/noLabelWithoutControl: the Input child is the control
-    <label data-slot="search-input" className={cn("relative block", wrapperClassName)}>
+    <label
+      data-slot="search-input"
+      className={cn("relative block group-data-[collapsible=icon]:hidden", wrapperClassName)}
+    >
       <SearchIcon
         aria-hidden="true"
         className={cn(

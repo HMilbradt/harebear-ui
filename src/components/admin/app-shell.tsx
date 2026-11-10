@@ -43,20 +43,27 @@ export interface AppBrandProps extends React.ComponentProps<"div"> {
   action?: React.ReactNode
 }
 
-/** Logo tile + product name. Used in the sidebar header or a top bar. */
+/**
+ * Logo tile + product name. Used in the sidebar header or a top bar.
+ * In a sidebar collapsed to its icon rail, only the tile shows.
+ */
 function AppBrand({ name, subtitle, icon, action, className, ...props }: AppBrandProps) {
   return (
-    <div data-slot="app-brand" className={cn("flex items-center gap-3", className)} {...props}>
+    <div
+      data-slot="app-brand"
+      className={cn("flex items-center gap-3 group-data-[collapsible=icon]:justify-center", className)}
+      {...props}
+    >
       {icon && (
         <div className="grid size-9 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground [&_svg]:size-[18px]">
           {icon}
         </div>
       )}
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
         <div className="truncate text-[15px] font-semibold">{name}</div>
         {subtitle && <div className="truncate text-xs font-medium text-muted-foreground">{subtitle}</div>}
       </div>
-      {action}
+      {action && <div className="contents group-data-[collapsible=icon]:hidden">{action}</div>}
     </div>
   )
 }
@@ -95,7 +102,7 @@ function AppShell({
 }: AppShellProps) {
   return (
     <SidebarProvider defaultOpen={defaultOpen} style={{ "--sidebar-width": "15.75rem" } as React.CSSProperties}>
-      <Sidebar className="border-r-0">
+      <Sidebar>
         {brand && <SidebarHeader className="px-4 pt-6 pb-2">{brand}</SidebarHeader>}
         <SidebarContent className="gap-5 px-2">
           {nav.map((section, i) => (

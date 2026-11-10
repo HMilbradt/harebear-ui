@@ -12,6 +12,11 @@ const alertVariants = cva(
         default: "bg-card text-card-foreground",
         destructive:
           "bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
+        warning:
+          "border-transparent bg-warning/12 *:data-[slot=alert-description]:text-foreground *:[svg]:text-warning",
+        success:
+          "border-transparent bg-success/12 *:data-[slot=alert-description]:text-foreground *:[svg]:text-success",
+        info: "border-transparent bg-primary-soft *:data-[slot=alert-description]:text-foreground *:[svg]:text-primary",
       },
     },
     defaultVariants: {
@@ -42,7 +47,7 @@ function AlertDescription({ className, ...props }: React.ComponentProps<"div">) 
     <div
       data-slot="alert-description"
       className={cn(
-        "text-sm text-balance text-muted-foreground md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4",
+        "min-w-0 text-sm text-balance wrap-anywhere text-muted-foreground md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4",
         className,
       )}
       {...props}

@@ -14,29 +14,47 @@ const toneColor: Record<StatusTone, string> = {
   neutral: "bg-muted-foreground",
 }
 
+export interface StatusDotProps extends React.ComponentProps<"span"> {
+  tone?: StatusTone
+  /** Pulse the dot, for live states like "working" or "connecting". */
+  pulse?: boolean
+}
+
 /** Small colored dot. Use for status, legends, and project markers. */
-function StatusDot({ tone = "neutral", className, ...props }: React.ComponentProps<"span"> & { tone?: StatusTone }) {
+function StatusDot({ tone = "neutral", pulse, className, ...props }: StatusDotProps) {
   return (
     <span
       data-slot="status-dot"
       aria-hidden="true"
-      className={cn("inline-block size-2 shrink-0 rounded-full", toneColor[tone], className)}
+      className={cn(
+        "inline-block size-2 shrink-0 rounded-full",
+        toneColor[tone],
+        pulse && "animate-pulse motion-reduce:animate-none",
+        className,
+      )}
       {...props}
     />
   )
 }
 
-/** Pill with a status dot and label, e.g. Paid / Pending / Refunded. */
+export interface StatusBadgeProps extends React.ComponentProps<typeof Badge> {
+  tone?: StatusTone
+  /** Pulse the dot. */
+  pulse?: boolean
+}
+
+/** Pill with a status dot and label, e.g. Paid / Pending / Refunded. `size="lg"` lines up with sm buttons. */
 function StatusBadge({
   tone = "neutral",
+  pulse,
   variant = "secondary",
   children,
   className,
   ...props
-}: React.ComponentProps<typeof Badge> & { tone?: StatusTone }) {
+}: StatusBadgeProps) {
   return (
     <Badge data-slot="status-badge" variant={variant} className={className} {...props}>
-      <StatusDot tone={tone} />
+      <StatusDot tone={tone} pulse={pulse} />
       {children}
     </Badge>
   )

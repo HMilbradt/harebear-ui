@@ -57,14 +57,21 @@ export interface ChatMessageProps extends React.ComponentProps<"div"> {
   avatar?: React.ReactNode
   /** Rendered under assistant content, usually <MessageActions />. */
   actions?: React.ReactNode
+  /** User bubble color: "muted" (gray, default) or "soft" (tinted with the accent). */
+  variant?: "muted" | "soft"
 }
 
 /** One chat turn. User: right-aligned bubble. Assistant: avatar + free-flowing content. */
-function ChatMessage({ role, avatar, actions, className, children, ...props }: ChatMessageProps) {
+function ChatMessage({ role, avatar, actions, variant = "muted", className, children, ...props }: ChatMessageProps) {
   if (role === "user") {
     return (
       <div data-slot="chat-message" data-role="user" className={cn("flex justify-end", className)} {...props}>
-        <div className="max-w-[80%] rounded-[calc(var(--radius-xl)*1.2)] rounded-br-sm bg-muted px-4.5 py-3 text-[15px] whitespace-pre-wrap">
+        <div
+          className={cn(
+            "max-w-[80%] min-w-0 rounded-[calc(var(--radius-xl)*1.2)] rounded-br-sm px-4.5 py-3 text-[15px] whitespace-pre-wrap wrap-anywhere",
+            variant === "soft" ? "bg-primary-soft" : "bg-muted",
+          )}
+        >
           {children}
         </div>
       </div>
@@ -159,23 +166,36 @@ function MessageActions({
   )
 }
 
-/** Three pulsing dots while the assistant is generating. */
-function TypingIndicator({ className, ...props }: React.ComponentProps<"div">) {
+export interface TypingIndicatorProps extends React.ComponentProps<"div"> {
+  /** Text after the dots, e.g. "Working". Also used as the accessible label. */
+  label?: React.ReactNode
+  /** Dot color: "muted" (default) or "primary". */
+  variant?: "muted" | "primary"
+}
+
+/** Three pulsing dots while the assistant is generating, with an optional label. */
+function TypingIndicator({ label, variant = "muted", className, ...props }: TypingIndicatorProps) {
   return (
     <div
       data-slot="typing-indicator"
       role="status"
-      aria-label="Assistant is typing"
-      className={cn("flex gap-1.25 py-1", className)}
+      aria-label={typeof label === "string" ? label : "Assistant is typing"}
+      className={cn("flex items-center gap-2 py-1", className)}
       {...props}
     >
-      {[0, 150, 300].map((d) => (
-        <span
-          key={d}
-          className="inline-block size-1.5 animate-typing rounded-full bg-muted-foreground"
-          style={{ animationDelay: `${d}ms` }}
-        />
-      ))}
+      <span className="flex gap-1.25">
+        {[0, 150, 300].map((d) => (
+          <span
+            key={d}
+            className={cn(
+              "inline-block size-1.5 animate-typing rounded-full",
+              variant === "primary" ? "bg-primary" : "bg-muted-foreground",
+            )}
+            style={{ animationDelay: `${d}ms` }}
+          />
+        ))}
+      </span>
+      {label && <span className="text-xs text-muted-foreground">{label}</span>}
     </div>
   )
 }

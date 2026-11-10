@@ -1,8 +1,16 @@
 "use client"
 
-import { ArrowUpIcon, PaperclipIcon, SquareIcon } from "lucide-react"
+import { ArrowUpIcon, ChevronDownIcon, PaperclipIcon, SquareIcon } from "lucide-react"
 import * as React from "react"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 
 export interface PromptInputProps extends Omit<React.ComponentProps<"form">, "onSubmit" | "onChange"> {
@@ -120,8 +128,17 @@ function PromptInput({
   )
 }
 
+export interface PromptInputChipProps extends React.ComponentProps<typeof Button> {
+  active?: boolean
+  /** "warning" outlines the chip in the warning color, e.g. for a risky mode that is on. */
+  tone?: "default" | "warning"
+}
+
+const chipClass = (tone: "default" | "warning") =>
+  cn("h-8", tone === "warning" && "border-warning/50 bg-transparent text-warning")
+
 /** Toggleable pill for the composer toolbar (web search, a knowledge source…). */
-function PromptInputChip({ active, className, ...props }: React.ComponentProps<typeof Button> & { active?: boolean }) {
+function PromptInputChip({ active, tone = "default", className, ...props }: PromptInputChipProps) {
   return (
     <Button
       type="button"
@@ -129,10 +146,79 @@ function PromptInputChip({ active, className, ...props }: React.ComponentProps<t
       shape="pill"
       variant={active ? "soft" : "outline"}
       aria-pressed={active}
-      className={cn("h-8", className)}
+      data-tone={tone}
+      className={cn(chipClass(tone), className)}
       {...props}
     />
   )
 }
 
-export { PromptInput, PromptInputChip }
+export interface PromptInputSelectOption {
+  value: string
+  label: React.ReactNode
+  description?: React.ReactNode
+  icon?: React.ReactNode
+  /** "warning" shows the chip in the warning color while this option is selected. */
+  tone?: "default" | "warning"
+}
+
+export interface PromptInputSelectProps {
+  options: PromptInputSelectOption[]
+  value: string
+  onValueChange: (value: string) => void
+  /** Heading inside the menu, e.g. "Permissions for this conversation". */
+  label?: React.ReactNode
+  disabled?: boolean
+  /** Tooltip text on the chip. */
+  title?: string
+  className?: string
+}
+
+/** Composer chip that picks one of a few modes, each with an icon and a one-line description. */
+function PromptInputSelect({
+  options,
+  value,
+  onValueChange,
+  label,
+  disabled,
+  title,
+  className,
+}: PromptInputSelectProps) {
+  const current = options.find((o) => o.value === value) ?? options[0]
+  const tone = current?.tone ?? "default"
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild disabled={disabled}>
+        <Button
+          type="button"
+          size="sm"
+          shape="pill"
+          variant={tone === "warning" ? "outline" : "soft"}
+          data-slot="prompt-input-select"
+          data-tone={tone}
+          title={title}
+          className={cn(chipClass(tone), className)}
+        >
+          {current?.icon}
+          {current?.label}
+          <ChevronDownIcon className="opacity-60" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-72">
+        {label && <DropdownMenuLabel>{label}</DropdownMenuLabel>}
+        <DropdownMenuRadioGroup value={value} onValueChange={onValueChange}>
+          {options.map((o) => (
+            <DropdownMenuRadioItem key={o.value} value={o.value} className="items-start py-2">
+              <div className="flex min-w-0 flex-col">
+                <span className="font-medium">{o.label}</span>
+                {o.description && <span className="text-xs text-muted-foreground">{o.description}</span>}
+              </div>
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+export { PromptInput, PromptInputChip, PromptInputSelect }
