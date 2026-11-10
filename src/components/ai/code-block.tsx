@@ -41,7 +41,14 @@ function CodeSnippet({
         <CodeBlockHeader className="min-h-10">
           <CodeBlockTitle className="font-mono text-xs text-muted-foreground">{language}</CodeBlockTitle>
           {!hideCopy && (
-            <Button variant="ghost" size="sm" className="ms-auto" onClick={() => copy(code)} aria-label="Copy code">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="ms-auto"
+              onClick={() => copy(code)}
+              aria-label="Copy code"
+            >
               {copied ? <CheckIcon /> : <CopyIcon />}
               {copied ? "Copied" : "Copy"}
             </Button>

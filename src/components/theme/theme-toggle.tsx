@@ -11,6 +11,7 @@ function ThemeToggle(props: Omit<React.ComponentProps<typeof Button>, "onClick">
   const dark = resolvedMode === "dark"
   return (
     <Button
+      type="button"
       variant="ghost"
       size="icon"
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}

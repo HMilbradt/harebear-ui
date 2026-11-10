@@ -1,6 +1,6 @@
 "use client"
 
-import type * as React from "react"
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field"
@@ -234,6 +234,7 @@ function LoginForm({
   className,
   ...props
 }: LoginFormProps) {
+  const id = React.useId()
   const emailOnly = mode === "email-only"
   const desc =
     description ?? (emailOnly ? "Enter your email and we'll send you a sign-in link" : "Sign in to your account")
@@ -261,9 +262,9 @@ function LoginForm({
         {providersFirst && sso}
         {providersFirst && sso && <FieldSeparator>Or continue with email</FieldSeparator>}
         <Field>
-          <FieldLabel htmlFor="login-email">Email</FieldLabel>
+          <FieldLabel htmlFor={`${id}-email`}>Email</FieldLabel>
           <Input
-            id="login-email"
+            id={`${id}-email`}
             name="email"
             type="email"
             autoComplete="email"
@@ -275,7 +276,7 @@ function LoginForm({
         {!emailOnly && (
           <Field>
             <div className="flex items-center">
-              <FieldLabel htmlFor="login-password">Password</FieldLabel>
+              <FieldLabel htmlFor={`${id}-password`}>Password</FieldLabel>
               {forgotPasswordHref && (
                 <a
                   href={forgotPasswordHref}
@@ -286,7 +287,7 @@ function LoginForm({
               )}
             </div>
             <Input
-              id="login-password"
+              id={`${id}-password`}
               name="password"
               type="password"
               autoComplete="current-password"
@@ -355,6 +356,7 @@ function SignupForm({
   className,
   ...props
 }: SignupFormProps) {
+  const id = React.useId()
   const sso = providers.length > 0 && (
     <ProviderButtons providers={providers} verb="Sign up" onProviderClick={onProviderClick} disabled={loading} />
   )
@@ -386,14 +388,14 @@ function SignupForm({
         {providersFirst && sso && <FieldSeparator>Or sign up with email</FieldSeparator>}
         {nameField && (
           <Field>
-            <FieldLabel htmlFor="signup-name">Full name</FieldLabel>
-            <Input id="signup-name" name="name" autoComplete="name" required disabled={loading} />
+            <FieldLabel htmlFor={`${id}-name`}>Full name</FieldLabel>
+            <Input id={`${id}-name`} name="name" autoComplete="name" required disabled={loading} />
           </Field>
         )}
         <Field>
-          <FieldLabel htmlFor="signup-email">Email</FieldLabel>
+          <FieldLabel htmlFor={`${id}-email`}>Email</FieldLabel>
           <Input
-            id="signup-email"
+            id={`${id}-email`}
             name="email"
             type="email"
             autoComplete="email"
@@ -403,12 +405,15 @@ function SignupForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="signup-password">Password</FieldLabel>
+          <FieldLabel htmlFor={`${id}-password`}>Password</FieldLabel>
           <Input
-            id="signup-password"
+            id={`${id}-password`}
             name="password"
             type="password"
             autoComplete="new-password"
+            onInput={(e) =>
+              (e.currentTarget.form?.elements.namedItem("confirm") as HTMLInputElement | null)?.setCustomValidity("")
+            }
             minLength={minPasswordLength}
             required
             disabled={loading}
@@ -417,9 +422,9 @@ function SignupForm({
         </Field>
         {confirmPassword && (
           <Field>
-            <FieldLabel htmlFor="signup-confirm">Confirm password</FieldLabel>
+            <FieldLabel htmlFor={`${id}-confirm`}>Confirm password</FieldLabel>
             <Input
-              id="signup-confirm"
+              id={`${id}-confirm`}
               name="confirm"
               type="password"
               autoComplete="new-password"

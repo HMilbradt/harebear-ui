@@ -4,6 +4,7 @@ import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 import {
   ChatMessage,
+  CodeBlockCopyButton,
   CodeSnippet,
   LoginForm,
   SignupForm,
@@ -199,5 +200,47 @@ describe("CodeSnippet", () => {
     render(<CodeSnippet language="bash" code={"echo hi\nls"} />)
     expect(screen.getByText("echo hi")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument()
+  })
+})
+
+describe("review fixes", () => {
+  it("SignupForm submits after the password (not the confirmation) is corrected", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    render(<SignupForm nameField={false} onSubmit={onSubmit} />)
+    await user.type(screen.getByLabelText("Email"), "a@b.co")
+    await user.type(screen.getByLabelText("Password"), "wrongpassword")
+    await user.type(screen.getByLabelText("Confirm password"), "rightpassword")
+    await user.click(screen.getByRole("button", { name: "Create account" }))
+    expect(onSubmit).not.toHaveBeenCalled()
+    await user.clear(screen.getByLabelText("Password"))
+    await user.type(screen.getByLabelText("Password"), "rightpassword")
+    await user.click(screen.getByRole("button", { name: "Create account" }))
+    expect(onSubmit).toHaveBeenCalledWith({ email: "a@b.co", password: "rightpassword" })
+  })
+
+  it("gives each LoginForm instance its own field ids", () => {
+    render(
+      <>
+        <LoginForm />
+        <LoginForm />
+      </>,
+    )
+    const emails = screen.getAllByLabelText("Email")
+    expect(emails).toHaveLength(2)
+    expect(emails[0]).not.toBe(emails[1])
+    expect(emails[0]!.id).not.toBe(emails[1]!.id)
+  })
+
+  it("CodeBlockCopyButton does not submit a surrounding form", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn((e: React.FormEvent) => e.preventDefault())
+    render(
+      <form onSubmit={onSubmit}>
+        <CodeBlockCopyButton value="x" />
+      </form>,
+    )
+    await user.click(screen.getByRole("button", { name: "Copy" }))
+    expect(onSubmit).not.toHaveBeenCalled()
   })
 })

@@ -82,6 +82,7 @@ function CodeBlockCopyButton({
   value,
   variant = "ghost",
   size = "icon-xs",
+  type = "button",
   className,
   onClick,
   ...props
@@ -102,6 +103,7 @@ function CodeBlockCopyButton({
       <Button
         data-slot="code-block-copy-button"
         data-copied={copied || undefined}
+        type={type}
         variant={variant}
         size={size}
         aria-label={copied ? "Copied" : "Copy"}
