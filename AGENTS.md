@@ -6,14 +6,14 @@ Consumers get compiled ESM + types from `dist/` and a Tailwind stylesheet (`hare
 
 ## Commands
 
-| Command                  | What it does                                                                                                  |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `pnpm dev`               | Playground at http://localhost:5199 with the four reference screens (`#admin`, `#chat`, `#records`, `#home`). |
-| `pnpm check`             | Everything CI runs: lint, typecheck, tests, build, publint, attw. Run before you say you're done.             |
-| `pnpm test`              | Vitest. `pnpm test -u` updates the export snapshot after an intended API change.                              |
-| `pnpm gen`               | Regenerate `src/index.ts` from component export lists. Run after adding or renaming exports.                  |
-| `pnpm format`            | Biome format + safe fixes.                                                                                    |
-| `pnpm shadcn add <name>` | Pull a new shadcn component into `src/components/ui/`.                                                        |
+| Command                  | What it does                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| `pnpm dev`               | Playground at http://localhost:5199 with the reference screens.                                   |
+| `pnpm check`             | Everything CI runs: lint, typecheck, tests, build, publint, attw. Run before you say you're done. |
+| `pnpm test`              | Vitest. `pnpm test -u` updates the export snapshot after an intended API change.                  |
+| `pnpm gen`               | Regenerate `src/index.ts` from component export lists. Run after adding or renaming exports.      |
+| `pnpm format`            | Biome format + safe fixes.                                                                        |
+| `pnpm shadcn add <name>` | Pull a new shadcn component into `src/components/ui/`.                                            |
 
 ## Layout
 
@@ -26,9 +26,10 @@ src/
   components/theme/     ThemeProvider, ThemeToggle, ThemeScript.
   components/admin/     Layout and dashboard composites (AppShell, StatCard, PageHeader...).
   components/data/      DataTable, TrendChart, Sparkline, BarList, StatusBars.
-  components/ai/        Chat composites (ChatThread, ChatMessage, PromptInput, ModelPicker...).
+  components/ai/        Chat composites (ChatThread, ChatMessage, PromptInput, ModelPicker, CodeSnippet...).
+  components/auth/      AuthLayout, LoginForm, SignupForm (parameterized shadcn login/signup blocks).
   hooks/, lib/utils.ts  Shared hooks and cn().
-playground/screens/     Reference screens that use only public exports. They are the visual spec and usage examples.
+playground/screens/     Reference screens that use only public exports (#admin, #chat, #records, #home, #auth, #catalog). Visual spec and usage examples.
 docs/COMPONENTS.md      Consumer-facing catalog. Shipped. Test-enforced to mention every export.
 llms.txt, skills/       Consumer-facing agent docs. Shipped.
 bin/harebear-ui.mjs     `npx harebear-ui init|docs` for consuming apps.
@@ -37,7 +38,7 @@ test/                   Vitest: API snapshot, docs coverage, token integrity, be
 
 ## Adding a component
 
-1. Pick the folder by purpose (`admin`, `data`, `ai`; `ui` only for shadcn primitives).
+1. Pick the folder by purpose (`admin`, `data`, `ai`, `auth`; `ui` only for shadcn primitives).
 2. Follow the existing files: `"use client"` first line, named function component, props interface exported as `<Name>Props`, `data-slot="<kebab-name>"` on the root, `className` merged last with `cn()`, rest props spread on the root.
 3. Style only with tokens (`bg-card`, `text-muted-foreground`, `bg-primary-soft`, `shadow-card`, `rounded-xl`). No hex, no palette colors. Status takes a `tone` (`success | warning | danger | info | neutral`).
 4. `pnpm gen`, then add the component to `docs/COMPONENTS.md` (the docs test fails otherwise) and to the index in `llms.txt`.
@@ -50,6 +51,8 @@ test/                   Vitest: API snapshot, docs coverage, token integrity, be
 - Keep upstream file structure so `pnpm shadcn add <name> -o` diffs stay readable. Change class strings, add variants; avoid restructuring.
 - shadcn sometimes rewrites the utils import to `from "cn"`. It must be `from "@/lib/utils"`. Remove any `cn` dependency it adds. Same for `next-themes` (sonner uses our `useTheme`).
 - New shadcn files need `"use client"` as the first line.
+- Restyle new primitives to harebear's look: form controls are 40px `rounded-md bg-muted border-transparent` with `focus-visible:border-primary focus-visible:bg-card focus-visible:ring-4 focus-visible:ring-primary/15`; replace `border-input` / `dark:bg-input/30` patterns; selected states use `bg-primary-soft`.
+- The package includes every `registry:ui` item. Check for gaps with `pnpm shadcn list @shadcn --json` and compare names against `src/components/ui/`.
 
 ## Gotchas
 

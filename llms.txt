@@ -21,7 +21,7 @@
 
 - [Component catalog](docs/COMPONENTS.md): every export with props and examples. In an installed app: node_modules/harebear-ui/docs/COMPONENTS.md
 - [Agent skill](skills/harebear-ui/SKILL.md): Claude Code skill, installed by `npx harebear-ui init`.
-- [Example screens](https://github.com/hmilbradt/harebear-ui/tree/main/playground/screens): admin dashboard, AI chat, data table + detail panel, status home page.
+- [Example screens](https://github.com/hmilbradt/harebear-ui/tree/main/playground/screens): admin dashboard, AI chat, data table + detail panel, status home page, auth pages, component catalog.
 - [Source](https://github.com/hmilbradt/harebear-ui)
 
 ## Component index
@@ -29,6 +29,8 @@
 Theme: ThemeProvider, useTheme, ThemeToggle, ThemeScript
 Layout/admin: AppShell, AppBrand, PageHeader, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, Callout, LinkTile
 Data: DataTable, createDataTableColumnHelper, TrendChart, TrendLegend, BarList, Sparkline, StatusBars
-AI/chat: ChatThread, ChatMessage, AssistantAvatar, MessageActions, PromptInput, PromptInputChip, ModelPicker, ConversationList, ToolCall, TypingIndicator, CodeBlock, InlineCode, Prose
-Primitives (shadcn/ui): Accordion, Alert, AlertDialog, AspectRatio, Avatar, Badge, Breadcrumb, Button, ButtonGroup, Calendar, Card, Carousel, Chart, Checkbox, Collapsible, Command, ContextMenu, Dialog, Drawer, DropdownMenu, Empty, Field, HoverCard, Input, InputGroup, InputOTP, Item, Kbd, Label, Menubar, NavigationMenu, Pagination, Popover, Progress, RadioGroup, Resizable, ScrollArea, Select, Separator, Sheet, Sidebar, Skeleton, Slider, Spinner, Switch, Table, Tabs, Textarea, Toaster, Toggle, ToggleGroup, Tooltip
-Hooks/utils: useCopyToClipboard, useIsMobile, cn
+AI/chat composites: ChatThread, ChatMessage, AssistantAvatar, MessageActions, PromptInput, PromptInputChip, ModelPicker, ConversationList, ToolCall, TypingIndicator, CodeSnippet, InlineCode, Prose
+AI/chat primitives (shadcn): Message, Bubble, MessageScroller, Attachment, Trace, Marker, Questionnaire, CodeBlock
+Auth: AuthLayout, LoginForm, SignupForm, GitHubIcon, GoogleIcon, AppleIcon
+Primitives (the full shadcn/ui registry): Accordion, Alert, AlertDialog, AspectRatio, Attachment, Avatar, Badge, Breadcrumb, Bubble, Button, ButtonGroup, Calendar, Card, Carousel, Chart, Checkbox, CodeBlock, Collapsible, Combobox, Command, ContextMenu, Dialog, DirectionProvider, Drawer, DropdownMenu, Empty, Field, HoverCard, Input, InputGroup, InputOTP, Item, Kbd, Label, Marker, Menubar, Message, MessageScroller, NativeSelect, NavigationMenu, Pagination, Popover, Progress, Questionnaire, RadioGroup, Resizable, ScrollArea, Select, Separator, Sheet, Sidebar, Skeleton, Slider, Spinner, Switch, Table, Tabs, Textarea, Toaster, Toggle, ToggleGroup, Tooltip, Trace
+Hooks/utils: useCopyToClipboard, useHighlightedCode, useIsMobile, cn

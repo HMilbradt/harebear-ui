@@ -14,7 +14,7 @@ import {
   Card,
   ChatMessage,
   ChatThread,
-  CodeBlock,
+  CodeSnippet,
   ConversationList,
   InlineCode,
   Kbd,
@@ -158,7 +158,7 @@ export function ChatScreen() {
                   </li>
                 </ol>
               </Prose>
-              <CodeBlock language="bash" code={code} />
+              <CodeSnippet language="bash" code={code} />
               <Prose>
                 <p>
                   Reboot, then confirm it worked with <InlineCode>dmesg | grep -e DMAR -e IOMMU</InlineCode>. If you see

@@ -4,6 +4,9 @@ import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 import {
   ChatMessage,
+  CodeSnippet,
+  LoginForm,
+  SignupForm,
   createDataTableColumnHelper,
   DataTable,
   PromptInput,
@@ -142,5 +145,59 @@ describe("display components", () => {
     )
     expect(screen.getByText("Hi").closest("[data-role]")).toHaveAttribute("data-role", "user")
     expect(screen.getByText("Hello").closest("[data-role]")).toHaveAttribute("data-role", "assistant")
+  })
+})
+
+describe("auth forms", () => {
+  it("LoginForm submits email and password", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    render(<LoginForm onSubmit={onSubmit} />)
+    await user.type(screen.getByLabelText("Email"), "a@b.co")
+    await user.type(screen.getByLabelText("Password"), "hunter22")
+    await user.click(screen.getByRole("button", { name: "Sign in" }))
+    expect(onSubmit).toHaveBeenCalledWith({ email: "a@b.co", password: "hunter22" })
+  })
+
+  it("LoginForm email-only mode has no password", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    render(<LoginForm mode="email-only" onSubmit={onSubmit} />)
+    expect(screen.queryByLabelText("Password")).toBeNull()
+    await user.type(screen.getByLabelText("Email"), "a@b.co")
+    await user.click(screen.getByRole("button", { name: "Send sign-in link" }))
+    expect(onSubmit).toHaveBeenCalledWith({ email: "a@b.co" })
+  })
+
+  it("SignupForm blocks mismatched passwords", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    render(<SignupForm onSubmit={onSubmit} />)
+    await user.type(screen.getByLabelText("Full name"), "Ada")
+    await user.type(screen.getByLabelText("Email"), "a@b.co")
+    await user.type(screen.getByLabelText("Password"), "longpassword")
+    await user.type(screen.getByLabelText("Confirm password"), "different1")
+    await user.click(screen.getByRole("button", { name: "Create account" }))
+    expect(onSubmit).not.toHaveBeenCalled()
+    await user.clear(screen.getByLabelText("Confirm password"))
+    await user.type(screen.getByLabelText("Confirm password"), "longpassword")
+    await user.click(screen.getByRole("button", { name: "Create account" }))
+    expect(onSubmit).toHaveBeenCalledWith({ name: "Ada", email: "a@b.co", password: "longpassword" })
+  })
+
+  it("renders provider buttons and reports clicks", async () => {
+    const user = userEvent.setup()
+    const onProviderClick = vi.fn()
+    render(<LoginForm providers={[{ id: "github", label: "GitHub" }]} onProviderClick={onProviderClick} />)
+    await user.click(screen.getByRole("button", { name: "Continue with GitHub" }))
+    expect(onProviderClick).toHaveBeenCalledWith("github")
+  })
+})
+
+describe("CodeSnippet", () => {
+  it("renders the code and a copy button", () => {
+    render(<CodeSnippet language="bash" code={"echo hi\nls"} />)
+    expect(screen.getByText("echo hi")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument()
   })
 })

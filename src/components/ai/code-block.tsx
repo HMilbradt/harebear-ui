@@ -3,37 +3,57 @@
 import { CheckIcon, CopyIcon } from "lucide-react"
 import type * as React from "react"
 import { Button } from "@/components/ui/button"
+import { CodeBlock, CodeBlockContent, CodeBlockHeader, CodeBlockLine, CodeBlockTitle } from "@/components/ui/code-block"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
+import { useHighlightedCode } from "@/hooks/use-highlighted-code"
 import { cn } from "@/lib/utils"
 
-export interface CodeBlockProps extends Omit<React.ComponentProps<"div">, "children"> {
+export interface CodeSnippetProps extends Omit<React.ComponentProps<typeof CodeBlock>, "children"> {
   code: string
-  /** Label shown top-left, e.g. "bash". */
+  /** Language for the label and syntax highlighting, e.g. "bash", "tsx". Unknown languages render plain. */
   language?: string
-  /** Pre-highlighted content (e.g. from shiki). Falls back to plain `code`. */
-  children?: React.ReactNode
+  /** Turn syntax highlighting off. Default on. */
+  highlight?: boolean
+  lineNumbers?: boolean
   /** Hide the copy button. */
   hideCopy?: boolean
 }
 
-/** Code panel with language label and copy button. No highlighter bundled; pass highlighted children if you have one. */
-function CodeBlock({ code, language, children, hideCopy, className, ...props }: CodeBlockProps) {
+/**
+ * One-prop code panel: language label, copy button, shiki highlighting (loaded
+ * lazily per language). Built on the CodeBlock primitives; use those directly
+ * for diffs, highlighted lines, or custom headers.
+ */
+function CodeSnippet({
+  code,
+  language,
+  highlight = true,
+  lineNumbers,
+  hideCopy,
+  className,
+  ...props
+}: CodeSnippetProps) {
   const { copied, copy } = useCopyToClipboard()
+  const lines = useHighlightedCode(code, highlight && language ? language : "text")
   return (
-    <div data-slot="code-block" className={cn("overflow-hidden rounded-lg bg-muted", className)} {...props}>
-      <div className="flex min-h-10 items-center justify-between pt-2 pr-2 pl-4.5">
-        <span className="font-mono text-xs font-medium text-muted-foreground">{language}</span>
-        {!hideCopy && (
-          <Button variant="ghost" size="sm" onClick={() => copy(code)} aria-label="Copy code">
-            {copied ? <CheckIcon /> : <CopyIcon />}
-            {copied ? "Copied" : "Copy"}
-          </Button>
-        )}
-      </div>
-      <pre className="m-0 overflow-x-auto px-4.5 pt-1 pb-4.5 font-mono text-[13px] leading-[1.7]">
-        <code>{children ?? code}</code>
-      </pre>
-    </div>
+    <CodeBlock data-slot="code-snippet" className={className} {...props}>
+      {(language || !hideCopy) && (
+        <CodeBlockHeader className="min-h-10">
+          <CodeBlockTitle className="font-mono text-xs text-muted-foreground">{language}</CodeBlockTitle>
+          {!hideCopy && (
+            <Button variant="ghost" size="sm" className="ms-auto" onClick={() => copy(code)} aria-label="Copy code">
+              {copied ? <CheckIcon /> : <CopyIcon />}
+              {copied ? "Copied" : "Copy"}
+            </Button>
+          )}
+        </CodeBlockHeader>
+      )}
+      <CodeBlockContent lineNumbers={lineNumbers} className="pb-4.5">
+        {lines.map((line, i) => (
+          <CodeBlockLine key={i}>{line}</CodeBlockLine>
+        ))}
+      </CodeBlockContent>
+    </CodeBlock>
   )
 }
 
@@ -74,4 +94,4 @@ function Prose({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-export { CodeBlock, InlineCode, Prose }
+export { CodeSnippet, InlineCode, Prose }

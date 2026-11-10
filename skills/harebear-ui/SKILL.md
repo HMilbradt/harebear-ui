@@ -12,7 +12,7 @@ This project uses `harebear-ui` for all UI. Its theme, tokens, and components ar
 
 1. Read the catalog: `node_modules/harebear-ui/docs/COMPONENTS.md`. It lists every export with props and examples.
 2. Pick existing components first. Build new components only by composing harebear-ui parts.
-3. For a whole screen, start from the closest reference screen: admin dashboard, AI chat, data table with detail panel, or status home page (https://github.com/hmilbradt/harebear-ui/tree/main/playground/screens).
+3. For a whole screen, start from the closest reference screen: admin dashboard, AI chat, data table with detail panel, status home page, or auth (https://github.com/hmilbradt/harebear-ui/tree/main/playground/screens).
 
 ## Rules
 
@@ -24,7 +24,8 @@ This project uses `harebear-ui` for all UI. Its theme, tokens, and components ar
 - Compose `className` with `cn()` from harebear-ui.
 - Lay out pages as columns of `Card`s with `gap-5`, page sections with `gap-7`. Use `PageHeader` for page titles and `AppShell` for sidebar apps.
 - DataTable columns: define with `createDataTableColumnHelper<Row>()` at module scope, pass `getRowId`.
-- Chat: `ChatThread` > `ChatMessage role="user" | "assistant"`; render model output inside `Prose`; composer is `PromptInput`.
+- Chat: `ChatThread` > `ChatMessage role="user" | "assistant"`; render model output inside `Prose`; composer is `PromptInput`; code is `CodeSnippet`; agent steps are `Trace`; clarifying questions are `Questionnaire`.
+- Sign-in and sign-up pages: `AuthLayout` + `LoginForm` / `SignupForm`. Don't hand-build auth forms.
 - Theme: `ThemeProvider` at the root (`accent`, `radius`, `defaultMode`), `ThemeToggle` for the light/dark button. Both modes must work: never style for only one.
 
 ## Check your work
