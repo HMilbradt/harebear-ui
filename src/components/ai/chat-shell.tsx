@@ -1,23 +1,13 @@
 "use client"
 
-import { PanelLeftCloseIcon, PanelLeftOpenIcon, PanelRightIcon, TriangleAlertIcon } from "lucide-react"
+import { PanelRightIcon, TriangleAlertIcon } from "lucide-react"
 import * as React from "react"
+import { SidebarLayout, type SidebarLayoutProps } from "@/components/admin/sidebar-layout"
 import { ChatThread } from "@/components/ai/chat"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
-  useSidebarOptional,
-} from "@/components/ui/sidebar"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { SidebarTrigger, useSidebarOptional } from "@/components/ui/sidebar"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { cn } from "@/lib/utils"
 
@@ -31,18 +21,6 @@ interface ChatShellContextValue {
 }
 
 const ChatShellContext = React.createContext<ChatShellContextValue | null>(null)
-
-function readStored(key: string) {
-  try {
-    const v = window.localStorage.getItem(key)
-    return v === null ? null : v !== "collapsed"
-  } catch {
-    return null
-  }
-}
-
-// Layout effect on the client so a stored state applies before paint; plain effect on the server (no warning).
-const useIsomorphicLayoutEffect = typeof window === "undefined" ? React.useEffect : React.useLayoutEffect
 
 export interface ChatShellProps {
   /** Sidebar top, usually <AppBrand />. Collapses to its logo tile in the icon rail. */
@@ -59,6 +37,8 @@ export interface ChatShellProps {
   detailsTitle?: string
   /** Show the details panel at first on wide screens. Default true. */
   defaultDetailsOpen?: boolean
+  /** How the sidebar collapses on desktop. Default "icon" (an icon rail). See SidebarLayout. */
+  collapsible?: SidebarLayoutProps["collapsible"]
   /** Remember the sidebar's expanded or collapsed state in localStorage under this key. */
   storageKey?: string
   /** Sidebar expanded at first (when nothing is stored). Default true. */
@@ -69,8 +49,8 @@ export interface ChatShellProps {
 }
 
 /**
- * Full-height chat app layout: a sidebar that collapses to an icon rail (a sheet on mobile), the main chat
- * column, and an optional details panel. Put a ChatPanel inside.
+ * Full-height chat app layout: SidebarLayout (sidebar with an icon rail, a sheet on mobile) around the chat
+ * column, plus an optional details panel. Put a ChatPanel inside.
  */
 function ChatShell({
   brand,
@@ -80,27 +60,12 @@ function ChatShell({
   details,
   detailsTitle = "Details",
   defaultDetailsOpen = true,
+  collapsible,
   storageKey,
   defaultOpen = true,
   className,
   children,
 }: ChatShellProps) {
-  // Start from defaultOpen on both server and client, then restore the stored state after hydration.
-  const [open, setOpen] = React.useState(defaultOpen)
-  useIsomorphicLayoutEffect(() => {
-    if (!storageKey) return
-    const stored = readStored(storageKey)
-    if (stored !== null) setOpen(stored)
-  }, [storageKey])
-  const onOpenChange = (next: boolean) => {
-    setOpen(next)
-    if (!storageKey) return
-    try {
-      window.localStorage.setItem(storageKey, next ? "open" : "collapsed")
-    } catch {
-      // Storage blocked (private mode): the state just isn't remembered.
-    }
-  }
   const wide = useMediaQuery(WIDE)
   const [inline, setInline] = React.useState(defaultDetailsOpen)
   const [sheet, setSheet] = React.useState(false)
@@ -118,81 +83,42 @@ function ChatShell({
   )
 
   return (
-    <TooltipProvider>
-      <SidebarProvider
-        open={open}
-        onOpenChange={onOpenChange}
-        style={{ "--sidebar-width": "17rem", "--sidebar-width-icon": "4.25rem" } as React.CSSProperties}
-      >
-        <ChatShellContext.Provider value={ctx}>
-          <Sidebar collapsible="icon">
-            <SidebarHeader className="gap-5 px-3.5 pt-[max(1.25rem,env(safe-area-inset-top))] group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3 group-data-[collapsible=icon]:px-0">
-              <div className="flex min-w-0 items-center gap-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-3">
-                {brand && <div className="min-w-0 flex-1 pl-2 group-data-[collapsible=icon]:pl-0">{brand}</div>}
-                <SidebarCollapseButton />
-              </div>
-              {sidebarActions && (
-                <div className="flex flex-col gap-2.5 group-data-[collapsible=icon]:items-center">{sidebarActions}</div>
-              )}
-            </SidebarHeader>
-            <SidebarContent className="px-3.5 pt-2">{sidebar}</SidebarContent>
-            {sidebarFooter && (
-              <SidebarFooter className="px-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))] group-data-[collapsible=icon]:px-0">
-                <div className="px-2 group-data-[collapsible=icon]:px-0 has-data-[slot=user-menu-trigger]:px-0">
-                  {sidebarFooter}
-                </div>
-              </SidebarFooter>
-            )}
-          </Sidebar>
-          <SidebarInset data-slot="chat-shell" className={cn("h-dvh min-w-0 overflow-hidden", className)}>
-            <div className="flex h-full min-h-0 gap-3 p-2 sm:p-3 md:pl-0">
-              {children}
-              {hasDetails && wide && inline && (
-                <aside
-                  data-slot="chat-shell-details"
-                  aria-label={detailsTitle}
-                  className="flex w-75 shrink-0 flex-col gap-3 overflow-y-auto"
-                >
-                  {details}
-                </aside>
-              )}
-            </div>
-            {hasDetails && !wide && (
-              <Sheet open={sheet} onOpenChange={setSheet}>
-                <SheetContent className="overflow-y-auto bg-background p-4">
-                  <SheetHeader className="p-0">
-                    <SheetTitle>{detailsTitle}</SheetTitle>
-                  </SheetHeader>
-                  <div className="flex flex-col gap-3">{details}</div>
-                </SheetContent>
-              </Sheet>
-            )}
-          </SidebarInset>
-        </ChatShellContext.Provider>
-      </SidebarProvider>
-    </TooltipProvider>
-  )
-}
-
-/** Collapse / expand control for the desktop sidebar, with a tooltip. Hidden on mobile, where the sidebar is a sheet. */
-function SidebarCollapseButton() {
-  const { state, isMobile, toggleSidebar } = useSidebar()
-  if (isMobile) return null
-  const label = state === "collapsed" ? "Expand sidebar" : "Collapse sidebar"
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size={state === "collapsed" ? "icon" : "icon-sm"}
-          aria-label={label}
-          onClick={toggleSidebar}
-        >
-          {state === "collapsed" ? <PanelLeftOpenIcon /> : <PanelLeftCloseIcon />}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="right">{label}</TooltipContent>
-    </Tooltip>
+    <SidebarLayout
+      brand={brand}
+      sidebarActions={sidebarActions}
+      sidebar={sidebar}
+      sidebarFooter={sidebarFooter}
+      collapsible={collapsible}
+      storageKey={storageKey}
+      defaultOpen={defaultOpen}
+      width="17rem"
+      className={cn("h-dvh overflow-hidden", className)}
+    >
+      <ChatShellContext.Provider value={ctx}>
+        <div data-slot="chat-shell" className="flex h-full min-h-0 gap-3 p-2 sm:p-3 md:pl-0">
+          {children}
+          {hasDetails && wide && inline && (
+            <aside
+              data-slot="chat-shell-details"
+              aria-label={detailsTitle}
+              className="flex w-75 shrink-0 flex-col gap-3 overflow-y-auto"
+            >
+              {details}
+            </aside>
+          )}
+        </div>
+        {hasDetails && !wide && (
+          <Sheet open={sheet} onOpenChange={setSheet}>
+            <SheetContent className="overflow-y-auto bg-background p-4">
+              <SheetHeader className="p-0">
+                <SheetTitle>{detailsTitle}</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-3">{details}</div>
+            </SheetContent>
+          </Sheet>
+        )}
+      </ChatShellContext.Provider>
+    </SidebarLayout>
   )
 }
 
