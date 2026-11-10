@@ -3,12 +3,21 @@
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
-function Empty({ className, ...props }: React.ComponentProps<"div">) {
+function Empty({
+  className,
+  size = "default",
+  ...props
+}: React.ComponentProps<"div"> & {
+  /** harebear: "sm" is a compact empty for inside cards and panels (no flex-grow, 12px padding). */
+  size?: "default" | "sm"
+}) {
   return (
     <div
       data-slot="empty"
+      data-size={size}
       className={cn(
-        "flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-xl border-dashed p-6 text-center text-balance",
+        "flex w-full min-w-0 flex-col items-center justify-center rounded-xl border-dashed text-center text-balance",
+        size === "sm" ? "gap-2 p-3" : "flex-1 gap-4 p-6",
         className,
       )}
       {...props}

@@ -111,14 +111,29 @@ function ItemContent({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
+function ItemTitle({
+  className,
+  mono,
+  onPointerEnter,
+  ...props
+}: React.ComponentProps<"div"> & {
+  /** harebear: monospace, for commands, paths and IDs. */
+  mono?: boolean
+}) {
   return (
     <div
       data-slot="item-title"
       className={cn(
         "line-clamp-1 w-fit max-w-full text-sm leading-snug font-medium wrap-anywhere underline-offset-4",
+        mono && "font-mono text-[13px]",
         className,
       )}
+      // harebear: when the title is clamped, hovering shows the full text as a native tooltip.
+      onPointerEnter={(e) => {
+        const el = e.currentTarget
+        if (!props.title && el.scrollHeight > el.clientHeight) el.title = el.textContent ?? ""
+        onPointerEnter?.(e)
+      }}
       {...props}
     />
   )

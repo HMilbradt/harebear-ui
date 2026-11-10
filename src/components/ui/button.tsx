@@ -4,6 +4,7 @@ import type * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 import { Slot } from "radix-ui"
+import { Spinner } from "@/components/ui/spinner"
 
 const buttonVariants = cva(
   "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-[background-color,color,box-shadow,border-color] outline-none select-none focus-visible:ring-4 focus-visible:ring-ring/20 focus-visible:border-ring active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-[18px]",
@@ -52,21 +53,39 @@ function Button({
   size = "default",
   shape = "default",
   asChild = false,
+  loading = false,
+  disabled,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    /** harebear: show a spinner and disable the button while an action runs. Icon buttons swap their icon for the spinner. */
+    loading?: boolean
   }) {
   const Comp = asChild ? Slot.Root : "button"
+  const iconOnly = size?.startsWith("icon")
 
   return (
     <Comp
       data-slot="button"
       data-variant={variant}
       data-size={size}
+      data-loading={loading || undefined}
+      aria-busy={loading || undefined}
+      disabled={disabled || loading}
       className={cn(buttonVariants({ variant, size, shape, className }))}
       {...props}
-    />
+    >
+      {loading && !asChild ? (
+        <>
+          <Spinner aria-hidden="true" role={undefined} aria-label={undefined} />
+          {!iconOnly && children}
+        </>
+      ) : (
+        children
+      )}
+    </Comp>
   )
 }
 

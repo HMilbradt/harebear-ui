@@ -1,7 +1,8 @@
 "use client"
 
-import { PlusIcon } from "lucide-react"
-import type * as React from "react"
+import { PlusIcon, Trash2Icon } from "lucide-react"
+import * as React from "react"
+import { ConfirmDialog } from "@/components/admin/confirm-dialog"
 import { StatusDot, type StatusTone } from "@/components/admin/status"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription } from "@/components/ui/empty"
@@ -18,6 +19,8 @@ export interface Conversation {
   tone?: StatusTone
   /** Pulse the status dot. */
   pulse?: boolean
+  /** With `onDelete`: block deleting this row. A string is shown as the reason, e.g. "Stop the agent first". */
+  deleteDisabled?: boolean | string
 }
 
 export interface ConversationGroup {
@@ -32,6 +35,13 @@ export interface ConversationListProps extends Omit<React.ComponentProps<"nav">,
   onSelect?: (id: string) => void
   /** Trailing control per row, e.g. a delete button. On devices that can hover it shows on hover and focus; on touch it is always visible. */
   renderAction?: (conversation: Conversation) => React.ReactNode
+  /**
+   * Adds a delete button to each row that asks for confirmation first, then calls this. Ignored when `renderAction`
+   * is set. Use `Conversation.deleteDisabled` to block it per row.
+   */
+  onDelete?: (conversation: Conversation) => void
+  /** Body of the delete confirmation. Default "This cannot be undone." */
+  deleteDescription?: React.ReactNode
   /** Shown when there are no conversations. Default "No conversations yet". */
   empty?: React.ReactNode
 }
@@ -45,11 +55,31 @@ function ConversationList({
   activeId,
   onSelect,
   renderAction,
+  onDelete,
+  deleteDescription = "This cannot be undone.",
   empty = "No conversations yet",
   className,
   ...props
 }: ConversationListProps) {
   const sidebar = useSidebarOptional()
+  // The target outlives `open` so the title does not blank out while the dialog animates closed.
+  const [confirm, setConfirm] = React.useState<Conversation | null>(null)
+  const [confirmOpen, setConfirmOpen] = React.useState(false)
+  const deleteButton = (c: Conversation) => (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      aria-label={`Delete ${c.title}`}
+      title={typeof c.deleteDisabled === "string" ? c.deleteDisabled : "Delete conversation"}
+      disabled={!!c.deleteDisabled}
+      onClick={() => {
+        setConfirm(c)
+        setConfirmOpen(true)
+      }}
+    >
+      <Trash2Icon />
+    </Button>
+  )
   const select = (id: string) => {
     onSelect?.(id)
     sidebar?.setOpenMobile(false)
@@ -67,7 +97,7 @@ function ConversationList({
           <div className="px-3 pb-1.5 text-xs font-medium text-muted-foreground">{g.label}</div>
           {g.items.map((c) => {
             const active = c.id === activeId
-            const action = renderAction?.(c)
+            const action = renderAction ? renderAction(c) : onDelete ? deleteButton(c) : null
             return (
               <div
                 key={c.id}
@@ -110,6 +140,19 @@ function ConversationList({
           <EmptyDescription>{empty}</EmptyDescription>
         </Empty>
       )}
+      {onDelete && (
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          title={`Delete “${confirm?.title ?? ""}”?`}
+          description={deleteDescription}
+          confirmLabel="Delete"
+          destructive
+          onConfirm={() => {
+            if (confirm) onDelete(confirm)
+          }}
+        />
+      )}
     </nav>
   )
 }
@@ -141,6 +184,18 @@ function groupByDate<T>(
     groups[i]?.items.push(toConversation(item))
   }
   return groups.filter((g) => g.items.length)
+}
+
+/**
+ * Short timestamp for lists and headers: the time today ("9:41 AM"), the date this year ("Nov 3"), else with the
+ * year ("Nov 3, 2025"). Uses the browser locale unless `locale` is given. Pass `now` for deterministic tests.
+ */
+function formatWhen(date: number | Date, now: number | Date = Date.now(), locale?: string | string[]): string {
+  const d = new Date(date)
+  const n = new Date(now)
+  if (d.toDateString() === n.toDateString()) return d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })
+  if (d.getFullYear() === n.getFullYear()) return d.toLocaleDateString(locale, { month: "short", day: "numeric" })
+  return d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })
 }
 
 export interface NewConversationButtonProps extends React.ComponentProps<typeof Button> {
@@ -194,4 +249,4 @@ function NewConversationButton({
   )
 }
 
-export { ConversationList, NewConversationButton, groupByDate }
+export { ConversationList, NewConversationButton, formatWhen, groupByDate }

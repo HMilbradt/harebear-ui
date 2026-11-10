@@ -34,14 +34,32 @@ const badgeVariants = cva(
   },
 )
 
+type BadgeTone = "success" | "warning" | "danger" | "info" | "neutral"
+
+/** harebear: status tones (the same words as StatusBadge) mapped to Badge variants. */
+const toneVariant = {
+  success: "success",
+  warning: "warning",
+  danger: "destructive",
+  info: "soft",
+  neutral: "secondary",
+} as const satisfies Record<BadgeTone, VariantProps<typeof badgeVariants>["variant"]>
+
 function Badge({
   className,
-  variant = "default",
+  variant: variantProp = "default",
+  tone,
   size = "default",
   asChild = false,
   ...props
-}: React.ComponentProps<"span"> & VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+}: React.ComponentProps<"span"> &
+  VariantProps<typeof badgeVariants> & {
+    asChild?: boolean
+    /** harebear: color by status tone instead of variant. Wins over `variant`. */
+    tone?: BadgeTone
+  }) {
   const Comp = asChild ? Slot.Root : "span"
+  const variant = tone ? toneVariant[tone] : variantProp
 
   return (
     <Comp
