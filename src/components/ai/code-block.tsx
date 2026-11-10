@@ -65,13 +65,22 @@ function CodeSnippet({
 }
 
 /** Inline monospace span for commands and identifiers. */
-function InlineCode({ className, ...props }: React.ComponentProps<"code">) {
+export interface InlineCodeProps extends React.ComponentProps<"code"> {
+  /** Cut string children longer than this many characters with an ellipsis; the full text becomes the tooltip. */
+  truncate?: number
+}
+
+function InlineCode({ truncate, className, children, title, ...props }: InlineCodeProps) {
+  const cut = truncate !== undefined && typeof children === "string" && children.length > truncate
   return (
     <code
       data-slot="inline-code"
+      title={title ?? (cut ? (children as string) : undefined)}
       className={cn("rounded-[6px] bg-muted px-1.5 py-0.5 font-mono text-[12.5px]", className)}
       {...props}
-    />
+    >
+      {cut ? `${(children as string).slice(0, truncate)}…` : children}
+    </code>
   )
 }
 

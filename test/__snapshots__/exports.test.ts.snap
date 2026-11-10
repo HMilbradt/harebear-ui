@@ -420,6 +420,7 @@ exports[`public API > matches the export snapshot (update with \`pnpm test -u\` 
   "cn",
   "createDataTableColumnHelper",
   "dataTableFeatures",
+  "formatWhen",
   "groupByDate",
   "highlightCode",
   "initials",

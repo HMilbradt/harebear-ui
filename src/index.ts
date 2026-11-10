@@ -447,8 +447,8 @@ export type {
   ToolCallProps,
 } from "./components/ai/chat"
 export { CodeSnippet, InlineCode, Prose } from "./components/ai/code-block"
-export type { CodeSnippetProps } from "./components/ai/code-block"
-export { ConversationList, NewConversationButton, groupByDate } from "./components/ai/conversation-list"
+export type { CodeSnippetProps, InlineCodeProps } from "./components/ai/code-block"
+export { ConversationList, NewConversationButton, formatWhen, groupByDate } from "./components/ai/conversation-list"
 export type {
   Conversation,
   ConversationGroup,

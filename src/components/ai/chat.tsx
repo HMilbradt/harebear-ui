@@ -53,8 +53,11 @@ function ChatThread({ autoScroll = true, className, contentClassName, children, 
 
 export interface ChatMessageProps extends React.ComponentProps<"div"> {
   role: "user" | "assistant"
-  /** Assistant avatar. Defaults to a sparkle in a tinted circle. */
-  avatar?: React.ReactNode
+  /**
+   * Assistant avatar. Defaults to a sparkle in a tinted circle. `false` renders no avatar and lets the content use
+   * the full width, for agent threads where one turn is many blocks (text, tool groups, approvals).
+   */
+  avatar?: React.ReactNode | false
   /** Rendered under assistant content, usually <MessageActions />. */
   actions?: React.ReactNode
   /** User bubble color: "muted" (gray, default) or "soft" (tinted with the accent). */
@@ -79,7 +82,7 @@ function ChatMessage({ role, avatar, actions, variant = "muted", className, chil
   }
   return (
     <div data-slot="chat-message" data-role="assistant" className={cn("flex items-start gap-4", className)} {...props}>
-      {avatar ?? <AssistantAvatar />}
+      {avatar === false ? null : (avatar ?? <AssistantAvatar />)}
       <div className="flex min-w-0 flex-1 flex-col gap-3.5">
         {children}
         {actions}

@@ -41,12 +41,15 @@ export interface StatusBadgeProps extends React.ComponentProps<typeof Badge> {
   tone?: StatusTone
   /** Pulse the dot. */
   pulse?: boolean
+  /** Below 640px show only the dot; the label stays for screen readers. For crowded mobile headers. */
+  compact?: boolean
 }
 
 /** Pill with a status dot and label, e.g. Paid / Pending / Refunded. `size="lg"` lines up with sm buttons. */
 function StatusBadge({
   tone = "neutral",
   pulse,
+  compact,
   variant = "secondary",
   children,
   className,
@@ -55,7 +58,7 @@ function StatusBadge({
   return (
     <Badge data-slot="status-badge" variant={variant} className={className} {...props}>
       <StatusDot tone={tone} pulse={pulse} />
-      {children}
+      {compact ? <span className="sr-only sm:not-sr-only">{children}</span> : children}
     </Badge>
   )
 }

@@ -7,7 +7,6 @@ import {
   ShieldIcon,
   ShieldOffIcon,
   TerminalIcon,
-  Trash2Icon,
 } from "lucide-react"
 import { useState } from "react"
 import {
@@ -24,7 +23,6 @@ import {
   ChatMessage,
   ChatPanel,
   ChatShell,
-  ConfirmDialog,
   ConversationList,
   CopyField,
   DropdownMenuItem,
@@ -99,7 +97,6 @@ export function AgentScreen() {
   const [active, setActive] = useState("disk")
   const [draft, setDraft] = useState("")
   const [mode, setMode] = useState("ask")
-  const [deleting, setDeleting] = useState<string | null>(null)
   const title = chats.find((c) => c.id === active)?.title
 
   const groups = groupByDate(
@@ -127,16 +124,8 @@ export function AgentScreen() {
           groups={groups}
           activeId={active}
           onSelect={setActive}
-          renderAction={(c) => (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Delete ${c.title}`}
-              onClick={() => setDeleting(c.title)}
-            >
-              <Trash2Icon />
-            </Button>
-          )}
+          onDelete={() => {}}
+          deleteDescription="The conversation file is removed and cannot be restored from here."
         />
       }
       sidebarFooter={
@@ -160,10 +149,14 @@ export function AgentScreen() {
             <ModelPicker
               value="claude-opus"
               onValueChange={() => {}}
-              models={[{ id: "claude-opus", label: "Opus 5.5", description: "anthropic" }]}
+              models={[
+                { id: "claude-opus", label: "Opus 5.5", group: "Anthropic" },
+                { id: "claude-sonnet", label: "Sonnet 5.5", group: "Anthropic" },
+                { id: "gpt", label: "GPT", group: "OpenAI" },
+              ]}
             />
-            <StatusBadge size="lg" tone="warning">
-              <span className="hidden sm:inline">Waiting for you</span>
+            <StatusBadge size="lg" tone="warning" compact>
+              Waiting for you
             </StatusBadge>
           </>
         }
@@ -218,6 +211,7 @@ export function AgentScreen() {
           You approved <InlineCode>ssh services 'docker system df'</InlineCode>, once
         </ApprovalResult>
         <ApprovalCard
+          reason="Frees about 18 GB of build cache older than a week. Images and volumes are untouched."
           title="Approval needed: run a command on services"
           description="Ask before changes · asked 9:44"
           code="ssh services 'docker builder prune --force --filter until=168h'"
@@ -237,20 +231,9 @@ export function AgentScreen() {
               For this conversation covers <InlineCode>docker builder prune</InlineCode> until its agent process stops.
             </>
           }
-        >
-          <strong>Why: </strong>Frees about 18 GB of build cache older than a week. Images and volumes are untouched.
-        </ApprovalCard>
+        ></ApprovalCard>
         <TypingIndicator label="Working" variant="primary" />
       </ChatPanel>
-      <ConfirmDialog
-        open={deleting !== null}
-        onOpenChange={(o) => !o && setDeleting(null)}
-        title={`Delete “${deleting}”?`}
-        description="The conversation file is removed and cannot be restored from here."
-        confirmLabel="Delete"
-        destructive
-        onConfirm={() => setDeleting(null)}
-      />
     </ChatShell>
   )
 }
@@ -300,7 +283,7 @@ function Details({ mode }: { mode: string }) {
                 <StatusDot tone="success" />
               </ItemMedia>
               <ItemContent>
-                <ItemTitle className="font-mono">ssh services 'docker system df --verbose --format json'</ItemTitle>
+                <ItemTitle mono>ssh services 'docker system df --verbose --format json'</ItemTitle>
                 <ItemDescription>once · 9:43</ItemDescription>
               </ItemContent>
             </Item>
@@ -318,7 +301,7 @@ function Details({ mode }: { mode: string }) {
                 <PencilIcon />
               </ItemMedia>
               <ItemContent>
-                <ItemTitle className="font-mono">docs/vms/services.md</ItemTitle>
+                <ItemTitle mono>docs/vms/services.md</ItemTitle>
               </ItemContent>
               <ItemActions>
                 <Badge variant="secondary">edited</Badge>

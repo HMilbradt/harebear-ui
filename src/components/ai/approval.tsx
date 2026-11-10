@@ -27,6 +27,8 @@ export interface ApprovalCardProps extends Omit<React.ComponentProps<"section">,
   actions?: React.ReactNode
   /** Small print under the actions. */
   footer?: React.ReactNode
+  /** Why the agent wants this, shown first in the body after a bold "Why:". */
+  reason?: React.ReactNode
 }
 
 /**
@@ -41,6 +43,7 @@ function ApprovalCard({
   codeLabel,
   actions,
   footer,
+  reason,
   className,
   children,
   ...props
@@ -69,9 +72,15 @@ function ApprovalCard({
           {description && <span className="text-xs text-muted-foreground">{description}</span>}
         </div>
       </div>
-      {children && (
+      {(reason || children) && (
         <div className="text-[14.5px] leading-relaxed whitespace-pre-wrap wrap-anywhere [&_strong]:font-semibold">
-          {children}
+          {reason && (
+            <p>
+              <strong>Why: </strong>
+              {reason}
+            </p>
+          )}
+          {reason && children ? <div className="mt-2">{children}</div> : children}
         </div>
       )}
       {code !== undefined && (

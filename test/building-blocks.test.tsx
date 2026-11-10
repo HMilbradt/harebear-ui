@@ -4,13 +4,22 @@ import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 import {
   AppShell,
+  ApprovalCard,
+  Badge,
+  Button,
+  ChatMessage,
   ChatPanel,
   ChatShell,
   ConfirmDialog,
   ConversationList,
   DropdownMenuItem,
+  Empty,
+  formatWhen,
   groupByDate,
+  InlineCode,
+  ModelPicker,
   PromptInputSelect,
+  StatusBadge,
   ToolGroup,
   ThemeProvider,
   ToolStep,
@@ -254,5 +263,129 @@ describe("AppShell", () => {
       </AppShell>,
     )
     expect(screen.queryByRole("button", { name: "Collapse sidebar" })).not.toBeInTheDocument()
+  })
+})
+
+describe("P1 props", () => {
+  it("Button loading disables the button and shows a spinner", () => {
+    render(
+      <>
+        <Button loading>Save</Button>
+        <Button loading size="icon" aria-label="Refresh">
+          <span>icon</span>
+        </Button>
+      </>,
+    )
+    const save = screen.getByRole("button", { name: "Save" })
+    expect(save).toBeDisabled()
+    expect(save).toHaveAttribute("aria-busy", "true")
+    expect(save.querySelector("[data-slot=spinner]")).toBeInTheDocument()
+    expect(screen.queryByText("icon")).not.toBeInTheDocument()
+  })
+
+  it("Badge tone maps to the status variants", () => {
+    render(
+      <>
+        <Badge tone="danger">failed</Badge>
+        <Badge tone="neutral" variant="default">
+          done
+        </Badge>
+      </>,
+    )
+    expect(screen.getByText("failed")).toHaveAttribute("data-variant", "destructive")
+    expect(screen.getByText("done")).toHaveAttribute("data-variant", "secondary")
+  })
+
+  it("Empty size sm marks itself compact", () => {
+    render(<Empty size="sm">none</Empty>)
+    expect(screen.getByText("none")).toHaveAttribute("data-size", "sm")
+  })
+
+  it("InlineCode truncate cuts long strings and keeps the full text as a tooltip", () => {
+    render(<InlineCode truncate={5}>docker restart sonarr</InlineCode>)
+    const code = screen.getByText("docke…")
+    expect(code).toHaveAttribute("title", "docker restart sonarr")
+  })
+
+  it("StatusBadge compact keeps the label for screen readers", () => {
+    render(
+      <StatusBadge tone="info" compact>
+        Working
+      </StatusBadge>,
+    )
+    expect(screen.getByText("Working")).toHaveClass("sr-only")
+  })
+
+  it("ModelPicker sections by group and lists an unknown current value", async () => {
+    const user = userEvent.setup()
+    render(
+      <ModelPicker
+        value="local/llama"
+        onValueChange={() => {}}
+        models={[
+          { id: "a/one", label: "one", group: "Anthropic" },
+          { id: "o/two", label: "two", group: "OpenAI" },
+        ]}
+      />,
+    )
+    await user.click(screen.getByRole("button", { name: /local\/llama/ }))
+    expect(await screen.findByText("Anthropic")).toBeInTheDocument()
+    expect(screen.getByText("OpenAI")).toBeInTheDocument()
+    expect(screen.getByRole("menuitem", { name: "local/llama" })).toBeInTheDocument()
+  })
+
+  it("ConversationList onDelete confirms first and respects deleteDisabled", async () => {
+    const user = userEvent.setup()
+    const onDelete = vi.fn()
+    render(
+      <ConversationList
+        groups={[
+          {
+            label: "Today",
+            items: [
+              { id: "a", title: "Disk alert" },
+              { id: "b", title: "Busy one", deleteDisabled: "Stop the agent first" },
+            ],
+          },
+        ]}
+        onDelete={onDelete}
+        deleteDescription="Gone for good."
+      />,
+    )
+    const blocked = screen.getByRole("button", { name: "Delete Busy one" })
+    expect(blocked).toBeDisabled()
+    expect(blocked).toHaveAttribute("title", "Stop the agent first")
+    await user.click(screen.getByRole("button", { name: "Delete Disk alert" }))
+    expect(await screen.findByText("Gone for good.")).toBeInTheDocument()
+    expect(onDelete).not.toHaveBeenCalled()
+    await user.click(screen.getByRole("button", { name: "Delete" }))
+    expect(onDelete).toHaveBeenCalledWith(expect.objectContaining({ id: "a" }))
+  })
+
+  it("ApprovalCard reason renders before the body", () => {
+    render(
+      <ApprovalCard title="Approval needed" reason="To free disk space">
+        extra
+      </ApprovalCard>,
+    )
+    expect(screen.getByText("Why:")).toBeInTheDocument()
+    expect(screen.getByText("To free disk space")).toBeInTheDocument()
+    expect(screen.getByText("extra")).toBeInTheDocument()
+  })
+
+  it("ChatMessage avatar false renders no avatar", () => {
+    const { container } = render(
+      <ChatMessage role="assistant" avatar={false}>
+        hi
+      </ChatMessage>,
+    )
+    expect(container.querySelector("[data-slot=assistant-avatar]")).not.toBeInTheDocument()
+  })
+
+  it("formatWhen picks time, date, or date with year", () => {
+    const now = new Date(2026, 10, 10, 15)
+    expect(formatWhen(new Date(2026, 10, 10, 9, 41), now, "en-US")).toBe("9:41 AM")
+    expect(formatWhen(new Date(2026, 10, 3), now, "en-US")).toBe("Nov 3")
+    expect(formatWhen(new Date(2025, 10, 3), now, "en-US")).toBe("Nov 3, 2025")
   })
 })
