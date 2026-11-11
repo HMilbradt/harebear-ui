@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>harebear-ui light and dark</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .frame {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        top: 70px;
+        aspect-ratio: 16 / 10;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid rgb(255 255 255 / 0.14);
+        box-shadow:
+          0 0 0 1px rgb(0 0 0 / 0.6),
+          0 50px 120px -30px rgb(0 0 0 / 0.9),
+          0 0 140px -20px rgb(91 132 255 / 0.4);
+      }
+      .frame img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        display: block;
+      }
+      .dark {
+        clip-path: polygon(58% 0, 100% 0, 100% 100%, 42% 100%);
+      }
+      /* The seam: the clip edge runs from (58%, 0) to (42%, 100%) of the 1120x700 frame,
+         so a 723px line through the center, turned 14.36deg. */
+      .seam {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 2px;
+        height: 723px;
+        transform: translate(-50%, -50%) rotate(14.36deg);
+        background: linear-gradient(180deg, transparent, #e7ecff 25%, #c5b3f5 70%, transparent);
+        box-shadow:
+          0 0 12px 1px rgb(126 157 255 / 0.9),
+          0 0 40px 4px rgb(126 157 255 / 0.35);
+        border-radius: 2px;
+      }
+      .label {
+        position: absolute;
+        top: 22px;
+        z-index: 3;
+      }
+      .label.light {
+        left: 106px;
+        background: rgb(255 255 255 / 0.85);
+        color: #18181b;
+        border-color: rgb(0 0 0 / 0.08);
+        box-shadow: 0 6px 20px rgb(0 0 0 / 0.2);
+      }
+      .label.dark-l {
+        right: 106px;
+        background: rgb(16 16 18 / 0.85);
+        backdrop-filter: blur(8px);
+      }
+      .fade {
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        pointer-events: none;
+        background: linear-gradient(180deg, transparent 70%, var(--bg) 97%);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="glow" style="width: 700px; height: 380px; left: 290px; top: 160px; background: #2f5bd3; opacity: 0.5"></div>
+      <div class="glow" style="width: 380px; height: 300px; right: -60px; top: -120px; background: #7d5bd0; opacity: 0.45"></div>
+      <div class="grid"></div>
+
+      <div class="frame">
+        <img src="../screens/admin-light.webp" alt="" />
+        <img class="dark" src="../screens/admin-dark.webp" alt="" />
+        <div class="seam"></div>
+      </div>
+      <span class="pill label light">☀ Light</span>
+      <span class="pill label dark-l">☾ Dark</span>
+      <div class="fade"></div>
+      <div class="grain"></div>
+    </div>
+  </body>
+</html>

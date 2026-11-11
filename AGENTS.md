@@ -14,6 +14,7 @@ Consumers get compiled ESM + types from `dist/` and a Tailwind stylesheet (`hare
 | `pnpm gen`               | Regenerate `src/index.ts` from component export lists. Run after adding or renaming exports.      |
 | `pnpm format`            | Biome format + safe fixes.                                                                        |
 | `pnpm shadcn add <name>` | Pull a new shadcn component into `src/components/ui/`.                                            |
+| `pnpm shots [filter]`    | Regenerate README images in `.github/assets/` (needs `pnpm dev` running, Chrome and `cwebp`).     |
 
 ## Layout
 
@@ -31,8 +32,11 @@ src/
   hooks/, lib/utils.ts  Shared hooks and cn().
 playground/screens/     Reference screens that use only public exports (#admin, #chat, #records, #home, #auth, #catalog). Visual spec and usage examples.
 docs/COMPONENTS.md      Consumer-facing catalog. Shipped. Test-enforced to mention every export.
+docs/guides/            Getting started (per framework), theming, working with agents. Shipped.
 llms.txt, skills/       Consumer-facing agent docs. Shipped.
-bin/harebear-ui.mjs     `npx harebear-ui init|docs` for consuming apps.
+bin/harebear-ui.mjs     `npx harebear-ui init|docs [name...]` for consuming apps. Zero dependencies.
+scripts/screenshots.mjs `pnpm shots`: captures playground screens and renders .github/assets/art/*.html to images.
+.github/assets/         README imagery (not shipped): logo.svg, screens/*.webp, hero/light-dark/agents art, social.png.
 test/                   Vitest: API snapshot, docs coverage, token integrity, behavior.
 ```
 
@@ -41,10 +45,23 @@ test/                   Vitest: API snapshot, docs coverage, token integrity, be
 1. Pick the folder by purpose (`admin`, `data`, `ai`, `auth`; `ui` only for shadcn primitives).
 2. Follow the existing files: `"use client"` first line, named function component, props interface exported as `<Name>Props`, `data-slot="<kebab-name>"` on the root, `className` merged last with `cn()`, rest props spread on the root.
 3. Style only with tokens (`bg-card`, `text-muted-foreground`, `bg-primary-soft`, `shadow-card`, `rounded-xl`). No hex, no palette colors. Status takes a `tone` (`success | warning | danger | info | neutral`).
-4. `pnpm gen`, then add the component to `docs/COMPONENTS.md` (the docs test fails otherwise) and to the index in `llms.txt`.
+4. `pnpm gen`, then add the component to `docs/COMPONENTS.md` (the docs test fails otherwise) and to the index in `llms.txt`. Use a heading like ``### `Name` `` or a table row with the name in backticks, so `npx harebear-ui docs Name` finds it.
 5. Use it in a playground screen if it is visual, and look at it in light and dark mode and at 375px width.
 6. Add a behavior test in `test/components.test.tsx` if it has logic. `pnpm test -u` to accept the new export in the snapshot.
 7. `pnpm check`.
+
+## Looking at your work
+
+- `pnpm dev`, then open http://localhost:5199/#admin (or `#chat`, `#agent`, `#records`, `#home`, `#auth`, `#catalog`).
+- `?mode=dark` or `?mode=light` pins the theme without touching localStorage; `?shot` hides the screen switcher. Example: http://localhost:5199/?mode=dark&shot#agent
+- A headless capture: `pnpm shots admin` writes `.github/assets/screens/admin-*.webp`.
+
+## README imagery
+
+- `.github/assets/logo.svg` is the mark. It is hand-written SVG; edit it directly. `logo.png` is exported from it.
+- Screens are real playground captures. Art (`hero`, `light-dark`, `agents`) is HTML in `.github/assets/art/` that composes those captures, rendered by `pnpm shots`. `social.png` is the hero at 1x for GitHub's social preview (upload it by hand in repo Settings).
+- After a visible change to a screen or the theme, run `pnpm shots` and commit the images with the change. Check the results by eye before committing.
+- If `npx harebear-ui init` output changes, update the terminal text in `art/agents.html` to match.
 
 ## Changing shadcn primitives
 

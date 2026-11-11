@@ -24,6 +24,7 @@ const AGENT_BLOCK = `${START}
 All UI in this project uses the \`harebear-ui\` component library (pre-themed shadcn/ui on Tailwind v4, plus admin, data table, chart, and AI chat components).
 
 - Read \`node_modules/harebear-ui/docs/COMPONENTS.md\` before building UI. It lists every component with props and examples.
+- Look up single entries with \`npx harebear-ui docs DataTable PromptInput\` (export names, a prefix, or a section such as \`Tokens\`).
 - Import from the package root: \`import { Button, Card, DataTable } from "harebear-ui"\`.
 - Style only with theme tokens (\`bg-card\`, \`bg-muted\`, \`text-muted-foreground\`, \`bg-primary-soft\`, \`text-success\`, \`shadow-card\`, \`rounded-xl\`). No hex or Tailwind palette colors.
 - Check new screens in light and dark mode and at phone width.
@@ -86,6 +87,50 @@ function installSkill() {
   console.log(`✓ Installed Claude Code skill to ${relative(cwd, destDir)}/SKILL.md`)
 }
 
+// Backticked identifiers in a heading or table cell: "`ChatMessage`" -> "chatmessage".
+const namesIn = (text) => [...text.matchAll(/`([A-Za-z]\w*)/g)].map((m) => m[1].toLowerCase())
+
+// The parts of the catalog about one export or section: "### `Name`" sections, primitive table rows
+// (with their table header), or a whole "## Section" by title. Exact names first, then prefix matches.
+function lookup(catalog, query) {
+  const q = query.toLowerCase()
+  const blocks = catalog.split(/^(?=#{2,3} )/m)
+  const section = blocks.find((b) => b.startsWith("## ") && b.split("\n", 1)[0].slice(3).toLowerCase() === q)
+  if (section) {
+    // A "## Section" block stops at its first "###"; take the subsections that follow it too.
+    const start = blocks.indexOf(section)
+    const end = blocks.findIndex((b, i) => i > start && b.startsWith("## "))
+    return blocks
+      .slice(start, end < 0 ? undefined : end)
+      .join("")
+      .trimEnd()
+  }
+  for (const match of [(n) => n === q, (n) => n.startsWith(q)]) {
+    const out = blocks.filter((b) => b.startsWith("### ") && namesIn(b.split("\n", 1)[0]).some(match))
+    let header = []
+    let headerShown = null
+    const rows = []
+    for (const line of catalog.split("\n")) {
+      if (!line.startsWith("|")) {
+        header = []
+        continue
+      }
+      if (header.length < 2) {
+        header.push(line)
+        continue
+      }
+      const [, first = "", second = ""] = line.split("|")
+      if (!namesIn(first + second).some(match)) continue
+      if (headerShown !== header) rows.push(...header)
+      headerShown = header
+      rows.push(line)
+    }
+    if (rows.length) out.push(rows.join("\n"))
+    if (out.length) return out.map((b) => b.trimEnd()).join("\n\n")
+  }
+  return undefined
+}
+
 switch (cmd) {
   case "init": {
     if (!existsSync(join(cwd, "package.json"))) {
@@ -109,9 +154,25 @@ Next: wrap your app root.
 `)
     break
   }
-  case "docs":
-    process.stdout.write(readFileSync(join(pkgRoot, "docs/COMPONENTS.md"), "utf8"))
+  case "docs": {
+    const catalog = readFileSync(join(pkgRoot, "docs/COMPONENTS.md"), "utf8")
+    const queries = args.filter((a) => !a.startsWith("--"))
+    if (queries.length === 0) {
+      process.stdout.write(catalog)
+      break
+    }
+    let missed = false
+    for (const q of queries) {
+      const found = lookup(catalog, q)
+      if (found) process.stdout.write(`${found}\n\n`)
+      else {
+        missed = true
+        console.error(`! Nothing in the catalog for "${q}". Run \`npx harebear-ui docs\` for the full catalog.`)
+      }
+    }
+    if (missed) process.exitCode = 1
     break
+  }
   default:
     console.log(`harebear-ui
 
@@ -119,7 +180,9 @@ Next: wrap your app root.
       Add the stylesheet import after @import "tailwindcss", add a harebear-ui
       section to AGENTS.md (or CLAUDE.md), and install the Claude Code skill.
 
-  npx harebear-ui docs
+  npx harebear-ui docs [name...]
       Print the component catalog (props and examples for every export).
+      With names, print only those entries: an export (DataTable, Button),
+      a name prefix (Prompt), or a section title (Tokens, Auth).
 `)
 }
