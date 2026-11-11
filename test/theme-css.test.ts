@@ -21,4 +21,15 @@ describe("theme tokens", () => {
     const unknown = darkVars.filter((v) => !root.includes(`${v}:`))
     expect(unknown).toEqual([])
   })
+
+  it("keeps the category palette distinct from status colors in both modes", () => {
+    for (const mode of [root, dark]) {
+      const value = (name: string) => mode.match(new RegExp(`${name}: ([^;]+);`))?.[1]
+      const status = ["--success", "--warning", "--destructive"].map(value)
+      const categories = [1, 2, 3, 4, 5, 6].map((i) => value(`--category-${i}`))
+      expect(categories.every(Boolean)).toBe(true)
+      expect(categories.filter((c) => status.includes(c))).toEqual([])
+      expect(new Set(categories).size).toBe(6)
+    }
+  })
 })

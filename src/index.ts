@@ -73,6 +73,8 @@ export {
   ChartStyle,
 } from "./components/ui/chart"
 export type { ChartConfig } from "./components/ui/chart"
+export { CheckCircle } from "./components/ui/check-circle"
+export type { CheckCircleProps } from "./components/ui/check-circle"
 export { Checkbox } from "./components/ui/checkbox"
 export {
   CodeBlock,
@@ -352,7 +354,8 @@ export {
 } from "./components/ui/sidebar"
 export { Skeleton } from "./components/ui/skeleton"
 export { Slider } from "./components/ui/slider"
-export { Toaster } from "./components/ui/sonner"
+export { Toaster, toastUndo } from "./components/ui/sonner"
+export type { ToastUndoOptions } from "./components/ui/sonner"
 export { Spinner } from "./components/ui/spinner"
 export { Switch } from "./components/ui/switch"
 export {
@@ -384,6 +387,8 @@ export {
 // Admin and layout
 export { ActivityFeed } from "./components/admin/activity-feed"
 export type { ActivityItem } from "./components/admin/activity-feed"
+export { AppNav } from "./components/admin/app-nav"
+export type { AppNavPlace, AppNavGroup, AppNavAction, AppNavProps } from "./components/admin/app-nav"
 export { AppShell, AppBrand } from "./components/admin/app-shell"
 export type { AppNavItem, AppNavSection, AppBrandProps, AppShellProps } from "./components/admin/app-shell"
 export { Callout } from "./components/admin/callout"
@@ -391,6 +396,8 @@ export { ConfirmDialog } from "./components/admin/confirm-dialog"
 export type { ConfirmDialogProps } from "./components/admin/confirm-dialog"
 export { CopyField } from "./components/admin/copy-field"
 export type { CopyFieldProps } from "./components/admin/copy-field"
+export { FocusLayout } from "./components/admin/focus-layout"
+export type { FocusLayoutProps } from "./components/admin/focus-layout"
 export { KeyValueGrid } from "./components/admin/key-value-grid"
 export type { KeyValueItem } from "./components/admin/key-value-grid"
 export { LinkTile } from "./components/admin/link-tile"
@@ -399,6 +406,8 @@ export { PageHeader } from "./components/admin/page-header"
 export type { PageHeaderProps } from "./components/admin/page-header"
 export { SearchInput } from "./components/admin/search-input"
 export type { SearchInputProps } from "./components/admin/search-input"
+export { SettingsSection, SettingsRow } from "./components/admin/settings"
+export type { SettingsSectionProps, SettingsRowProps } from "./components/admin/settings"
 export { SidebarLayout, SidebarCollapseButton } from "./components/admin/sidebar-layout"
 export type { SidebarLayoutProps } from "./components/admin/sidebar-layout"
 export { StatCard } from "./components/admin/stat-card"
@@ -415,6 +424,8 @@ export { UserMenu } from "./components/admin/user-menu"
 export type { UserMenuProps } from "./components/admin/user-menu"
 
 // Layout and text
+export { Collapse } from "./components/layout/collapse"
+export type { CollapseProps } from "./components/layout/collapse"
 export { MediaItem } from "./components/layout/media-item"
 export type { MediaItemProps } from "./components/layout/media-item"
 export { Metric, MetricGroup } from "./components/layout/metric"
@@ -440,16 +451,33 @@ export { BarList } from "./components/data/bar-list"
 export type { BarListItem } from "./components/data/bar-list"
 export { DataTable, dataTableFeatures, createDataTableColumnHelper } from "./components/data/data-table"
 export type { DataTableFeatures, DataTableColumnDef, DataTableProps } from "./components/data/data-table"
+export { SectionedList } from "./components/data/sectioned-list"
+export type { SectionedListItem, SectionedListSection, SectionedListProps } from "./components/data/sectioned-list"
 export { Sparkline, smoothPath } from "./components/data/sparkline"
 export type { SparklineProps } from "./components/data/sparkline"
 export { StatusBars } from "./components/data/status-bars"
 export type { StatusBarDatum, StatusBarsProps } from "./components/data/status-bars"
+export { TaskRow } from "./components/data/task-row"
+export type { TaskRowAssignee, TaskRowProps } from "./components/data/task-row"
 export { TrendChart, TrendLegend } from "./components/data/trend-chart"
 export type { TrendSeries, TrendChartProps } from "./components/data/trend-chart"
 
 // AI and chat
+export { ActionReceipt } from "./components/ai/action-receipt"
+export type { ActionReceiptProps } from "./components/ai/action-receipt"
 export { ApprovalCard, ApprovalResult } from "./components/ai/approval"
 export type { ApprovalCardProps, ApprovalResultProps } from "./components/ai/approval"
+export { AskBox } from "./components/ai/ask-box"
+export type { AskBoxProps } from "./components/ai/ask-box"
+export { AssistantProvider, AssistantDock, useAssistant, useAssistantPage } from "./components/ai/assistant"
+export type {
+  AssistantMessage,
+  AssistantPage,
+  AssistantSendContext,
+  AssistantContextValue,
+  AssistantProviderProps,
+  AssistantDockProps,
+} from "./components/ai/assistant"
 export { ChatShell, ChatPanel } from "./components/ai/chat-shell"
 export type { ChatShellProps, ChatPanelProps } from "./components/ai/chat-shell"
 export {
@@ -476,6 +504,13 @@ export type {
   ConversationListProps,
   NewConversationButtonProps,
 } from "./components/ai/conversation-list"
+export { DictationButton, browserSpeechSource, useDictation } from "./components/ai/dictation"
+export type {
+  SpeechSourceHandlers,
+  SpeechSource,
+  UseDictationOptions,
+  DictationButtonProps,
+} from "./components/ai/dictation"
 export { ModelPicker } from "./components/ai/model-picker"
 export type { ModelOption, ModelPickerProps } from "./components/ai/model-picker"
 export { PromptInput, PromptInputChip, PromptInputSelect } from "./components/ai/prompt-input"

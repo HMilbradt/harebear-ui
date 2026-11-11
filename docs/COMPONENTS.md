@@ -16,6 +16,36 @@ Full working screens that combine these live in the repo under `playground/scree
 - **Icons are lucide-react elements.** Pass `<SearchIcon />`, not the component. Buttons size icons automatically.
 - **Status uses tones**, not colors: `"success" | "warning" | "danger" | "info" | "neutral"`.
 
+## Agent-first apps
+
+A household or personal app where an assistant sits on every page and safe actions run on their own, with Undo.
+
+```tsx
+<ThemeProvider>
+  <TooltipProvider>
+    <AssistantProvider onSend={(text, { page, append }) => runAgent(text, page, append)}>
+      <AppNav
+        brand={<AppBrand name="Homeclub" icon={<HouseIcon />} />}
+        places={[{ label: "Today", icon: <SunIcon />, href: "/", active: true, count: 3 }, ...]}
+        group={{ label: "Lists", items: lists, onAdd: newList, addLabel: "New list" }}
+        action={{ label: "New to-do", icon: <PlusIcon />, onSelect: openQuickAdd }}
+        footer={<UserMenu name={user.name} onSignOut={signOut} />}
+      >
+        <Outlet /> {/* pages call useAssistantPage({ id, title, suggestions }) */}
+        <AssistantDock title="HomeBot" fullScreenHref="/chat" />
+      </AppNav>
+      <Toaster />
+    </AssistantProvider>
+  </TooltipProvider>
+</ThemeProvider>
+```
+
+- Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo`.
+- In the assistant thread, each action it took is an `ActionReceipt` with Undo (append it from `onSend`).
+- Settings and setup flows leave the frame: `FocusLayout` around `SettingsSection`s of `SettingsRow`s.
+- Members, lists and calendars take a `category-1..6` color; status colors never double as categories.
+- Live example: `playground/screens/household.tsx` (`#household`) and `settings.tsx` (`#settings`).
+
 ## Theme
 
 | Export          | Use                                                                                                                                                                                                                                                                             |
@@ -57,6 +87,7 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 | Carousel         | `Carousel`, `CarouselContent`, `CarouselItem`, `CarouselPrevious`, `CarouselNext`, `useCarousel`, type `CarouselApi`                                                                                                                                                                                                                                                                                                                                         | embla.                                                                                                                                                                                                                                                                                                                                                                    |
 | Chart            | `ChartContainer`, `ChartTooltip`, `ChartTooltipContent`, `ChartLegend`, `ChartLegendContent`, `ChartStyle`                                                                                                                                                                                                                                                                                                                                                   | Recharts wrappers. Prefer `TrendChart` for line/area; use these for custom charts.                                                                                                                                                                                                                                                                                        |
 | Checkbox         | `Checkbox`                                                                                                                                                                                                                                                                                                                                                                                                                                                   |                                                                                                                                                                                                                                                                                                                                                                           |
+| Check circle     | `CheckCircle`                                                                                                                                                                                                                                                                                                                                                                                                                                                | harebear. 24px round checkbox for to-do rows (44px touch target), pops when ticked. `tone="important"` tints it; pair with a word. Name it with `aria-labelledby` the row title.                                                                                                                                                                                          |
 | Collapsible      | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent`                                                                                                                                                                                                                                                                                                                                                                                                    |                                                                                                                                                                                                                                                                                                                                                                           |
 | Combobox         | `Combobox`, `ComboboxInput`, `ComboboxContent`, `ComboboxList`, `ComboboxItem`, `ComboboxGroup`, `ComboboxLabel`, `ComboboxCollection`, `ComboboxEmpty`, `ComboboxSeparator`, `ComboboxChips`, `ComboboxChip`, `ComboboxChipsInput`, `ComboboxTrigger`, `ComboboxValue`, `useComboboxAnchor`                                                                                                                                                                 | Searchable select (Base UI). `<Combobox items={list}>` + `<ComboboxList>{(item) => <ComboboxItem value={item}>…}</ComboboxList>`. Chips for multi-select.                                                                                                                                                                                                                 |
 | Command          | `Command`, `CommandDialog`, `CommandInput`, `CommandList`, `CommandEmpty`, `CommandGroup`, `CommandItem`, `CommandShortcut`, `CommandSeparator`                                                                                                                                                                                                                                                                                                              | Use for ⌘K palettes.                                                                                                                                                                                                                                                                                                                                                      |
@@ -98,7 +129,7 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 | Table            | `Table`, `TableHeader`, `TableBody`, `TableFooter`, `TableRow`, `TableHead`, `TableCell`, `TableCaption`                                                                                                                                                                                                                                                                                                                                                     | Borderless rows with rounded hover; quiet 12px headers. `data-state="selected"` tints a row.                                                                                                                                                                                                                                                                              |
 | Tabs             | `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`, `tabsListVariants`                                                                                                                                                                                                                                                                                                                                                                                         | `TabsList variant`: `default` (segmented control), `pill` (rounded top-level nav), `line`. Use `Tabs` as a segmented filter too (date ranges, status filters).                                                                                                                                                                                                            |
 | Textarea         | `Textarea`                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Same filled style as `Input`, auto-grows.                                                                                                                                                                                                                                                                                                                                 |
-| Toast            | `Toaster`                                                                                                                                                                                                                                                                                                                                                                                                                                                    | sonner. Mount once; call `toast("Saved")` from `sonner`. Follows the theme mode.                                                                                                                                                                                                                                                                                          |
+| Toast            | `Toaster`                                                                                                                                                                                                                                                                                                                                                                                                                                                    | sonner. Mount once; call `toast("Saved")` from `sonner`. Follows the theme mode. `toastUndo(message, { onUndo, undoLabel?, duration = 9000 })` shows an Undo toast for something already done.                                                                                                                                                                            |
 | Toggle           | `Toggle`, `toggleVariants`, `ToggleGroup`, `ToggleGroupItem`                                                                                                                                                                                                                                                                                                                                                                                                 |                                                                                                                                                                                                                                                                                                                                                                           |
 | Tooltip          | `TooltipProvider`, `Tooltip`, `TooltipTrigger`, `TooltipContent`                                                                                                                                                                                                                                                                                                                                                                                             | Mount `TooltipProvider` once near the root.                                                                                                                                                                                                                                                                                                                               |
 | Trace            | `Trace`, `TraceLine`, `TraceIcon`, `TraceTitle`, `TraceDescription`, `TraceCollapsible`, `TraceCollapsibleTrigger`, `TraceCollapsibleContent`                                                                                                                                                                                                                                                                                                                | Agent step log (searched, read, ran). `TraceLine status`: `running` (shimmer), `error`, `pending`.                                                                                                                                                                                                                                                                        |
@@ -242,6 +273,44 @@ Quiet note with an icon (sparkle by default). Props: `icon?`, `tone?` (`"muted" 
 
 Muted tile that lifts on hover, for service launchers. Props: `title`, `subtitle?` (mono), `icon?`, `status?: { tone; label }`, `href`, or `asChild` with your router `<Link>` as the only child.
 
+### `AppNav`
+
+One nav config, two renderings: on desktop a `SidebarLayout` sidebar (brand, action button, places, one collapsible group, footer; active place is a raised card; collapses to the icon rail), under 768px a bottom tab bar (first 5 places, 56px targets, `aria-current="page"`) plus a round floating action button. Use it instead of `AppShell` for consumer apps that need phone navigation.
+
+Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar), `group?: AppNavGroup` (`label`, `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect }`, `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `children`.
+On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger` in the page header if users need them there. Render `AssistantDock` inside `children` so it clears the tab bar, and mount `<Toaster mobileOffset={{ bottom: "5.5rem" }} />` so toasts do too.
+
+### `FocusLayout`
+
+A page outside the app frame (settings, onboarding, setup): slim sticky top bar, one centred column. Props: `title?`, `back?` (close or back link; icon-only needs `aria-label`), `actions?`, `width?` (`sm | md | lg`, default `md` = 42rem).
+
+### `SettingsSection`, `SettingsRow`
+
+`SettingsSection`: card with `title`, `description?` and rows divided by hairlines (a labelled `region`). `SettingsRow`: `label`, `description?`, `control?` (Switch, Select, ToggleGroup, Button), `htmlFor?` (makes the label a `<label>` for the control). Add `content` to expand inline (change password, add a connection): without a `control` the row gets a "Change"/"Cancel" button (`expandLabel?`); control it with `open`/`onOpenChange` or `defaultOpen`.
+
+```tsx
+;<FocusLayout
+  title="Settings"
+  back={
+    <Button asChild variant="ghost" size="icon">
+      <a href="/" aria-label="Close">
+        <XIcon />
+      </a>
+    </Button>
+  }
+>
+  <SettingsSection title="Notifications">
+    <SettingsRow
+      label="Daily summary"
+      description="Every morning at 7"
+      htmlFor="daily"
+      control={<Switch id="daily" />}
+    />
+    <SettingsRow label="Password" content={<ChangePasswordForm />} />
+  </SettingsSection>
+</FocusLayout>
+```
+
 ## Layout and text
 
 Props instead of class names, for blocks that should look right without styling (dashboard widgets, generated UI). Every class string is a literal, so Tailwind finds them.
@@ -265,6 +334,10 @@ Thumbnail (`image`, `imageShape`: `poster | square | wide`), a two-line `title` 
 ### `ShowMore`
 
 Shows the first `initial` children (default 5) and a "Show N more" button for the rest.
+
+### `Collapse`
+
+Animates children between full height and 0 (CSS `grid-template-rows`), so neighbours slide instead of jumping. Closed content is `inert` and `aria-hidden`. Props: `open`, `contentClassName?`. No motion under `prefers-reduced-motion`.
 
 ## Data display
 
@@ -309,6 +382,23 @@ Tiny trend line. Props: `data: number[]`, `color?`, `area?` (fill, default true)
 ### `StatusBars`
 
 Mini bar history (pings, uptime). Props: `data: (number | { value; tone?; label? })[]`, `max?`, `tone?` (default for plain numbers). Default size 96x26.
+
+### `TaskRow`
+
+One to-do: `CheckCircle` aligned with the first line, title, one meta line, optional assignee avatar. Props: `title`, `checked`, `onCheckedChange(checked)`, `meta?`, `assignee?: { name; avatarUrl? }`, `important?` (say it in `meta` too), `onOpen?` (title becomes a button, e.g. to open a sheet), `disabled?`.
+
+### `SectionedList`
+
+A to-do list: one add box at the top, sections with headings, done items folded into a "Show N done" toggle, an empty state. A ticked row stays visible for a moment, then folds away with `Collapse`. Props: `sections: { id; title?; items: SectionedListItem[] }[]` (item: `id`, `title`, `meta?`, `done?`, `important?`, `assignee?`), `onToggle(id, done)`, `onAdd?(text)`, `addPlaceholder?` (default "Add a to-do"), `onOpen?(id)`, `empty?`, `defaultShowDone?`.
+
+```tsx
+;<SectionedList
+  sections={[{ id: "today", title: "Today", items: todos }]}
+  onToggle={(id, done) => setDone(id, done)}
+  onAdd={addTodo}
+  empty={<Empty title="All clear" />}
+/>
+```
 
 ## AI and chat
 
@@ -438,6 +528,27 @@ Agent tool calls as a bordered, collapsible card. `ToolStatus = "queued" | "wait
 `ApprovalCard`: warning-ringed card for anything the agent waits on the user for. Props: `title`, `description?`, `icon?` (default shield, `null` for none), `reason?` (shown first after a bold "Why:"), `code?` + `codeLabel?` (wrapped code block with copy), `actions?` (buttons), `footer?`, `children` (more body).
 `ApprovalResult`: one-line record in the thread. Props: `decision: "approved" | "denied"`, `time?`, `children`.
 
+### `AssistantProvider`, `useAssistant`, `useAssistantPage`
+
+One assistant conversation across pages. `AssistantProvider` props: `onSend(text, { page, messages, append, update })` (return the reply, or `append`/`update` messages yourself for streaming and receipts; a thrown error becomes the reply), `initialMessages?`, `defaultOpen?`. `useAssistant()` returns `{ open, setOpen, toggle, messages, pending, page, setPage, send, append, update, clear }`. A page calls `useAssistantPage({ id, title?, data?, suggestions? })` to become the context while mounted.
+
+### `AssistantDock`
+
+The assistant as a floating panel over the page (never reflows it): header (icon, title, full-screen link, close), empty state with suggestions, thread, `AskBox`. Closed, it is a soft launcher button. Escape closes and returns focus to the launcher. Props: `title?` (default "Assistant"), `icon?`, `fullScreenHref?`, `emptyTitle?`, `emptyDescription?`, `suggestions?` (default: the page's), `placeholder?`, `dictation?`, `launcher?` (false when another control opens it), `launcherLabel?`.
+
+### `AskBox`
+
+Large rounded composer: auto-growing text, `chips` shown while there is text, suggestion pills, `DictationButton`. The focus ring is on the box (`focus-box`). Props: `value`, `onValueChange`, `onSubmit(text)`, `placeholder?` (also the label, default "Ask anything"), `chips?`, `suggestions?`, `onSuggestion?` (default submits), `dictation?` (`SpeechSource`, or `false` to hide the mic), `lang?`, `disabled?`.
+
+### `DictationButton`, `useDictation`, `browserSpeechSource`
+
+`DictationButton`: one round button that is a mic when the text is empty, stop with listening bars while listening (announces "Listening" politely), send once there is text. Props: `value`, `onTranscript(text)`, `onSend?` (else it submits the form), `source?`, `lang?`, `disabled?`. Without a supported source the mic is hidden.
+`SpeechSource` is `{ isSupported(); start(handlers, { lang }) => stop }`; `browserSpeechSource` (default) uses the Web Speech API. `useDictation({ source?, lang?, onTranscript })` returns `{ supported, listening, interim, error, start, stop }` for custom controls.
+
+### `ActionReceipt`
+
+What the assistant did, as a compact card: round check, `title` (past tense), `meta?`, Undo (`onUndo?`, `undoLabel?`). `undone` strikes it through and shows "Undone".
+
 ### `CodeSnippet`, `InlineCode`, `Prose`
 
 `CodeSnippet`: one-prop code panel with language label, copy button and shiki syntax highlighting (each language loads on first use). Props: `code`, `language?` (`bash`, `tsx`, `ts`, `js`, `json`, `python`, `sql`, `yaml`, `css`, `html`, `markdown`, `diff`; others render plain), `highlight?` (default true), `lineNumbers?`, `hideCopy?`. Built on the `CodeBlock` primitives; drop to those for diffs or highlighted lines.
@@ -486,33 +597,37 @@ Props: `onSubmit?({ name?, email, password })`, `nameField?` (default true), `co
 
 ## Hooks and utilities
 
-| Export                                                       | Use                                                                                                        |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| `useCopyToClipboard(resetMs?)`                               | `{ copied, copy(text) }` for copy buttons.                                                                 |
-| `useHighlightedCode(code, language)`                         | Shiki-highlighted lines (one node per line) for custom `CodeBlock`s; plain lines until the language loads. |
-| `loadHighlighter(language)`, `highlightCode(code, language)` | Async shiki access outside React.                                                                          |
-| `useIsMobile()`                                              | `true` under 768px.                                                                                        |
-| `useMediaQuery(query)`                                       | `true` while the media query matches; `false` during SSR.                                                  |
-| `cn(...classes)`                                             | clsx + tailwind-merge. Use for every `className` you compose.                                              |
+| Export                                                              | Use                                                                                                                                                     |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useCopyToClipboard(resetMs?)`                                      | `{ copied, copy(text) }` for copy buttons.                                                                                                              |
+| `useHighlightedCode(code, language)`                                | Shiki-highlighted lines (one node per line) for custom `CodeBlock`s; plain lines until the language loads.                                              |
+| `loadHighlighter(language)`, `highlightCode(code, language)`        | Async shiki access outside React.                                                                                                                       |
+| `useIsMobile()`                                                     | `true` under 768px.                                                                                                                                     |
+| `useAssistant()`, `useAssistantPage(page)`, `useDictation(options)` | See [`AssistantProvider`](#assistantprovider-useassistant-useassistantpage) and [`DictationButton`](#dictationbutton-usedictation-browserspeechsource). |
+| `useMediaQuery(query)`                                              | `true` while the media query matches; `false` during SSR.                                                                                               |
+| `cn(...classes)`                                                    | clsx + tailwind-merge. Use for every `className` you compose.                                                                                           |
 
 ## Tokens
 
 Use these as Tailwind utilities (`bg-*`, `text-*`, `border-*`, `ring-*`, `fill-*`, `stroke-*`):
 
-| Token                               | Use                                                                                               |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `background` / `foreground`         | Page background and body text.                                                                    |
-| `card` / `card-foreground`          | Raised surfaces (cards, active nav item, popovers via `popover`).                                 |
-| `muted` / `muted-foreground`        | Inputs, segmented controls, quiet panels; secondary text and labels.                              |
-| `primary` / `primary-foreground`    | Brand accent (from `--brand`). Primary buttons, links, chart line.                                |
-| `primary-soft`                      | Tinted primary background for selected rows, soft badges, icon circles. Pair with `text-primary`. |
-| `secondary`, `accent`               | Same as muted; kept for shadcn compatibility.                                                     |
-| `success`, `warning`, `destructive` | Status colors. Use `bg-success/12 text-success` for soft status fills.                            |
-| `border`, `input`, `ring`           | Hairlines, input borders, focus rings.                                                            |
-| `chart-1` … `chart-5`, `chart-grid` | Data series and gridlines.                                                                        |
-| `sidebar-*`                         | Sidebar surfaces (default to the page tokens).                                                    |
+| Token                               | Use                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `background` / `foreground`         | Page background and body text.                                                                          |
+| `card` / `card-foreground`          | Raised surfaces (cards, active nav item, popovers via `popover`).                                       |
+| `muted` / `muted-foreground`        | Inputs, segmented controls, quiet panels; secondary text and labels.                                    |
+| `primary` / `primary-foreground`    | Brand accent (from `--brand`). Primary buttons, links, chart line.                                      |
+| `primary-soft`                      | Tinted primary background for selected rows, soft badges, icon circles. Pair with `text-primary`.       |
+| `secondary`, `accent`               | Same as muted; kept for shadcn compatibility.                                                           |
+| `success`, `warning`, `destructive` | Status colors. Use `bg-success/12 text-success` for soft status fills.                                  |
+| `border`, `input`, `ring`           | Hairlines, input borders, focus rings.                                                                  |
+| `chart-1` … `chart-5`, `chart-grid` | Data series and gridlines.                                                                              |
+| `category-1` … `category-6`         | Members, lists, calendars: blue, teal, violet, rose, slate, cyan, each with a dark value. Never status. |
+| `sidebar-*`                         | Sidebar surfaces (default to the page tokens).                                                          |
 
 Other theme values: `rounded-sm/md/lg/xl/2xl` scale from `--radius` (default 14px; cards use `xl`, buttons and inputs `md`), `shadow-card` (the one elevation), `font-sans` (Geist), `font-mono` (Geist Mono), `animate-typing`.
+
+Utilities: `focus-box` gives the box around a bare field the focus ring (primary border, card fill, 4px halo); pair it with `border border-transparent bg-muted`. `animate-check-pop` and `animate-listening` are the check and dictation animations. All motion is off under `prefers-reduced-motion`.
 
 Override any token in your CSS after the import:
 

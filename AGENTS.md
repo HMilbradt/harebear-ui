@@ -25,13 +25,15 @@ src/
   index.ts              Generated barrel. Do not edit by hand.
   components/ui/        shadcn primitives (radix-nova style), restyled. Keep upstream structure.
   components/theme/     ThemeProvider, ThemeToggle, ThemeScript.
-  components/admin/     Layout and dashboard composites (AppShell, StatCard, PageHeader...).
-  components/data/      DataTable, TrendChart, Sparkline, BarList, StatusBars.
-  components/ai/        Chat composites (ChatThread, ChatMessage, PromptInput, ModelPicker, CodeSnippet...).
+  components/admin/     Layout and dashboard composites (AppShell, AppNav, FocusLayout, SettingsSection, StatCard...).
+  components/data/      DataTable, TrendChart, Sparkline, BarList, StatusBars, TaskRow, SectionedList.
+  components/ai/        Chat composites (ChatThread, ChatMessage, PromptInput...) and the assistant layer (AssistantProvider, AssistantDock, AskBox, DictationButton, ActionReceipt).
   components/auth/      AuthLayout, LoginForm, SignupForm (parameterized shadcn login/signup blocks).
+  components/layout/    Prop-driven layout and text (Stack, Text, Metric, ShowMore, Collapse).
   hooks/, lib/utils.ts  Shared hooks and cn().
-playground/screens/     Reference screens that use only public exports (#admin, #chat, #records, #home, #auth, #catalog). Visual spec and usage examples.
-docs/COMPONENTS.md      Consumer-facing catalog. Shipped. Test-enforced to mention every export.
+playground/screens/     Reference screens that use only public exports (#admin, #chat, #agent, #records, #home, #household, #settings, #auth, #catalog). Visual spec and usage examples.
+docs/COMPONENTS.md      Consumer-facing catalog. Shipped. Test-enforced to mention every export. "Agent-first apps" is the recipe for household/assistant apps.
+docs/ROADMAP.md         Proposed and built components for household and agent-first apps. Mark items built when they land.
 docs/guides/            Getting started (per framework), theming, working with agents. Shipped.
 llms.txt, skills/       Consumer-facing agent docs. Shipped.
 bin/harebear-ui.mjs     `npx harebear-ui init|docs [name...]` for consuming apps. Zero dependencies.
@@ -42,17 +44,18 @@ test/                   Vitest: API snapshot, docs coverage, token integrity, be
 
 ## Adding a component
 
-1. Pick the folder by purpose (`admin`, `data`, `ai`, `auth`; `ui` only for shadcn primitives).
+1. Pick the folder by purpose (`admin`, `layout`, `data`, `ai`, `auth`; `ui` only for shadcn primitives and small harebear primitives such as `CheckCircle`).
 2. Follow the existing files: `"use client"` first line, named function component, props interface exported as `<Name>Props`, `data-slot="<kebab-name>"` on the root, `className` merged last with `cn()`, rest props spread on the root.
-3. Style only with tokens (`bg-card`, `text-muted-foreground`, `bg-primary-soft`, `shadow-card`, `rounded-xl`). No hex, no palette colors. Status takes a `tone` (`success | warning | danger | info | neutral`).
-4. `pnpm gen`, then add the component to `docs/COMPONENTS.md` (the docs test fails otherwise) and to the index in `llms.txt`. Use a heading like ``### `Name` `` or a table row with the name in backticks, so `npx harebear-ui docs Name` finds it.
-5. Use it in a playground screen if it is visual, and look at it in light and dark mode and at 375px width.
-6. Add a behavior test in `test/components.test.tsx` if it has logic. `pnpm test -u` to accept the new export in the snapshot.
-7. `pnpm check`.
+3. Style only with tokens (`bg-card`, `text-muted-foreground`, `bg-primary-soft`, `shadow-card`, `rounded-xl`). No hex, no palette colors. Status takes a `tone` (`success | warning | danger | info | neutral`); categories (members, lists) use `category-1..6`. A box around a bare field uses `focus-box`. Motion is CSS only and off under `prefers-reduced-motion` (`motion-reduce:`; `Collapse` for height changes).
+4. Floors: checks 24px, phone touch targets 44px, no text under 12px, icon-only buttons have `aria-label`.
+5. `pnpm gen`, then add the component to `docs/COMPONENTS.md` (the docs test fails otherwise) and to the index in `llms.txt`. Use a heading like ``### `Name` `` or a table row with the name in backticks, so `npx harebear-ui docs Name` finds it.
+6. Use it in a playground screen if it is visual, and look at it in light and dark mode and at 375px width.
+7. Add a behavior test in `test/` if it has logic (`components.test.tsx`, `building-blocks.test.tsx`, `household.test.tsx` for the household and assistant layer). `pnpm test -u` to accept the new export in the snapshot.
+8. `pnpm check`.
 
 ## Looking at your work
 
-- `pnpm dev`, then open http://localhost:5199/#admin (or `#chat`, `#agent`, `#records`, `#home`, `#auth`, `#catalog`).
+- `pnpm dev`, then open http://localhost:5199/#admin (or `#chat`, `#agent`, `#records`, `#home`, `#household`, `#settings`, `#auth`, `#catalog`).
 - `?mode=dark` or `?mode=light` pins the theme without touching localStorage; `?shot` hides the screen switcher. Example: http://localhost:5199/?mode=dark&shot#agent
 - A headless capture: `pnpm shots admin` writes `.github/assets/screens/admin-*.webp`.
 

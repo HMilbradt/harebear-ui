@@ -13,7 +13,8 @@
 
 - Use harebear-ui components before writing new UI. Primitives keep shadcn/ui names and props.
 - Style with theme tokens only: bg-background, bg-card, bg-muted, text-muted-foreground, bg-primary, bg-primary-soft, text-success, text-warning, text-destructive, border-border, shadow-card, rounded-md/lg/xl. No hex colors or Tailwind palette colors.
-- Status is a tone: success | warning | danger | info | neutral.
+- Status is a tone: success | warning | danger | info | neutral. Members, lists and calendars use category-1..6 (bg-category-3), never status colors.
+- Agent-first apps (assistant on every page, undoable actions): AppNav + AssistantProvider/AssistantDock + SectionedList + toastUndo + FocusLayout/SettingsSection. Recipe: `npx harebear-ui docs "Agent-first apps"`.
 - Icons: lucide-react elements, e.g. `<SearchIcon />`. Icon-only buttons need aria-label.
 - Change the brand with `<ThemeProvider accent="#hex" radius={14}>` or `--brand` / `--radius` in CSS.
 
@@ -31,11 +32,13 @@
 ## Component index
 
 Theme: ThemeProvider, useTheme, ThemeToggle, ThemeScript
-Layout/admin: SidebarLayout, SidebarCollapseButton, AppShell, AppBrand, PageHeader, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, UserMenu, Callout, LinkTile, ConfirmDialog, CopyField
-Layout and text: Stack, Row, Grid, Text, Heading, Metric, MetricGroup, MediaItem, ShowMore
-Data: DataTable, createDataTableColumnHelper, TrendChart, TrendLegend, BarList, Sparkline, StatusBars
+Layout/admin: SidebarLayout, SidebarCollapseButton, AppShell, AppNav, FocusLayout, SettingsSection, SettingsRow, AppBrand, PageHeader, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, UserMenu, Callout, LinkTile, ConfirmDialog, CopyField
+Layout and text: Stack, Row, Grid, Text, Heading, Metric, MetricGroup, MediaItem, ShowMore, Collapse
+Data: TaskRow, SectionedList, DataTable, createDataTableColumnHelper, TrendChart, TrendLegend, BarList, Sparkline, StatusBars
+Assistant layer: AssistantProvider, useAssistant, useAssistantPage, AssistantDock, AskBox, DictationButton, useDictation, browserSpeechSource, ActionReceipt
 AI/chat composites: ChatShell, ChatPanel, ChatThread, ChatMessage, AssistantAvatar, MessageActions, PromptInput, PromptInputChip, PromptInputSelect, ModelPicker, ConversationList, NewConversationButton, groupByDate, formatWhen, ToolCall, ToolGroup, ToolStep, ToolStatusIcon, ApprovalCard, ApprovalResult, TypingIndicator, CodeSnippet, InlineCode, Prose
 AI/chat primitives (shadcn): Message, Bubble, MessageScroller, Attachment, Trace, Marker, Questionnaire, CodeBlock
 Auth: AuthLayout, LoginForm, SignupForm, GitHubIcon, GoogleIcon, AppleIcon
+Feedback: Toaster, toastUndo, CheckCircle
 Primitives (the full shadcn/ui registry): Accordion, Alert, AlertDialog, AspectRatio, Attachment, Avatar, Badge, Breadcrumb, Bubble, Button, ButtonGroup, Calendar, Card, Carousel, Chart, Checkbox, CodeBlock, Collapsible, Combobox, Command, ContextMenu, Dialog, DirectionProvider, Drawer, DropdownMenu, Empty, Field, HoverCard, Input, InputGroup, InputOTP, Item, Kbd, Label, Marker, Menubar, Message, MessageScroller, NativeSelect, NavigationMenu, Pagination, Popover, Progress, Questionnaire, RadioGroup, Resizable, ScrollArea, Select, Separator, Sheet, Sidebar, Skeleton, Slider, Spinner, Switch, Table, Tabs, Textarea, Toaster, Toggle, ToggleGroup, Tooltip, Trace
 Hooks/utils: useCopyToClipboard, useHighlightedCode, useIsMobile, useMediaQuery, useSidebarOptional, cn

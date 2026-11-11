@@ -8,7 +8,9 @@ import { AuthScreen } from "./screens/auth"
 import { CatalogScreen } from "./screens/catalog"
 import { ChatScreen } from "./screens/chat"
 import { HomeScreen } from "./screens/home"
+import { HouseholdScreen } from "./screens/household"
 import { RecordsScreen } from "./screens/records"
+import { SettingsScreen } from "./screens/settings"
 
 const screens = {
   admin: AdminScreen,
@@ -16,6 +18,8 @@ const screens = {
   agent: AgentScreen,
   records: RecordsScreen,
   home: HomeScreen,
+  household: HouseholdScreen,
+  settings: SettingsScreen,
   auth: AuthScreen,
   catalog: CatalogScreen,
 }
@@ -70,7 +74,7 @@ if (root)
       <ThemeProvider defaultMode={pinnedMode ?? "light"} storageKey={pinnedMode ? null : undefined}>
         <TooltipProvider>
           <App />
-          <Toaster />
+          <Toaster mobileOffset={{ bottom: "5.5rem" }} />
         </TooltipProvider>
       </ThemeProvider>
     </StrictMode>,
