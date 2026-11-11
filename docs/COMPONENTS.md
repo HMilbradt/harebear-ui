@@ -242,6 +242,30 @@ Quiet note with an icon (sparkle by default). Props: `icon?`, `tone?` (`"muted" 
 
 Muted tile that lifts on hover, for service launchers. Props: `title`, `subtitle?` (mono), `icon?`, `status?: { tone; label }`, `href`, or `asChild` with your router `<Link>` as the only child.
 
+## Layout and text
+
+Props instead of class names, for blocks that should look right without styling (dashboard widgets, generated UI). Every class string is a literal, so Tailwind finds them.
+
+### `Stack`, `Row`, `Grid`
+
+`Stack` stacks children vertically, `Row` lays them out horizontally (`align`, `justify`, `wrap`). Both take a named `gap`: `none | xs | sm | md | lg | xl`. `Grid` makes equal columns: `cols={3}` or `cols={{ base: 1, sm: 2, md: 3 }}`. With `query="container"` the breakpoints measure the nearest `@container` ancestor (sm 28rem, md 42rem, lg 56rem) instead of the screen, for blocks that sit in cards of any width.
+
+### `Text`, `Heading`
+
+`Text` takes `size` (`xs | sm | base | lg | xl | 2xl`), `tone` (`default | muted | success | warning | danger | info`), `weight`, `mono`, `truncate`, `lines` (1 to 3) and `tabular`, and renders `as` a span, p or div. `Heading` is a card section title (`level={3}`) or a small uppercase group label (`level={4}`).
+
+### `Metric`, `MetricGroup`
+
+A number with `value`, `unit`, `label` and an optional `delta` in percent, green when it improves (`lowerIsBetter` for latency and the like). `MetricGroup` sets metrics side by side, evenly spaced.
+
+### `MediaItem`
+
+Thumbnail (`image`, `imageShape`: `poster | square | wide`), a two-line `title` (linked when `href` is set, new tab), a `meta` line and a two-line `description`.
+
+### `ShowMore`
+
+Shows the first `initial` children (default 5) and a "Show N more" button for the rest.
+
 ## Data display
 
 ### `DataTable`

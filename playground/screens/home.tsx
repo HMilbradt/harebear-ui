@@ -21,16 +21,30 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  Heading,
   LinkTile,
+  Metric,
+  MetricGroup,
   SearchInput,
+  ShowMore,
   Sparkline,
+  Stack,
   StatusBars,
   type StatusTone,
   StatusDot,
+  Text,
   ThemeToggle,
   TrendChart,
   UsageMeter,
 } from "@/index"
+
+const releases = [
+  { app: "Plex", name: "Media Server 1.42.2", when: "2 hours ago" },
+  { app: "Sonarr", name: "v4.0.15 stable", when: "Yesterday" },
+  { app: "Home Assistant", name: "2026.11.1", when: "3 days ago" },
+  { app: "Vaultwarden", name: "1.37.5", when: "Last week" },
+  { app: "Portainer", name: "2.45.3 LTS", when: "Last week" },
+]
 
 const services: Array<{ name: string; host: string; icon: React.ReactNode; tone: StatusTone; state: string }> = [
   { name: "Proxmox", host: "beast.lan:8006", icon: <ServerIcon />, tone: "success", state: "12 ms" },
@@ -202,6 +216,44 @@ export function HomeScreen() {
                 <span className="w-14 text-right font-mono text-[13px] font-medium tabular-nums">{p.ms}</span>
               </div>
             ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="flex flex-wrap items-stretch gap-5">
+        <Card className="@container min-w-0 flex-[1_1_320px]">
+          <CardHeader>
+            <CardTitle>Speed test</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Stack gap="md">
+              <MetricGroup>
+                <Metric label="Download" value="111.9" unit="Mbps" delta={-3.2} />
+                <Metric label="Upload" value="103.7" unit="Mbps" delta={56.6} />
+                <Metric label="Ping" value="21" unit="ms" delta={-34.5} lowerIsBetter />
+              </MetricGroup>
+              <Text size="xs" tone="muted">
+                Against the 30 day average
+              </Text>
+            </Stack>
+          </CardContent>
+        </Card>
+        <Card className="min-w-0 flex-[2_1_480px]">
+          <CardHeader>
+            <CardTitle>Releases</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ShowMore initial={3}>
+              {releases.map((r) => (
+                <Stack key={r.name} gap="none">
+                  <Heading level={4}>{r.app}</Heading>
+                  <Text weight="medium">{r.name}</Text>
+                  <Text size="xs" tone="muted">
+                    {r.when}
+                  </Text>
+                </Stack>
+              ))}
+            </ShowMore>
           </CardContent>
         </Card>
       </section>

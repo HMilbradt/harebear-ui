@@ -7,6 +7,8 @@ import {
   CodeBlockCopyButton,
   CodeSnippet,
   LoginForm,
+  Metric,
+  ShowMore,
   SignupForm,
   createDataTableColumnHelper,
   DataTable,
@@ -122,6 +124,29 @@ describe("ThemeProvider", () => {
     render(<ThemeProvider accent="#123456" radius={8} storageKey={null} />)
     expect(document.documentElement.style.getPropertyValue("--brand")).toBe("#123456")
     expect(document.documentElement.style.getPropertyValue("--radius")).toBe("0.5rem")
+  })
+})
+
+describe("layout and text", () => {
+  it("collapses ShowMore after `initial` children", async () => {
+    const user = userEvent.setup()
+    render(
+      <ShowMore initial={2}>
+        {["a", "b", "c", "d"].map((x) => (
+          <span key={x}>{x}</span>
+        ))}
+      </ShowMore>,
+    )
+    expect(screen.queryByText("c")).not.toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Show 2 more" }))
+    expect(screen.getByText("d")).toBeInTheDocument()
+  })
+
+  it("colors a Metric delta by direction", () => {
+    const { rerender } = render(<Metric label="Ping" value={21} unit="ms" delta={-12} lowerIsBetter />)
+    expect(screen.getByText("-12.0%").className).toContain("text-success")
+    rerender(<Metric label="Down" value={90} delta={-12} />)
+    expect(screen.getByText("-12.0%").className).toContain("text-destructive")
   })
 })
 

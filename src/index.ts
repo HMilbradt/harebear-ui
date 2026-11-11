@@ -414,6 +414,27 @@ export type { UserChipProps } from "./components/admin/user-chip"
 export { UserMenu } from "./components/admin/user-menu"
 export type { UserMenuProps } from "./components/admin/user-menu"
 
+// Layout and text
+export { MediaItem } from "./components/layout/media-item"
+export type { MediaItemProps } from "./components/layout/media-item"
+export { Metric, MetricGroup } from "./components/layout/metric"
+export type { MetricProps } from "./components/layout/metric"
+export { ShowMore } from "./components/layout/show-more"
+export type { ShowMoreProps } from "./components/layout/show-more"
+export { Stack, Row, Grid } from "./components/layout/stack"
+export type {
+  StackSpace,
+  StackAlign,
+  StackJustify,
+  StackProps,
+  RowProps,
+  GridCols,
+  ResponsiveGridCols,
+  GridProps,
+} from "./components/layout/stack"
+export { Text, Heading } from "./components/layout/text"
+export type { TextTone, TextProps, HeadingProps } from "./components/layout/text"
+
 // Data display
 export { BarList } from "./components/data/bar-list"
 export type { BarListItem } from "./components/data/bar-list"
