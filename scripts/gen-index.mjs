@@ -10,6 +10,7 @@ const groups = [
   ["Theme", "components/theme"],
   ["Primitives (shadcn/ui, restyled)", "components/ui"],
   ["Admin and layout", "components/admin"],
+  ["Layout and text", "components/layout"],
   ["Data display", "components/data"],
   ["AI and chat", "components/ai"],
   ["Auth", "components/auth"],
