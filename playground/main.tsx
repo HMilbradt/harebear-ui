@@ -33,12 +33,21 @@ function useHash(): Key {
   return key
 }
 
+// ?mode=dark|light pins the mode without persisting it; ?shot hides the screen switcher.
+// scripts/screenshots.mjs uses both to capture the README images.
+const params = new URLSearchParams(location.search)
+const pinnedMode = params.get("mode") === "dark" ? "dark" : params.get("mode") === "light" ? "light" : undefined
+const shot = params.has("shot")
+
 function App() {
   const key = useHash()
   const Screen = screens[key]
   return (
     <>
-      <nav className="fixed right-3 bottom-3 z-50 flex gap-1 rounded-full border bg-card p-1 text-xs shadow-card">
+      <nav
+        hidden={shot}
+        className="fixed right-3 bottom-3 z-50 flex gap-1 rounded-full border bg-card p-1 text-xs shadow-card"
+      >
         {(Object.keys(screens) as Key[]).map((k) => (
           <a
             key={k}
@@ -58,7 +67,7 @@ const root = document.getElementById("root")
 if (root)
   createRoot(root).render(
     <StrictMode>
-      <ThemeProvider defaultMode="light">
+      <ThemeProvider defaultMode={pinnedMode ?? "light"} storageKey={pinnedMode ? null : undefined}>
         <TooltipProvider>
           <App />
           <Toaster />

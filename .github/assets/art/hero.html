@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>harebear-ui hero</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .copy {
+        position: absolute;
+        left: 72px;
+        top: 0;
+        bottom: 0;
+        width: 520px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 26px;
+        z-index: 2;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      h1 {
+        font-size: 60px;
+        font-weight: 640;
+        letter-spacing: -0.035em;
+        line-height: 1;
+        background: linear-gradient(180deg, #ffffff 30%, #a9b9f5);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      h1 span {
+        background: linear-gradient(90deg, #7e9dff, #b49bf0);
+        -webkit-background-clip: text;
+        background-clip: text;
+      }
+      .tagline {
+        font-size: 22px;
+        line-height: 1.4;
+        color: #a3a3ad;
+        letter-spacing: -0.01em;
+        max-width: 470px;
+      }
+      .tagline b {
+        color: var(--fg);
+        font-weight: 550;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .cmd {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        width: fit-content;
+        height: 48px;
+        padding: 0 18px;
+        border-radius: 12px;
+        border: 1px solid rgb(126 157 255 / 0.35);
+        background: linear-gradient(180deg, rgb(91 132 255 / 0.14), rgb(91 132 255 / 0.04));
+        box-shadow:
+          0 0 0 4px rgb(91 132 255 / 0.06),
+          0 10px 40px -8px rgb(91 132 255 / 0.5);
+        font-size: 16px;
+        color: #e6e9ff;
+      }
+      .cmd .prompt {
+        color: #7e9dff;
+      }
+      .cmd .caret {
+        width: 9px;
+        height: 20px;
+        background: #9db2ff;
+        border-radius: 2px;
+        box-shadow: 0 0 12px #7e9dff;
+      }
+
+      .scene {
+        position: absolute;
+        left: 600px;
+        top: -40px;
+        width: 900px;
+        height: 720px;
+        perspective: 2000px;
+      }
+      .fade {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        pointer-events: none;
+        background:
+          linear-gradient(90deg, transparent 72%, var(--bg) 99%),
+          linear-gradient(180deg, transparent 80%, var(--bg));
+      }
+      .tilt {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+        transform: rotateX(14deg) rotateY(-24deg) rotateZ(6deg);
+      }
+      .w1 {
+        width: 680px;
+        left: 200px;
+        top: 70px;
+        transform: translateZ(-160px);
+        opacity: 0.55;
+      }
+      .w2 {
+        width: 680px;
+        left: 110px;
+        top: 160px;
+        transform: translateZ(-60px);
+        opacity: 0.8;
+      }
+      .w3 {
+        width: 680px;
+        left: 20px;
+        top: 260px;
+        transform: translateZ(40px);
+        box-shadow:
+          0 0 0 1px rgb(0 0 0 / 0.6),
+          0 50px 100px -20px rgb(0 0 0 / 0.9),
+          0 0 120px -10px rgb(91 132 255 / 0.45);
+      }
+      .edge {
+        position: absolute;
+        left: 20px;
+        top: 259px;
+        width: 680px;
+        height: 2px;
+        transform: translateZ(41px);
+        background: linear-gradient(90deg, transparent, #9db2ff, #c5b3f5, transparent);
+        filter: blur(0.5px);
+        box-shadow: 0 0 18px #7e9dff;
+        border-radius: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="glow" style="width: 620px; height: 420px; left: -120px; top: -160px; background: #2f5bd3; opacity: 0.45"></div>
+      <div class="glow" style="width: 560px; height: 460px; right: -80px; bottom: -220px; background: #7d5bd0"></div>
+      <div class="glow" style="width: 380px; height: 300px; right: 260px; top: -140px; background: #1f7f75; opacity: 0.35"></div>
+      <div class="grid"></div>
+
+      <div class="copy">
+        <div class="brand">
+          <img class="mark" src="../logo.svg" alt="" />
+          <h1>harebear<span>-ui</span></h1>
+        </div>
+        <p class="tagline">
+          Pre-themed React components for <b>admin tools</b>, <b>data apps</b> and <b>AI chat</b>. Built for the
+          agents that write your UI.
+        </p>
+        <div class="chips">
+          <span class="pill">React 19</span>
+          <span class="pill">Tailwind CSS v4</span>
+          <span class="pill">shadcn/ui</span>
+          <span class="pill"><span class="dot"></span>Agent-ready</span>
+        </div>
+        <div class="cmd mono"><span class="prompt">$</span>npx harebear-ui init<span class="caret"></span></div>
+      </div>
+
+      <div class="scene">
+        <div class="tilt">
+          <div class="window w1"><img src="../screens/records-dark.webp" alt="" /></div>
+          <div class="window w2"><img src="../screens/agent-dark.webp" alt="" /></div>
+          <div class="window w3"><img src="../screens/admin-dark.webp" alt="" /></div>
+          <div class="edge"></div>
+        </div>
+      </div>
+      <div class="fade"></div>
+      <div class="grain"></div>
+    </div>
+  </body>
+</html>

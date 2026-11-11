@@ -20,6 +20,10 @@
 ## Docs
 
 - [Component catalog](docs/COMPONENTS.md): every export with props and examples. In an installed app: node_modules/harebear-ui/docs/COMPONENTS.md
+- Look up single entries instead of reading it all: `npx harebear-ui docs DataTable StatCard` (export names, a prefix like `Prompt`, or a section like `Tokens`). Exits 1 when nothing matches.
+- [Getting started](docs/guides/getting-started.md): setup for Vite, Next.js App Router and React Router v7, plus troubleshooting.
+- [Theming](docs/guides/theming.md): ThemeProvider props, CSS token overrides, fonts, SSR.
+- [Working with AI agents](docs/guides/agents.md): what init installs, per-tool setup, prompts, review checklist.
 - [Agent skill](skills/harebear-ui/SKILL.md): Claude Code skill, installed by `npx harebear-ui init`.
 - [Example screens](https://github.com/hmilbradt/harebear-ui/tree/main/playground/screens): admin dashboard, AI chat, data table + detail panel, status home page, auth pages, component catalog.
 - [Source](https://github.com/hmilbradt/harebear-ui)

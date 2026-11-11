@@ -10,7 +10,7 @@ This project uses `harebear-ui` for all UI. Its theme, tokens, and components ar
 
 ## Before writing UI
 
-1. Read the catalog: `node_modules/harebear-ui/docs/COMPONENTS.md`. It lists every export with props and examples.
+1. Read the catalog: `node_modules/harebear-ui/docs/COMPONENTS.md`. It lists every export with props and examples. To pull only what you need, run `npx harebear-ui docs DataTable StatCard` (export names, a name prefix such as `Prompt`, or a section such as `Tokens`).
 2. Pick existing components first. Build new components only by composing harebear-ui parts.
 3. For a whole screen, start from the closest reference screen: admin dashboard, AI chat, data table with detail panel, status home page, or auth (https://github.com/hmilbradt/harebear-ui/tree/main/playground/screens).
 

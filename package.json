@@ -58,6 +58,7 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "test": "vitest run",
+    "shots": "node scripts/screenshots.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && publint && attw --pack . --profile esm-only --exclude-entrypoints ./styles.css ./llms.txt",
     "prepublishOnly": "pnpm check"
   },
