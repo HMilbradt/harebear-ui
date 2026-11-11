@@ -53,6 +53,12 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-chart-grid: var(--chart-grid);
+  --color-category-1: var(--category-1);
+  --color-category-2: var(--category-2);
+  --color-category-3: var(--category-3);
+  --color-category-4: var(--category-4);
+  --color-category-5: var(--category-5);
+  --color-category-6: var(--category-6);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -108,6 +114,13 @@
   --chart-4: #0f8a7e;
   --chart-5: #8b5cc9;
   --chart-grid: #eeeef0;
+  /* Category palette for members, lists and calendars: 1 blue, 2 teal, 3 violet, 4 rose, 5 slate, 6 cyan. Never a status color. */
+  --category-1: #3166d4;
+  --category-2: #0d8578;
+  --category-3: #7a4cc7;
+  --category-4: #c03a78;
+  --category-5: #5a6578;
+  --category-6: #0a7fa3;
   --elevation: 0 1px 2px rgb(24 24 27 / 0.04), 0 6px 20px rgb(24 24 27 / 0.05);
 
   --sidebar: var(--background);
@@ -149,6 +162,12 @@
   --chart-4: #3cb8a8;
   --chart-5: #a98ae0;
   --chart-grid: #242427;
+  --category-1: #76a0f2;
+  --category-2: #3dbcac;
+  --category-3: #ad8de6;
+  --category-4: #ec7fae;
+  --category-5: #9ba6b8;
+  --category-6: #4cbde0;
   --elevation: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.22);
 
   color-scheme: dark;
@@ -185,6 +204,62 @@
 
 @utility animate-typing {
   animation: hb-typing 1.2s infinite ease-in-out;
+}
+
+/*
+ * Composite focus: the box around a bare field shows the focus ring (AskBox, SectionedList's add box).
+ * Pair with a border and fill: `rounded-xl border border-transparent bg-muted focus-box`.
+ */
+@utility focus-box {
+  transition-property: border-color, background-color, box-shadow;
+  transition-duration: 150ms;
+  &:focus-within {
+    border-color: var(--primary);
+    background-color: var(--card);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 15%, transparent);
+  }
+}
+
+/* Check pop: a short scale bump when a CheckCircle is ticked. */
+@keyframes hb-check-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@utility animate-check-pop {
+  animation: hb-check-pop 260ms cubic-bezier(0.3, 0.7, 0.4, 1.4);
+}
+
+/* Listening bars for DictationButton. */
+@keyframes hb-listening {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@utility animate-listening {
+  animation: hb-listening 900ms infinite ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-check-pop,
+  .animate-listening {
+    animation: none;
+  }
+  .focus-box {
+    transition: none;
+  }
 }
 
 /* Thin, quiet scrollbars in the theme's colors. Firefox and Chromium use the standard properties; Safari the ::-webkit rules. */
