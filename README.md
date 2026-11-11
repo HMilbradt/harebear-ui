@@ -139,13 +139,14 @@ Prompts that work, and what to check before you accept an agent's UI: [Working w
 
 ## What's inside
 
-| Group         | Exports                                                                                                                     |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Layout, admin | `SidebarLayout`, `AppShell`, `PageHeader`, `StatCard`, `StatusBadge`, `UsageMeter`, `Timeline`, `UserMenu`, `ConfirmDialog` |
-| Data          | `DataTable`, `TrendChart`, `BarList`, `Sparkline`, `StatusBars`                                                             |
-| AI and chat   | `ChatShell`, `ChatPanel`, `ChatMessage`, `PromptInput`, `ModelPicker`, `ToolGroup`, `ApprovalCard`, `CodeSnippet`, `Prose`  |
-| Auth          | `AuthLayout`, `LoginForm`, `SignupForm`                                                                                     |
-| Primitives    | The full shadcn/ui registry: `Button`, `Dialog`, `Select`, `Sidebar`, `Tabs`, `Command`, `Chart`, and the rest              |
+| Group         | Exports                                                                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Layout, admin | `SidebarLayout`, `AppShell`, `AppNav`, `FocusLayout`, `SettingsSection`, `PageHeader`, `StatCard`, `StatusBadge`, `UserMenu`, `ConfirmDialog` |
+| Data          | `SectionedList`, `TaskRow`, `DataTable`, `TrendChart`, `BarList`, `Sparkline`, `StatusBars`                                                   |
+| Assistant     | `AssistantProvider`, `AssistantDock`, `AskBox`, `DictationButton`, `ActionReceipt`, `toastUndo`                                               |
+| AI and chat   | `ChatShell`, `ChatPanel`, `ChatMessage`, `PromptInput`, `ModelPicker`, `ToolGroup`, `ApprovalCard`, `CodeSnippet`, `Prose`                    |
+| Auth          | `AuthLayout`, `LoginForm`, `SignupForm`                                                                                                       |
+| Primitives    | The full shadcn/ui registry: `Button`, `Dialog`, `Select`, `Sidebar`, `Tabs`, `Command`, `Chart`, and the rest                                |
 
 The full list with props: [docs/COMPONENTS.md](docs/COMPONENTS.md).
 
