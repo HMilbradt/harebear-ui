@@ -32,14 +32,14 @@
 ## Component index
 
 Theme: ThemeProvider, useTheme, ThemeToggle, ThemeScript
-Layout/admin: SidebarLayout, SidebarCollapseButton, AppShell, AppNav, FocusLayout, SettingsSection, SettingsRow, AppBrand, PageHeader, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, UserMenu, MemberAvatar, AvatarStack, VisibilityBadge, CategoryDot, ColorSwatchPicker, AvatarUpload, Callout, LinkTile, ConfirmDialog, CopyField, DetailSheet
+Layout/admin: SidebarLayout, SidebarCollapseButton, AppShell, AppNav, FocusLayout, SettingsSection, SettingsRow, AppBrand, PageHeader, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, UserMenu, MemberAvatar, AvatarStack, VisibilityBadge, CategoryDot, ColorSwatchPicker, AvatarUpload, Callout, LinkTile, ConfirmDialog, PromptDialog, CopyField, DetailSheet
 Layout and text: Stack, Row, Grid, Text, Heading, Metric, MetricGroup, MediaItem, ShowMore, Collapse
 Data: TaskRow, SectionedList, AgendaRow, DayStrip, DataTable, createDataTableColumnHelper, TrendChart, TrendLegend, BarList, Sparkline, StatusBars
 Assistant layer: AssistantProvider, useAssistant, useAssistantPage, AssistantDock, AskBox, DictationButton, useDictation, browserSpeechSource, ActionReceipt
 AI/chat composites: ChatShell, ChatPanel, ChatThread, ChatMessage, AssistantAvatar, MessageActions, PromptInput, PromptInputChip, PromptInputSelect, ModelPicker, ConversationList, NewConversationButton, groupByDate, formatWhen, ToolCall, ToolGroup, ToolStep, ToolStatusIcon, ApprovalCard, ApprovalResult, TypingIndicator, CodeSnippet, InlineCode, Prose, ProseBlockquote
 AI/chat primitives (shadcn): Message, Bubble, MessageScroller, Attachment, Trace, Marker, Questionnaire, CodeBlock
-Auth: AuthLayout, LoginForm, SignupForm, GitHubIcon, GoogleIcon, AppleIcon
-Forms: PasswordInput, DateTimePicker, MarkdownEditor
-Feedback: Toaster, toastUndo, CheckCircle, Celebration, celebrate
+Auth: AuthLayout, AuthForm, LoginForm, SignupForm, NewPasswordForm, GitHubIcon, GoogleIcon, AppleIcon
+Forms: PasswordInput, DateTimePicker, TimeZonePicker, MarkdownEditor
+Feedback: Toaster, toast, toastUndo, CheckCircle, Celebration, celebrate
 Primitives (the full shadcn/ui registry): Accordion, Alert, AlertDialog, AspectRatio, Attachment, Avatar, Badge, Breadcrumb, Bubble, Button, ButtonGroup, Calendar, Card, Carousel, Chart, Checkbox, CodeBlock, Collapsible, Combobox, Command, ContextMenu, Dialog, DirectionProvider, Drawer, DropdownMenu, Empty, Field, HoverCard, Input, InputGroup, InputOTP, Item, Kbd, Label, Marker, Menubar, Message, MessageScroller, NativeSelect, NavigationMenu, Pagination, Popover, Progress, Questionnaire, RadioGroup, Resizable, ScrollArea, Select, Separator, Sheet, Sidebar, Skeleton, Slider, Spinner, Switch, Table, Tabs, Textarea, Toaster, Toggle, ToggleGroup, Tooltip, Trace
 Hooks/utils: categoryBg, cropImageToSquare, useCopyToClipboard, useHighlightedCode, useIsMobile, useMediaQuery, useSidebarOptional, cn

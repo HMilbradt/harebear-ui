@@ -41,6 +41,8 @@ export interface SettingsRowProps extends Omit<React.ComponentProps<"div">, "con
   htmlFor?: string
   /** The control at the right: Switch, Select, ToggleGroup, Button. */
   control?: React.ReactNode
+  /** Always shown under the label, full width, with no toggle (a list of connections, a hint, a short form). */
+  body?: React.ReactNode
   /**
    * Inline content that expands under the row (change password, add a connection). Without a `control`, the row
    * gets a toggle button (`expandLabel` / "Cancel").
@@ -53,12 +55,13 @@ export interface SettingsRowProps extends Omit<React.ComponentProps<"div">, "con
   expandLabel?: React.ReactNode
 }
 
-/** One setting: label and description at the left, a control at the right, optional expandable content. */
+/** One setting: label and description at the left, a control at the right, optional body and expandable content. */
 function SettingsRow({
   label,
   description,
   htmlFor,
   control,
+  body,
   content,
   open: openProp,
   defaultOpen = false,
@@ -103,6 +106,7 @@ function SettingsRow({
             </Button>
           ) : null)}
       </div>
+      {body && <div className="pt-3">{body}</div>}
       {content && (
         <Collapse open={open} id={contentId}>
           <div className="pt-3.5">{content}</div>

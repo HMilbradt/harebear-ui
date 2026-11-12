@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { PasswordInput } from "@/components/ui/password-input"
-import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 
 // Layout --------------------------------------------------------------------
@@ -106,12 +105,10 @@ function ProviderButtons({
   providers,
   verb,
   onProviderClick,
-  disabled,
 }: {
   providers: AuthProvider[]
   verb: string
   onProviderClick?: (id: string) => void
-  disabled?: boolean
 }) {
   // Three or more providers with icons collapse to an icon row.
   const compact = providers.length >= 3 && providers.every((p) => p.icon)
@@ -125,7 +122,6 @@ function ProviderButtons({
           key={p.id}
           type="button"
           variant="outline"
-          disabled={disabled}
           onClick={() => onProviderClick?.(p.id)}
           aria-label={compact ? `${verb} with ${p.label}` : undefined}
         >
@@ -169,7 +165,73 @@ function AppleIcon(props: React.ComponentProps<"svg">) {
   return <BrandSvg d={APPLE_PATH} {...props} />
 }
 
-// Shared --------------------------------------------------------------------
+// Shell ---------------------------------------------------------------------
+
+export interface AuthFormProps extends Omit<React.ComponentProps<"form">, "onSubmit" | "title"> {
+  title: React.ReactNode
+  description?: React.ReactNode
+  /** The fields. Give each a `name`; they arrive in onSubmit's FormData. */
+  children?: React.ReactNode
+  /** Form-level error, e.g. "Invalid email or password". */
+  error?: React.ReactNode
+  submitLabel: React.ReactNode
+  /** Shows a spinner on the submit button and disables every control. */
+  loading?: boolean
+  /** Called with the form's data once the browser's validation passes. Omit to submit natively (e.g. to an `action`). */
+  onSubmit?: (data: FormData) => void | Promise<void>
+  /** Under the submit button: provider buttons, a "Sign in" link. */
+  footer?: React.ReactNode
+}
+
+/** The shell LoginForm, SignupForm and NewPasswordForm share: heading, your fields, error, submit button. */
+function AuthForm({
+  title,
+  description,
+  children,
+  error,
+  submitLabel,
+  loading,
+  onSubmit,
+  footer,
+  className,
+  ...props
+}: AuthFormProps) {
+  return (
+    <form
+      data-slot="auth-form"
+      className={cn("flex flex-col gap-6", className)}
+      onSubmit={(e) => {
+        const form = e.currentTarget
+        if (!form.reportValidity()) {
+          e.preventDefault()
+          return
+        }
+        if (!onSubmit) return
+        e.preventDefault()
+        onSubmit(new FormData(form))
+      }}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      <fieldset disabled={loading} className="contents">
+        <FieldGroup>
+          <div className="flex flex-col items-center gap-1.5 text-center">
+            <h1 className="text-2xl font-semibold tracking-[-0.02em]">{title}</h1>
+            {description && <p className="text-sm text-balance text-muted-foreground">{description}</p>}
+          </div>
+          {children}
+          {error && <FieldError>{error}</FieldError>}
+          <Field>
+            <Button type="submit" loading={loading}>
+              {submitLabel}
+            </Button>
+          </Field>
+          {footer}
+        </FieldGroup>
+      </fieldset>
+    </form>
+  )
+}
 
 interface AuthFormBase extends Omit<React.ComponentProps<"form">, "onSubmit" | "title"> {
   title?: React.ReactNode
@@ -185,19 +247,67 @@ interface AuthFormBase extends Omit<React.ComponentProps<"form">, "onSubmit" | "
   providersFirst?: boolean
 }
 
-function Header({ title, description }: { title: React.ReactNode; description?: React.ReactNode }) {
+const text = (data: FormData, name: string) => {
+  const v = data.get(name)
+  return typeof v === "string" ? v : ""
+}
+
+function EmailField({ id }: { id: string }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 text-center">
-      <h1 className="text-2xl font-semibold tracking-[-0.02em]">{title}</h1>
-      {description && <p className="text-sm text-balance text-muted-foreground">{description}</p>}
-    </div>
+    <Field>
+      <FieldLabel htmlFor={`${id}-email`}>Email</FieldLabel>
+      <Input id={`${id}-email`} name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
+    </Field>
   )
 }
 
-function readForm(form: HTMLFormElement) {
-  return Object.fromEntries(
-    [...new FormData(form).entries()].map(([k, v]) => [k, typeof v === "string" ? v : ""]),
-  ) as Record<string, string>
+/** "password" and optional "confirm" fields; a mismatch makes "confirm" invalid so the browser blocks the submit. */
+function NewPasswordFields({
+  id,
+  label,
+  confirm,
+  minLength,
+  hint,
+}: {
+  id: string
+  label: string
+  confirm: boolean
+  minLength: number
+  hint?: React.ReactNode
+}) {
+  const check = (form: HTMLFormElement | null) => {
+    const password = form?.elements.namedItem("password") as HTMLInputElement | null
+    const again = form?.elements.namedItem("confirm") as HTMLInputElement | null
+    again?.setCustomValidity(again.value && again.value !== password?.value ? "Passwords do not match" : "")
+  }
+  return (
+    <>
+      <Field>
+        <FieldLabel htmlFor={`${id}-password`}>{label}</FieldLabel>
+        <PasswordInput
+          id={`${id}-password`}
+          name="password"
+          autoComplete="new-password"
+          minLength={minLength}
+          required
+          onInput={(e) => check(e.currentTarget.form)}
+        />
+        <FieldDescription>{hint ?? `At least ${minLength} characters.`}</FieldDescription>
+      </Field>
+      {confirm && (
+        <Field>
+          <FieldLabel htmlFor={`${id}-confirm`}>Confirm password</FieldLabel>
+          <PasswordInput
+            id={`${id}-confirm`}
+            name="confirm"
+            autoComplete="new-password"
+            required
+            onInput={(e) => check(e.currentTarget.form)}
+          />
+        </Field>
+      )}
+    </>
+  )
 }
 
 // Login ---------------------------------------------------------------------
@@ -230,88 +340,63 @@ function LoginForm({
   forgotPasswordHref,
   signupHref,
   submitLabel,
-  loading,
-  error,
-  className,
   ...props
 }: LoginFormProps) {
   const id = React.useId()
   const emailOnly = mode === "email-only"
-  const desc =
-    description ?? (emailOnly ? "Enter your email and we'll send you a sign-in link" : "Sign in to your account")
   const sso = providers.length > 0 && (
-    <ProviderButtons providers={providers} verb="Continue" onProviderClick={onProviderClick} disabled={loading} />
+    <ProviderButtons providers={providers} verb="Continue" onProviderClick={onProviderClick} />
   )
   return (
-    <form
+    <AuthForm
       data-slot="login-form"
-      className={cn("flex flex-col gap-6", className)}
-      onSubmit={
-        onSubmit
-          ? (e) => {
-              e.preventDefault()
-              const v = readForm(e.currentTarget)
-              onSubmit(emailOnly ? { email: v.email ?? "" } : { email: v.email ?? "", password: v.password ?? "" })
-            }
-          : undefined
+      title={title}
+      description={
+        description ?? (emailOnly ? "Enter your email and we'll send you a sign-in link" : "Sign in to your account")
       }
-      aria-busy={loading || undefined}
+      submitLabel={submitLabel ?? (emailOnly ? "Send sign-in link" : "Sign in")}
+      onSubmit={
+        onSubmit &&
+        ((data) =>
+          onSubmit(
+            emailOnly
+              ? { email: text(data, "email") }
+              : { email: text(data, "email"), password: text(data, "password") },
+          ))
+      }
+      footer={
+        <>
+          {!providersFirst && sso && <FieldSeparator>Or continue with</FieldSeparator>}
+          {!providersFirst && sso}
+          {signupHref && (
+            <FieldDescription className="text-center">
+              Don&apos;t have an account? <a href={signupHref}>Sign up</a>
+            </FieldDescription>
+          )}
+        </>
+      }
       {...props}
     >
-      <FieldGroup>
-        <Header title={title} description={desc} />
-        {providersFirst && sso}
-        {providersFirst && sso && <FieldSeparator>Or continue with email</FieldSeparator>}
+      {providersFirst && sso}
+      {providersFirst && sso && <FieldSeparator>Or continue with email</FieldSeparator>}
+      <EmailField id={id} />
+      {!emailOnly && (
         <Field>
-          <FieldLabel htmlFor={`${id}-email`}>Email</FieldLabel>
-          <Input
-            id={`${id}-email`}
-            name="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            required
-            disabled={loading}
-          />
+          <div className="flex items-center">
+            <FieldLabel htmlFor={`${id}-password`}>Password</FieldLabel>
+            {forgotPasswordHref && (
+              <a
+                href={forgotPasswordHref}
+                className="ms-auto text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                Forgot password?
+              </a>
+            )}
+          </div>
+          <PasswordInput id={`${id}-password`} name="password" autoComplete="current-password" required />
         </Field>
-        {!emailOnly && (
-          <Field>
-            <div className="flex items-center">
-              <FieldLabel htmlFor={`${id}-password`}>Password</FieldLabel>
-              {forgotPasswordHref && (
-                <a
-                  href={forgotPasswordHref}
-                  className="ms-auto text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                >
-                  Forgot password?
-                </a>
-              )}
-            </div>
-            <PasswordInput
-              id={`${id}-password`}
-              name="password"
-              autoComplete="current-password"
-              required
-              disabled={loading}
-            />
-          </Field>
-        )}
-        {error && <FieldError>{error}</FieldError>}
-        <Field>
-          <Button type="submit" disabled={loading}>
-            {loading && <Spinner />}
-            {submitLabel ?? (emailOnly ? "Send sign-in link" : "Sign in")}
-          </Button>
-        </Field>
-        {!providersFirst && sso && <FieldSeparator>Or continue with</FieldSeparator>}
-        {!providersFirst && sso}
-        {signupHref && (
-          <FieldDescription className="text-center">
-            Don&apos;t have an account? <a href={signupHref}>Sign up</a>
-          </FieldDescription>
-        )}
-      </FieldGroup>
-    </form>
+      )}
+    </AuthForm>
   )
 }
 
@@ -324,7 +409,10 @@ export interface SignupValues {
 }
 
 export interface SignupFormProps extends AuthFormBase {
-  onSubmit?: (values: SignupValues) => void | Promise<void>
+  /** `data` holds every field, including your own `children` fields. */
+  onSubmit?: (values: SignupValues, data: FormData) => void | Promise<void>
+  /** Extra fields shown before the name field (e.g. a household name). Give each a `name`; read it from `data`. */
+  children?: React.ReactNode
   /** Ask for a full name. Default true. */
   nameField?: boolean
   /** Ask for the password twice; mismatches are reported before onSubmit. Default true. */
@@ -342,6 +430,7 @@ function SignupForm({
   title = "Create your account",
   description = "Enter your details to get started",
   onSubmit,
+  children,
   nameField = true,
   confirmPassword = true,
   passwordHint,
@@ -351,104 +440,102 @@ function SignupForm({
   providersFirst,
   loginHref,
   submitLabel = "Create account",
-  loading,
-  error,
-  className,
   ...props
 }: SignupFormProps) {
   const id = React.useId()
   const sso = providers.length > 0 && (
-    <ProviderButtons providers={providers} verb="Sign up" onProviderClick={onProviderClick} disabled={loading} />
+    <ProviderButtons providers={providers} verb="Sign up" onProviderClick={onProviderClick} />
   )
   return (
-    <form
+    <AuthForm
       data-slot="signup-form"
-      className={cn("flex flex-col gap-6", className)}
-      onSubmit={(e) => {
-        const form = e.currentTarget
-        const v = readForm(form)
-        const confirm = form.elements.namedItem("confirm") as HTMLInputElement | null
-        if (confirm) {
-          confirm.setCustomValidity(v.confirm === v.password ? "" : "Passwords do not match")
-          if (!confirm.reportValidity()) {
-            e.preventDefault()
-            return
-          }
-        }
-        if (!onSubmit) return
-        e.preventDefault()
-        onSubmit({ ...(nameField ? { name: v.name ?? "" } : {}), email: v.email ?? "", password: v.password ?? "" })
-      }}
-      aria-busy={loading || undefined}
+      title={title}
+      description={description}
+      submitLabel={submitLabel}
+      onSubmit={
+        onSubmit &&
+        ((data) =>
+          onSubmit(
+            {
+              ...(nameField ? { name: text(data, "name") } : {}),
+              email: text(data, "email"),
+              password: text(data, "password"),
+            },
+            data,
+          ))
+      }
+      footer={
+        <>
+          {!providersFirst && sso && <FieldSeparator>Or continue with</FieldSeparator>}
+          {!providersFirst && sso}
+          {loginHref && (
+            <FieldDescription className="text-center">
+              Already have an account? <a href={loginHref}>Sign in</a>
+            </FieldDescription>
+          )}
+        </>
+      }
       {...props}
     >
-      <FieldGroup>
-        <Header title={title} description={description} />
-        {providersFirst && sso}
-        {providersFirst && sso && <FieldSeparator>Or sign up with email</FieldSeparator>}
-        {nameField && (
-          <Field>
-            <FieldLabel htmlFor={`${id}-name`}>Full name</FieldLabel>
-            <Input id={`${id}-name`} name="name" autoComplete="name" required disabled={loading} />
-          </Field>
-        )}
+      {providersFirst && sso}
+      {providersFirst && sso && <FieldSeparator>Or sign up with email</FieldSeparator>}
+      {children}
+      {nameField && (
         <Field>
-          <FieldLabel htmlFor={`${id}-email`}>Email</FieldLabel>
-          <Input
-            id={`${id}-email`}
-            name="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            required
-            disabled={loading}
-          />
+          <FieldLabel htmlFor={`${id}-name`}>Full name</FieldLabel>
+          <Input id={`${id}-name`} name="name" autoComplete="name" required />
         </Field>
-        <Field>
-          <FieldLabel htmlFor={`${id}-password`}>Password</FieldLabel>
-          <PasswordInput
-            id={`${id}-password`}
-            name="password"
-            autoComplete="new-password"
-            onInput={(e) =>
-              (e.currentTarget.form?.elements.namedItem("confirm") as HTMLInputElement | null)?.setCustomValidity("")
-            }
-            minLength={minPasswordLength}
-            required
-            disabled={loading}
-          />
-          <FieldDescription>{passwordHint ?? `At least ${minPasswordLength} characters.`}</FieldDescription>
-        </Field>
-        {confirmPassword && (
-          <Field>
-            <FieldLabel htmlFor={`${id}-confirm`}>Confirm password</FieldLabel>
-            <PasswordInput
-              id={`${id}-confirm`}
-              name="confirm"
-              autoComplete="new-password"
-              required
-              disabled={loading}
-              onInput={(e) => e.currentTarget.setCustomValidity("")}
-            />
-          </Field>
-        )}
-        {error && <FieldError>{error}</FieldError>}
-        <Field>
-          <Button type="submit" disabled={loading}>
-            {loading && <Spinner />}
-            {submitLabel}
-          </Button>
-        </Field>
-        {!providersFirst && sso && <FieldSeparator>Or continue with</FieldSeparator>}
-        {!providersFirst && sso}
-        {loginHref && (
-          <FieldDescription className="text-center">
-            Already have an account? <a href={loginHref}>Sign in</a>
-          </FieldDescription>
-        )}
-      </FieldGroup>
-    </form>
+      )}
+      <EmailField id={id} />
+      <NewPasswordFields
+        id={id}
+        label="Password"
+        confirm={confirmPassword}
+        minLength={minPasswordLength}
+        hint={passwordHint}
+      />
+    </AuthForm>
   )
 }
 
-export { AuthLayout, LoginForm, SignupForm, GitHubIcon, GoogleIcon, AppleIcon }
+// New password --------------------------------------------------------------
+
+export interface NewPasswordFormProps
+  extends Omit<React.ComponentProps<"form">, "onSubmit" | "title">,
+    Pick<AuthFormProps, "description" | "error" | "loading"> {
+  /** Default "Choose a new password". */
+  title?: React.ReactNode
+  /** Called once both fields match. */
+  onSubmit?: (values: { password: string }) => void | Promise<void>
+  /** Minimum length enforced by the browser. Default 8. */
+  minPasswordLength?: number
+  /** Hint under the password field. Default "At least N characters." */
+  passwordHint?: React.ReactNode
+  /** Default "Save password". */
+  submitLabel?: React.ReactNode
+}
+
+/** Password reset or first password: new password + confirm. Pair with AuthLayout. */
+function NewPasswordForm({
+  title = "Choose a new password",
+  onSubmit,
+  minPasswordLength = 8,
+  passwordHint,
+  submitLabel = "Save password",
+  ...props
+}: NewPasswordFormProps) {
+  const id = React.useId()
+  return (
+    <AuthForm
+      data-slot="new-password-form"
+      title={title}
+      submitLabel={submitLabel}
+      onSubmit={onSubmit && ((data) => onSubmit({ password: text(data, "password") }))}
+      {...props}
+    >
+      <NewPasswordFields id={id} label="New password" confirm minLength={minPasswordLength} hint={passwordHint} />
+    </AuthForm>
+  )
+}
+
+export { AuthLayout, AuthForm, LoginForm, SignupForm, NewPasswordForm, GitHubIcon, GoogleIcon, AppleIcon }

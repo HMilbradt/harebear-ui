@@ -37,6 +37,7 @@ import {
   FieldLabel,
   Input,
   MarkdownEditor,
+  NewPasswordForm,
   Marker,
   MarkerContent,
   MarkerIcon,
@@ -49,6 +50,7 @@ import {
   NativeSelectOption,
   PageHeader,
   PasswordInput,
+  PromptDialog,
   Prose,
   Questionnaire,
   QuestionnaireActions,
@@ -65,6 +67,8 @@ import {
   SelectTrigger,
   SelectValue,
   ThemeToggle,
+  TimeZonePicker,
+  toast,
   Trace,
   TraceDescription,
   TraceIcon,
@@ -112,9 +116,12 @@ function NewFormControls() {
     "# Furnace filter\n\nSwap it every three months.\n\n> Tip: Turn the power off first.",
   )
   const [details, setDetails] = useState(false)
+  const [zone, setZone] = useState("America/Vancouver")
+  const [listName, setListName] = useState("Groceries")
+  const [renaming, setRenaming] = useState(false)
   return (
     <>
-      <Section title="Forms" description="PasswordInput, DateTimePicker and MarkdownEditor.">
+      <Section title="Forms" description="PasswordInput, DateTimePicker, TimeZonePicker and MarkdownEditor.">
         <Field>
           <FieldLabel htmlFor="c-password">Password</FieldLabel>
           <PasswordInput id="c-password" defaultValue="correct horse" />
@@ -124,9 +131,51 @@ function NewFormControls() {
           <DateTimePicker id="c-when" withTime value={when} onValueChange={setWhen} />
         </Field>
         <Field>
+          <FieldLabel htmlFor="c-zone">Time zone</FieldLabel>
+          <TimeZonePicker id="c-zone" value={zone} onValueChange={setZone} />
+        </Field>
+        <Field>
           <FieldLabel htmlFor="c-body">Body</FieldLabel>
           <MarkdownEditor id="c-body" value={body} onValueChange={setBody} renderPreview={previewMarkdown} />
         </Field>
+      </Section>
+      <Section title="Dialogs and toasts" description="PromptDialog and toast.">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setRenaming(true)}>
+            Rename {listName}
+          </Button>
+          <Button variant="outline" onClick={() => toast("Saved")}>
+            Toast
+          </Button>
+          <Button variant="outline" onClick={() => toast.success("Invite sent")}>
+            Success
+          </Button>
+          <Button variant="outline" onClick={() => toast.error("Could not reach the server")}>
+            Error
+          </Button>
+        </div>
+        <PromptDialog
+          open={renaming}
+          onOpenChange={setRenaming}
+          title="Rename list"
+          description="Type taken to see a server error."
+          label="Name"
+          defaultValue={listName}
+          submitLabel="Rename"
+          maxLength={60}
+          onSubmit={async (name) => {
+            await new Promise((r) => setTimeout(r, 600))
+            if (name.toLowerCase() === "taken") throw new Error("A list with that name already exists.")
+            setListName(name)
+          }}
+        />
+      </Section>
+      <Section title="New password" description="NewPasswordForm, built on AuthForm.">
+        <NewPasswordForm
+          onSubmit={() => {
+            toast.success("Password saved")
+          }}
+        />
       </Section>
       <Section title="Details and joy" description="DetailSheet, Prose tips and Celebration.">
         <Prose>

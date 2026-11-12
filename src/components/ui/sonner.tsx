@@ -58,4 +58,4 @@ function toastUndo(
   return toast(message, { duration, ...options, action: { label: undoLabel, onClick: () => onUndo() } })
 }
 
-export { Toaster, toastUndo }
+export { Toaster, toast, toastUndo }

@@ -685,3 +685,11 @@ describe("Settings and FocusLayout", () => {
     expect(screen.getByRole("button", { name: "Cancel" })).toHaveAttribute("aria-expanded", "true")
   })
 })
+
+describe("SettingsRow body", () => {
+  it("shows the body under the label without a toggle", () => {
+    render(<SettingsRow label="Connected calendars" body={<p>Family calendar</p>} />)
+    expect(screen.getByText("Family calendar")).toBeVisible()
+    expect(screen.queryByRole("button")).toBeNull()
+  })
+})
