@@ -175,6 +175,51 @@ describe("DetailSheet", () => {
     await user.click(within(dialog).getByRole("button", { name: "Close" }))
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
+
+  it("moves toasts left of the open side sheet, counted across sheets, and clears it on close", () => {
+    matchMediaWhere((q) => q === "(min-width: 768px)")
+    const root = document.documentElement
+    const sheets = (a: boolean, b: boolean) => (
+      <>
+        <DetailSheet open={a} onOpenChange={() => {}} title="A">
+          <p>A</p>
+        </DetailSheet>
+        <DetailSheet open={b} onOpenChange={() => {}} title="B">
+          <p>B</p>
+        </DetailSheet>
+      </>
+    )
+    const { rerender, unmount } = render(sheets(false, false))
+    expect(root.style.getPropertyValue("--hb-toast-sheet")).toBe("")
+    rerender(sheets(true, false))
+    expect(root.style.getPropertyValue("--hb-toast-sheet")).toBe("calc(min(420px, 100vw - 32px) + 1rem)")
+    expect(root.style.getPropertyValue("--hb-toast-drawer")).toBe("")
+    rerender(sheets(true, true))
+    rerender(sheets(false, true))
+    expect(root.style.getPropertyValue("--hb-toast-sheet")).not.toBe("")
+    rerender(sheets(false, false))
+    expect(root.style.getPropertyValue("--hb-toast-sheet")).toBe("")
+    unmount()
+  })
+
+  it("lifts toasts above the open drawer's footer on phones, in place of the tab bar's space", () => {
+    const root = document.documentElement
+    const sheet = (open: boolean, footer?: React.ReactNode) => (
+      <DetailSheet open={open} onOpenChange={() => {}} title="To-do" footer={footer}>
+        <p>Fields</p>
+      </DetailSheet>
+    )
+    const { rerender, unmount } = render(sheet(true, <button type="button">Delete</button>))
+    expect(root.style.getPropertyValue("--hb-toast-drawer")).toBe(
+      "calc(3.5625rem + max(1rem, env(safe-area-inset-bottom)))",
+    )
+    expect(root.style.getPropertyValue("--hb-toast-sheet")).toBe("")
+    rerender(sheet(true))
+    expect(root.style.getPropertyValue("--hb-toast-drawer")).toBe("env(safe-area-inset-bottom, 0px)")
+    rerender(sheet(false))
+    expect(root.style.getPropertyValue("--hb-toast-drawer")).toBe("")
+    unmount()
+  })
 })
 
 describe("Celebration", () => {

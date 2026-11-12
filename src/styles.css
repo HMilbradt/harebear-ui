@@ -319,22 +319,37 @@
 /* Toasts clear floating controls. AppNav (tab bar, action button) and AssistantDock (launcher) set --hb-toast-* on
    <html> while mounted (src/lib/internal/toast-clearance.ts); this adds them to Sonner's bottom offset. Unlayered and
    !important because Sonner injects its own unlayered rule at runtime. Breakpoints: AppNav's tab bar shows under
-   768px; Sonner switches to full-width mobile toasts under 600px. */
+   768px; Sonner switches to full-width mobile toasts under 600px.
+   An open DetailSheet sets --hb-toast-sheet (desktop side sheet: its width plus gap) or --hb-toast-drawer (phone
+   full-screen drawer: its footer height). The sheet moves toasts left of it and narrows them to fit; the drawer
+   replaces the other bottom offsets, since it covers the tab bar, action button and launcher. */
 [data-sonner-toaster][data-y-position="bottom"] {
   bottom: calc(var(--offset-bottom) + var(--hb-toast-launcher, 0px)) !important;
+}
+@media (min-width: 768px) {
+  [data-sonner-toaster] {
+    --width: min(356px, 100vw - var(--hb-toast-sheet, 0px) - 2 * var(--offset-right)) !important;
+  }
+  [data-sonner-toaster][data-x-position="right"] {
+    right: calc(var(--offset-right) + var(--hb-toast-sheet, 0px)) !important;
+  }
+  [data-sonner-toaster][data-x-position="center"] {
+    transform: translateX(calc(-50% - var(--hb-toast-sheet, 0px) / 2)) !important;
+  }
 }
 @media (max-width: 767px) {
   [data-sonner-toaster][data-y-position="bottom"] {
     bottom: calc(
-      var(--offset-bottom) + var(--hb-toast-nav, 0px) + var(--hb-toast-fab, 0px) + var(--hb-toast-launcher, 0px)
+      var(--offset-bottom) +
+        var(--hb-toast-drawer, var(--hb-toast-nav, 0px) + var(--hb-toast-fab, 0px) + var(--hb-toast-launcher, 0px))
     ) !important;
   }
 }
 @media (max-width: 600px) {
   [data-sonner-toaster][data-y-position="bottom"] {
     bottom: calc(
-      var(--mobile-offset-bottom) + var(--hb-toast-nav, 0px) + var(--hb-toast-fab, 0px) +
-        var(--hb-toast-launcher, 0px)
+      var(--mobile-offset-bottom) +
+        var(--hb-toast-drawer, var(--hb-toast-nav, 0px) + var(--hb-toast-fab, 0px) + var(--hb-toast-launcher, 0px))
     ) !important;
   }
 }

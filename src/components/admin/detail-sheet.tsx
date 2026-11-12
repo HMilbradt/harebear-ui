@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer"
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { useToastClearance } from "@/lib/internal/toast-clearance"
 import { cn } from "@/lib/utils"
 
 export interface DetailSheetProps {
@@ -26,6 +27,15 @@ export interface DetailSheetProps {
  */
 function DetailSheet({ open, onOpenChange, title, description, footer, className, children }: DetailSheetProps) {
   const desktop = useMediaQuery("(min-width: 768px)")
+  // Keep toasts (e.g. toastUndo) off the open sheet. Desktop: toasts move left of the sheet (its width plus the
+  // 16px gap). Phones: toasts sit above the footer (border, 16px padding, one 40px button row, bottom padding), or
+  // above the safe area without one; styles.css then ignores the tab bar, action button and launcher behind it.
+  useToastClearance("--hb-toast-sheet", "calc(min(420px, 100vw - 32px) + 1rem)", open && desktop)
+  useToastClearance(
+    "--hb-toast-drawer",
+    footer ? "calc(3.5625rem + max(1rem, env(safe-area-inset-bottom)))" : "env(safe-area-inset-bottom, 0px)",
+    open && !desktop,
+  )
   // Radix warns about a dialog without a description unless aria-describedby is set to undefined.
   const noDescription = description ? {} : { "aria-describedby": undefined }
   const body = (padBottom?: string) => (

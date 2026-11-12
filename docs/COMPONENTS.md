@@ -373,7 +373,7 @@ Searchable IANA time zone field built on `Combobox`, listing `Intl.supportedValu
 
 ### `DetailSheet`
 
-A record's details, one API for both sizes: a floating side sheet from 768px up, a full-screen drawer with a close button on phones. Props: `open`, `onOpenChange`, `title` (heading and accessible name), `description?`, `footer?` (pinned under the scrolling body, e.g. Delete), `children` (the fields). `data-layout` is `"sheet"` or `"drawer"`.
+A record's details, one API for both sizes: a floating side sheet from 768px up, a full-screen drawer with a close button on phones. Props: `open`, `onOpenChange`, `title` (heading and accessible name), `description?`, `footer?` (pinned under the scrolling body, e.g. Delete), `children` (the fields). `data-layout` is `"sheet"` or `"drawer"`. While open, toasts (e.g. `toastUndo`) stay off it: on desktop they move to the left of the sheet and narrow to fit; on phones they sit above the footer (one row of buttons) or the bottom safe area, in place of the hidden tab bar's space.
 
 ```tsx
 ;<DetailSheet
