@@ -44,6 +44,7 @@ A household or personal app where an assistant sits on every page and safe actio
 - Pages: `Page` (the column) with a `PageHeader` (h1; `UserMenu compact` in `actions` on phones, where the sidebar footer is hidden) and `PageSection`s (h2 regions). A chat page sets `fill` on `AppNav`.
 - Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo` and set `lingerMs` to its window so a ticked row stays struck through for about as long as Undo shows.
 - A week agenda: `DayStrip sticky` above one `SectionedList` with a section per day (`empty` keeps empty days) and `AgendaRow` rows from `renderItem`.
+- A record's details (`DetailSheet`): `ChecklistEditor` for steps, `CommentThread` for comments, `MarkdownEditor` for notes.
 - In the assistant thread, each action it took is an `ActionReceipt` with Undo (append it from `onSend`).
 - A page with its own ask box (Today) answers under it: `AskBox` with `reply` and `pending` from `useAssistant()`, `onStop={stop}`, and `send(text, { open: false })`.
 - Settings and setup flows leave the frame: `FocusLayout` around `SettingsSection`s of `SettingsRow`s.
@@ -406,16 +407,30 @@ Muted tile that lifts on hover, for service launchers. Props: `title`, `subtitle
 
 ### `MarkdownEditor`
 
-Markdown field with Write and Preview tabs; Preview renders inside `Prose`. Props: `value`, `onValueChange(value)`, `renderPreview(markdown)` (the library has no Markdown parser; pass yours), `wrapperClassName?`. Other props (`id`, `placeholder`, `aria-*`, `className`) go to the `Textarea`.
+Markdown field with Write and Preview tabs; Preview renders with `Markdown`. Props: `value`, `onValueChange(value)`, `renderPreview?(markdown)` (custom renderer, wrapped in `Prose`), `wrapperClassName?`. Other props (`id`, `placeholder`, `aria-*`, `className`) go to the `Textarea`.
 
 ```tsx
-;<MarkdownEditor
-  id="body"
-  value={body}
-  onValueChange={setBody}
-  renderPreview={(md) => <Markdown components={{ blockquote: ProseBlockquote }}>{md}</Markdown>}
+;<MarkdownEditor id="body" value={body} onValueChange={setBody} />
+```
+
+### `ChecklistEditor`
+
+Steps inside a record, e.g. a to-do's checklist: `CheckCircle` per item (the text is its label), a Remove button, an add field (Enter adds the trimmed text and clears), and an "x of y done" line when there are items. Props: `items: { id; text; done }[]`, `onToggle(id, done)`, `onRemove(id)`, `onAdd(text)`, `addPlaceholder?` (also the field's name, default "Add an item"), `progressLabel?(done, total)`. The root is a `role="group"`: name it with `aria-label` or `aria-labelledby`.
+
+```tsx
+;<ChecklistEditor
+  aria-label="Checklist"
+  items={task.checklist}
+  onToggle={toggleStep}
+  onRemove={removeStep}
+  onAdd={addStep}
+  addPlaceholder="Add a step"
 />
 ```
+
+### `CommentThread`
+
+Comments on a record, oldest first, then a box and a submit button (disabled while empty; submits the trimmed text and clears). Bodies render with `Markdown`. Props: `comments: { id; author: { name; color?; avatarUrl? }; meta?; body }[]` (`meta` is muted text after the name, e.g. "via HomeBot · 2 h ago"), `onSubmit(text)`, `placeholder?` (also the box's name, default "Add a comment"), `submitLabel?` (default "Comment"). Show your own empty state if you want one.
 
 ### `AppNav`
 
@@ -752,8 +767,16 @@ What the assistant did, as a compact card: round check, `title` (past tense), `m
 
 `CodeSnippet`: one-prop code panel with language label, copy button and shiki syntax highlighting (each language loads on first use). Props: `code`, `language?` (`bash`, `tsx`, `ts`, `js`, `json`, `python`, `sql`, `yaml`, `css`, `html`, `markdown`, `diff`; others render plain), `highlight?` (default true), `lineNumbers?`, `hideCopy?`. Built on the `CodeBlock` primitives; drop to those for diffs or highlighted lines.
 `InlineCode`: monospace span. `truncate?: number` cuts longer string children with an ellipsis and puts the full text in the tooltip.
-`Prose`: typography for model output and markdown. Styles plain `p, ul, ol, li, strong, a, code, pre, h1-h4, blockquote, table` children, so it works with `react-markdown`.
-Tip boxes: a blockquote whose first word is `Tip:` (`> Tip: Turn the power off first.`) renders as a `Callout` without the word. Prose does this for plain `<blockquote>` children; with react-markdown pass `components={{ blockquote: ProseBlockquote }}`.
+`Prose`: typography for model output and markdown. Styles plain `p, ul, ol, li, strong, a, code, pre, h1-h4, blockquote, table` children.
+Tip boxes: a blockquote whose first word is `Tip:` (`> Tip: Turn the power off first.`) renders as a `Callout` without the word. Prose does this for plain `<blockquote>` children; with your own react-markdown pass `components={{ blockquote: ProseBlockquote }}`.
+
+### `Markdown`
+
+Renders a Markdown string inside `Prose`: GitHub flavoured (tables, task lists, strikethrough, autolinks), `> Tip:` blockquotes as a `Callout`. Safe for user and model text: raw HTML is dropped and `javascript:` links are removed. Props: `children: string`, `linkComponent?` (your router `Link`, gets `href`; used for links without a scheme such as `/lists/2`). Other props go to the `Prose` wrapper.
+
+```tsx
+;<Markdown linkComponent={Link}>{message.text}</Markdown>
+```
 
 ### Chat primitives vs. composites
 
