@@ -30,6 +30,7 @@ This project uses `harebear-ui` for all UI. Its theme, tokens, and components ar
 - Notices: `Alert variant="warning" | "success" | "info" | "destructive"`. Confirmations: `ConfirmDialog`. Copyable IDs: `CopyField`. Live status: `StatusDot`/`StatusBadge` with `pulse`.
 - If you need a className to fix spacing, color, wrapping or borders on a harebear component, that is a library gap: report it instead of overriding.
 - Sign-in and sign-up pages: `AuthLayout` + `LoginForm` / `SignupForm`. Don't hand-build auth forms.
+- Form fields beyond `Input`: `PasswordInput` (Show/Hide; every password field), `DateTimePicker` (`{ date: "YYYY-MM-DD", time?: "HH:MM" }`, floating local), `MarkdownEditor` (Write/Preview; pass `renderPreview`). A record's details open in `DetailSheet` (side sheet on desktop, full screen on phones). Markdown goes inside `Prose`; `> Tip:` blockquotes become a `Callout` (react-markdown: `components={{ blockquote: ProseBlockquote }}`). Rare joy moments: mount `Celebration` once, call `celebrate()`.
 - Theme: `ThemeProvider` at the root (`accent`, `radius`, `defaultMode`), `ThemeToggle` for the light/dark button. Both modes must work: never style for only one.
 
 ## Check your work

@@ -1,7 +1,8 @@
 "use client"
 
-import { CheckIcon, CopyIcon } from "lucide-react"
-import type * as React from "react"
+import { CheckIcon, CopyIcon, LightbulbIcon } from "lucide-react"
+import * as React from "react"
+import { Callout } from "@/components/admin/callout"
 import { Button } from "@/components/ui/button"
 import { CodeBlock, CodeBlockContent, CodeBlockHeader, CodeBlockLine, CodeBlockTitle } from "@/components/ui/code-block"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
@@ -84,12 +85,56 @@ function InlineCode({ truncate, className, children, title, ...props }: InlineCo
   )
 }
 
+const TIP = /^\s*Tip:\s*/
+
+/** The children with a leading "Tip:" removed, or undefined when they do not start with it. */
+function withoutTip(children: React.ReactNode): React.ReactNode | undefined {
+  const items = React.Children.toArray(children)
+  const i = items.findIndex((c) => !(typeof c === "string" && c.trim() === ""))
+  const first = items[i]
+  let rest: React.ReactNode
+  if (typeof first === "string") {
+    if (!TIP.test(first)) return undefined
+    rest = first.replace(TIP, "")
+  } else if (React.isValidElement<{ children?: React.ReactNode }>(first) && typeof first.type === "string") {
+    const inner = withoutTip(first.props.children)
+    if (inner === undefined) return undefined
+    rest = React.cloneElement(first, undefined, inner)
+  } else {
+    return undefined
+  }
+  return [...items.slice(0, i), rest, ...items.slice(i + 1)]
+}
+
+/**
+ * A blockquote that becomes a `Callout` when its first word is "Tip:" (the word is dropped).
+ * Prose applies it to blockquote children; pass it to react-markdown as `components={{ blockquote: ProseBlockquote }}`.
+ */
+function ProseBlockquote({ children, node: _node, ...props }: React.ComponentProps<"blockquote"> & { node?: unknown }) {
+  const tip = withoutTip(children)
+  if (tip === undefined) return <blockquote {...props}>{children}</blockquote>
+  return (
+    <Callout data-tip="" icon={<LightbulbIcon />} className={props.className}>
+      {tip}
+    </Callout>
+  )
+}
+
+/** Swaps plain blockquote elements for ProseBlockquote, at any depth of plain HTML elements. */
+function withTips(children: React.ReactNode): React.ReactNode {
+  return React.Children.map(children, (c) => {
+    if (!React.isValidElement<{ children?: React.ReactNode }>(c) || typeof c.type !== "string") return c
+    if (c.type === "blockquote") return <ProseBlockquote {...(c.props as React.ComponentProps<"blockquote">)} />
+    return c.props.children === undefined ? c : React.cloneElement(c, undefined, withTips(c.props.children))
+  })
+}
+
 /**
  * Typography for long-form and model output. Styles plain HTML children
  * (p, ul, ol, li, strong, a, code, pre, h1-h4, blockquote, table), so it works
- * with react-markdown or any HTML renderer.
+ * with react-markdown or any HTML renderer. A blockquote starting "Tip:" renders as a Callout.
  */
-function Prose({ className, ...props }: React.ComponentProps<"div">) {
+function Prose({ className, children, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="prose"
@@ -106,8 +151,10 @@ function Prose({ className, ...props }: React.ComponentProps<"div">) {
         className,
       )}
       {...props}
-    />
+    >
+      {withTips(children)}
+    </div>
   )
 }
 
-export { CodeSnippet, InlineCode, Prose }
+export { CodeSnippet, InlineCode, Prose, ProseBlockquote }

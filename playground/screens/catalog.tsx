@@ -1,4 +1,5 @@
 import { CheckIcon, FileTextIcon, ImageIcon, SearchIcon, TerminalIcon, XIcon } from "lucide-react"
+import { useState } from "react"
 import {
   Attachment,
   AttachmentAction,
@@ -11,6 +12,7 @@ import {
   Bubble,
   BubbleContent,
   BubbleGroup,
+  Button,
   Card,
   CardContent,
   CardDescription,
@@ -20,15 +22,21 @@ import {
   CodeBlockContent,
   CodeBlockLine,
   CodeSnippet,
+  Celebration,
+  celebrate,
   Combobox,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
+  DateTimePicker,
+  type DateTimeValue,
+  DetailSheet,
   Field,
   FieldLabel,
   Input,
+  MarkdownEditor,
   Marker,
   MarkerContent,
   MarkerIcon,
@@ -40,6 +48,8 @@ import {
   NativeSelect,
   NativeSelectOption,
   PageHeader,
+  PasswordInput,
+  Prose,
   Questionnaire,
   QuestionnaireActions,
   QuestionnaireChoice,
@@ -78,6 +88,76 @@ function Section({ title, description, children }: { title: string; description:
       </CardHeader>
       <CardContent className="flex flex-col gap-4">{children}</CardContent>
     </Card>
+  )
+}
+
+// Tiny stand-in for react-markdown: headings, "> " quotes, paragraphs.
+function previewMarkdown(md: string) {
+  return md.split(/\n{2,}/).map((block, i) => {
+    const key = `${i}-${block.slice(0, 8)}`
+    if (block.startsWith("# ")) return <h1 key={key}>{block.slice(2)}</h1>
+    if (block.startsWith("> "))
+      return (
+        <blockquote key={key}>
+          <p>{block.slice(2)}</p>
+        </blockquote>
+      )
+    return <p key={key}>{block}</p>
+  })
+}
+
+function NewFormControls() {
+  const [when, setWhen] = useState<DateTimeValue | null>({ date: "2026-11-12", time: "09:30" })
+  const [body, setBody] = useState(
+    "# Furnace filter\n\nSwap it every three months.\n\n> Tip: Turn the power off first.",
+  )
+  const [details, setDetails] = useState(false)
+  return (
+    <>
+      <Section title="Forms" description="PasswordInput, DateTimePicker and MarkdownEditor.">
+        <Field>
+          <FieldLabel htmlFor="c-password">Password</FieldLabel>
+          <PasswordInput id="c-password" defaultValue="correct horse" />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="c-when">When</FieldLabel>
+          <DateTimePicker id="c-when" withTime value={when} onChange={setWhen} />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="c-body">Body</FieldLabel>
+          <MarkdownEditor id="c-body" value={body} onChange={setBody} renderPreview={previewMarkdown} />
+        </Field>
+      </Section>
+      <Section title="Details and joy" description="DetailSheet, Prose tips and Celebration.">
+        <Prose>
+          {previewMarkdown("> Tip: A blockquote starting with Tip: is a Callout.\n\n> A plain quote stays a quote.")}
+        </Prose>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setDetails(true)}>
+            Open details
+          </Button>
+          <Button variant="outline" onClick={() => celebrate()}>
+            Celebrate
+          </Button>
+        </div>
+        <DetailSheet
+          open={details}
+          onOpenChange={setDetails}
+          title="To-do"
+          footer={
+            <Button variant="ghost" onClick={() => setDetails(false)}>
+              Delete
+            </Button>
+          }
+        >
+          <Field>
+            <FieldLabel htmlFor="c-sheet-when">When</FieldLabel>
+            <DateTimePicker id="c-sheet-when" value={when} onChange={setWhen} />
+          </Field>
+        </DetailSheet>
+        <Celebration />
+      </Section>
+    </>
   )
 }
 
@@ -273,6 +353,8 @@ export function CatalogScreen() {
             </Combobox>
           </Field>
         </Section>
+
+        <NewFormControls />
       </div>
     </div>
   )

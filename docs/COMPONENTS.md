@@ -265,13 +265,56 @@ Controlled "are you sure" dialog. Props: `open`, `onOpenChange`, `title`, `descr
 
 Read-only value with a copy button (IDs, paths, URLs). Props: `value` (copied), `display?` (shown instead, full value as tooltip), `label?` (leading addon), `aria-label?`, `mono?` (default true).
 
+### `DateTimePicker`
+
+Date field: a button that opens a `Calendar` in a `Popover`, with an optional time field and a Clear button. Value is a floating local date, no time zone: `DateTimeValue = { date: "YYYY-MM-DD", time?: "HH:MM" }`. Props: `value: DateTimeValue | null`, `onChange(value | null)`, `withTime?` (time field under the calendar; enabled once a date is set), `placeholder?` (default "Pick a date"). Other props (`id`, `aria-label`, `disabled`) go to the trigger button. Day cells are 44px on phones.
+
+### `DetailSheet`
+
+A record's details, one API for both sizes: a floating side sheet from 768px up, a full-screen drawer with a close button on phones. Props: `open`, `onOpenChange`, `title` (heading and accessible name), `description?`, `footer?` (pinned under the scrolling body, e.g. Delete), `children` (the fields). `data-layout` is `"sheet"` or `"drawer"`.
+
+```tsx
+;<DetailSheet
+  open={!!task}
+  onOpenChange={(o) => !o && close()}
+  title="To-do"
+  footer={
+    <Button variant="ghost" onClick={askDelete}>
+      Delete
+    </Button>
+  }
+>
+  <Field>
+    <FieldLabel htmlFor="when">When</FieldLabel>
+    <DateTimePicker id="when" withTime value={due} onChange={setDue} />
+  </Field>
+</DetailSheet>
+```
+
 ### `Callout`
 
 Quiet note with an icon (sparkle by default). Props: `icon?`, `tone?` (`"muted" | "soft"`).
 
+### `Celebration`, `celebrate`
+
+An occasional confetti burst, e.g. when the last to-do of the day is ticked. Mount `<Celebration />` once near the root (like `Toaster`), then call `celebrate()` from anywhere. CSS only, about 1.5 s, renders nothing between bursts (`data-slot="celebration"` while it plays), and does nothing under `prefers-reduced-motion`. Keep it rare.
+
 ### `LinkTile`
 
 Muted tile that lifts on hover, for service launchers. Props: `title`, `subtitle?` (mono), `icon?`, `status?: { tone; label }`, `href`, or `asChild` with your router `<Link>` as the only child.
+
+### `MarkdownEditor`
+
+Markdown field with Write and Preview tabs; Preview renders inside `Prose`. Props: `value`, `onChange(value)`, `renderPreview(markdown)` (the library has no Markdown parser; pass yours), `wrapperClassName?`. Other props (`id`, `placeholder`, `aria-*`, `className`) go to the `Textarea`.
+
+```tsx
+;<MarkdownEditor
+  id="body"
+  value={body}
+  onChange={setBody}
+  renderPreview={(md) => <Markdown components={{ blockquote: ProseBlockquote }}>{md}</Markdown>}
+/>
+```
 
 ### `AppNav`
 
@@ -549,11 +592,12 @@ Large rounded composer: auto-growing text, `chips` shown while there is text, su
 
 What the assistant did, as a compact card: round check, `title` (past tense), `meta?`, Undo (`onUndo?`, `undoLabel?`). `undone` strikes it through and shows "Undone".
 
-### `CodeSnippet`, `InlineCode`, `Prose`
+### `CodeSnippet`, `InlineCode`, `Prose`, `ProseBlockquote`
 
 `CodeSnippet`: one-prop code panel with language label, copy button and shiki syntax highlighting (each language loads on first use). Props: `code`, `language?` (`bash`, `tsx`, `ts`, `js`, `json`, `python`, `sql`, `yaml`, `css`, `html`, `markdown`, `diff`; others render plain), `highlight?` (default true), `lineNumbers?`, `hideCopy?`. Built on the `CodeBlock` primitives; drop to those for diffs or highlighted lines.
 `InlineCode`: monospace span. `truncate?: number` cuts longer string children with an ellipsis and puts the full text in the tooltip.
 `Prose`: typography for model output and markdown. Styles plain `p, ul, ol, li, strong, a, code, pre, h1-h4, blockquote, table` children, so it works with `react-markdown`.
+Tip boxes: a blockquote whose first word is `Tip:` (`> Tip: Turn the power off first.`) renders as a `Callout` without the word. Prose does this for plain `<blockquote>` children; with react-markdown pass `components={{ blockquote: ProseBlockquote }}`.
 
 ### Chat primitives vs. composites
 
@@ -570,6 +614,10 @@ Full-page wrapper. Props: `variant` (`"centered"` card on the page, `"muted"` sa
 ### `LoginForm`
 
 Props: `onSubmit?({ email, password? })` (omit to submit natively to an `action`), `mode?` (`"password"` or `"email-only"` for magic links), `providers?: { id; label; icon? }[]` + `onProviderClick?(id)` (3+ providers with icons collapse to an icon row), `providersFirst?`, `forgotPasswordHref?`, `signupHref?`, `title?`, `description?`, `submitLabel?`, `loading?`, `error?`.
+
+### `PasswordInput`
+
+Password `Input` with a Show/Hide button (`aria-label` "Show password" / "Hide password") that switches `type` between `password` and `text`. Input props go to the input; `wrapperClassName?` styles the wrapper. `LoginForm` and `SignupForm` use it for every password field.
 
 ### `SignupForm`
 
