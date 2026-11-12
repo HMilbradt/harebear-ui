@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 
@@ -286,10 +287,9 @@ function LoginForm({
                 </a>
               )}
             </div>
-            <Input
+            <PasswordInput
               id={`${id}-password`}
               name="password"
-              type="password"
               autoComplete="current-password"
               required
               disabled={loading}
@@ -406,10 +406,9 @@ function SignupForm({
         </Field>
         <Field>
           <FieldLabel htmlFor={`${id}-password`}>Password</FieldLabel>
-          <Input
+          <PasswordInput
             id={`${id}-password`}
             name="password"
-            type="password"
             autoComplete="new-password"
             onInput={(e) =>
               (e.currentTarget.form?.elements.namedItem("confirm") as HTMLInputElement | null)?.setCustomValidity("")
@@ -423,10 +422,9 @@ function SignupForm({
         {confirmPassword && (
           <Field>
             <FieldLabel htmlFor={`${id}-confirm`}>Confirm password</FieldLabel>
-            <Input
+            <PasswordInput
               id={`${id}-confirm`}
               name="confirm"
-              type="password"
               autoComplete="new-password"
               required
               disabled={loading}

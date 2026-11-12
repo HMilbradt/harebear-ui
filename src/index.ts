@@ -272,6 +272,8 @@ export {
   PaginationNext,
   PaginationPrevious,
 } from "./components/ui/pagination"
+export { PasswordInput } from "./components/ui/password-input"
+export type { PasswordInputProps } from "./components/ui/password-input"
 export {
   Popover,
   PopoverAnchor,
@@ -396,18 +398,26 @@ export type { AvatarUploadProps } from "./components/admin/avatar-upload"
 export { Callout } from "./components/admin/callout"
 export { CategoryDot, categoryBg } from "./components/admin/category"
 export type { CategoryColor, CategoryDotProps } from "./components/admin/category"
+export { Celebration, celebrate } from "./components/admin/celebration"
+export type { CelebrationProps } from "./components/admin/celebration"
 export { ColorSwatchPicker } from "./components/admin/color-swatch-picker"
 export type { ColorSwatchPickerProps } from "./components/admin/color-swatch-picker"
 export { ConfirmDialog } from "./components/admin/confirm-dialog"
 export type { ConfirmDialogProps } from "./components/admin/confirm-dialog"
 export { CopyField } from "./components/admin/copy-field"
 export type { CopyFieldProps } from "./components/admin/copy-field"
+export { DateTimePicker } from "./components/admin/date-time-picker"
+export type { DateTimeValue, DateTimePickerProps } from "./components/admin/date-time-picker"
+export { DetailSheet } from "./components/admin/detail-sheet"
+export type { DetailSheetProps } from "./components/admin/detail-sheet"
 export { FocusLayout } from "./components/admin/focus-layout"
 export type { FocusLayoutProps } from "./components/admin/focus-layout"
 export { KeyValueGrid } from "./components/admin/key-value-grid"
 export type { KeyValueItem } from "./components/admin/key-value-grid"
 export { LinkTile } from "./components/admin/link-tile"
 export type { LinkTileProps } from "./components/admin/link-tile"
+export { MarkdownEditor } from "./components/admin/markdown-editor"
+export type { MarkdownEditorProps } from "./components/admin/markdown-editor"
 export { PageHeader } from "./components/admin/page-header"
 export type { PageHeaderProps } from "./components/admin/page-header"
 export { SearchInput } from "./components/admin/search-input"
@@ -511,7 +521,7 @@ export type {
   TypingIndicatorProps,
   ToolCallProps,
 } from "./components/ai/chat"
-export { CodeSnippet, InlineCode, Prose } from "./components/ai/code-block"
+export { CodeSnippet, InlineCode, Prose, ProseBlockquote } from "./components/ai/code-block"
 export type { CodeSnippetProps, InlineCodeProps } from "./components/ai/code-block"
 export { ConversationList, NewConversationButton, formatWhen, groupByDate } from "./components/ai/conversation-list"
 export type {

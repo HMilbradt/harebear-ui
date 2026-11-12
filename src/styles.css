@@ -256,8 +256,29 @@
   animation: hb-listening 900ms infinite ease-in-out;
 }
 
+/* Confetti piece for Celebration: flies out to (--hb-x, --hb-y), then falls and fades. */
+@keyframes hb-confetti {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(calc(var(--hb-x) * 0.7), var(--hb-y)) rotate(calc(var(--hb-r) * 0.4));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--hb-x), 40vh) rotate(var(--hb-r));
+  }
+}
+
+@utility animate-confetti {
+  animation: hb-confetti 1400ms cubic-bezier(0.2, 0.6, 0.4, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-check-pop,
+  .animate-confetti,
   .animate-listening {
     animation: none;
   }
