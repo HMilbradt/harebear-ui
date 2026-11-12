@@ -59,6 +59,7 @@
   --color-category-4: var(--category-4);
   --color-category-5: var(--category-5);
   --color-category-6: var(--category-6);
+  --color-category-foreground: var(--category-foreground);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -121,6 +122,8 @@
   --category-4: #c03a78;
   --category-5: #5a6578;
   --category-6: #0a7fa3;
+  /* Text and icons on a category fill (initials, a swatch's check). */
+  --category-foreground: #ffffff;
   --elevation: 0 1px 2px rgb(24 24 27 / 0.04), 0 6px 20px rgb(24 24 27 / 0.05);
 
   --sidebar: var(--background);
@@ -168,6 +171,7 @@
   --category-4: #ec7fae;
   --category-5: #9ba6b8;
   --category-6: #4cbde0;
+  --category-foreground: #101012;
   --elevation: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.22);
 
   color-scheme: dark;
@@ -252,8 +256,29 @@
   animation: hb-listening 900ms infinite ease-in-out;
 }
 
+/* Confetti piece for Celebration: flies out to (--hb-x, --hb-y), then falls and fades. */
+@keyframes hb-confetti {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(calc(var(--hb-x) * 0.7), var(--hb-y)) rotate(calc(var(--hb-r) * 0.4));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--hb-x), 40vh) rotate(var(--hb-r));
+  }
+}
+
+@utility animate-confetti {
+  animation: hb-confetti 1400ms cubic-bezier(0.2, 0.6, 0.4, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-check-pop,
+  .animate-confetti,
   .animate-listening {
     animation: none;
   }

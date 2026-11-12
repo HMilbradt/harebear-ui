@@ -272,6 +272,8 @@ export {
   PaginationNext,
   PaginationPrevious,
 } from "./components/ui/pagination"
+export { PasswordInput } from "./components/ui/password-input"
+export type { PasswordInputProps } from "./components/ui/password-input"
 export {
   Popover,
   PopoverAnchor,
@@ -391,17 +393,31 @@ export { AppNav } from "./components/admin/app-nav"
 export type { AppNavPlace, AppNavGroup, AppNavAction, AppNavProps } from "./components/admin/app-nav"
 export { AppShell, AppBrand } from "./components/admin/app-shell"
 export type { AppNavItem, AppNavSection, AppBrandProps, AppShellProps } from "./components/admin/app-shell"
+export { AvatarUpload, cropImageToSquare } from "./components/admin/avatar-upload"
+export type { AvatarUploadProps } from "./components/admin/avatar-upload"
 export { Callout } from "./components/admin/callout"
+export { CategoryDot, categoryBg } from "./components/admin/category"
+export type { CategoryColor, CategoryDotProps } from "./components/admin/category"
+export { Celebration, celebrate } from "./components/admin/celebration"
+export type { CelebrationProps } from "./components/admin/celebration"
+export { ColorSwatchPicker } from "./components/admin/color-swatch-picker"
+export type { ColorSwatchPickerProps } from "./components/admin/color-swatch-picker"
 export { ConfirmDialog } from "./components/admin/confirm-dialog"
 export type { ConfirmDialogProps } from "./components/admin/confirm-dialog"
 export { CopyField } from "./components/admin/copy-field"
 export type { CopyFieldProps } from "./components/admin/copy-field"
+export { DateTimePicker } from "./components/admin/date-time-picker"
+export type { DateTimeValue, DateTimePickerProps } from "./components/admin/date-time-picker"
+export { DetailSheet } from "./components/admin/detail-sheet"
+export type { DetailSheetProps } from "./components/admin/detail-sheet"
 export { FocusLayout } from "./components/admin/focus-layout"
 export type { FocusLayoutProps } from "./components/admin/focus-layout"
 export { KeyValueGrid } from "./components/admin/key-value-grid"
 export type { KeyValueItem } from "./components/admin/key-value-grid"
 export { LinkTile } from "./components/admin/link-tile"
 export type { LinkTileProps } from "./components/admin/link-tile"
+export { MarkdownEditor } from "./components/admin/markdown-editor"
+export type { MarkdownEditorProps } from "./components/admin/markdown-editor"
 export { PageHeader } from "./components/admin/page-header"
 export type { PageHeaderProps } from "./components/admin/page-header"
 export { SearchInput } from "./components/admin/search-input"
@@ -418,8 +434,13 @@ export { Timeline } from "./components/admin/timeline"
 export type { TimelineItem } from "./components/admin/timeline"
 export { UsageMeter } from "./components/admin/usage-meter"
 export type { UsageMeterProps } from "./components/admin/usage-meter"
-export { UserChip, initials } from "./components/admin/user-chip"
-export type { UserChipProps } from "./components/admin/user-chip"
+export { AvatarStack, MemberAvatar, UserChip, VisibilityBadge, initials } from "./components/admin/user-chip"
+export type {
+  MemberAvatarProps,
+  AvatarStackProps,
+  VisibilityBadgeProps,
+  UserChipProps,
+} from "./components/admin/user-chip"
 export { UserMenu } from "./components/admin/user-menu"
 export type { UserMenuProps } from "./components/admin/user-menu"
 
@@ -447,10 +468,14 @@ export { Text, Heading } from "./components/layout/text"
 export type { TextTone, TextProps, HeadingProps } from "./components/layout/text"
 
 // Data display
+export { AgendaRow } from "./components/data/agenda-row"
+export type { AgendaRowWho, AgendaRowProps } from "./components/data/agenda-row"
 export { BarList } from "./components/data/bar-list"
 export type { BarListItem } from "./components/data/bar-list"
 export { DataTable, dataTableFeatures, createDataTableColumnHelper } from "./components/data/data-table"
 export type { DataTableFeatures, DataTableColumnDef, DataTableProps } from "./components/data/data-table"
+export { DayStrip } from "./components/data/day-strip"
+export type { DayStripDay, DayStripProps } from "./components/data/day-strip"
 export { SectionedList } from "./components/data/sectioned-list"
 export type { SectionedListItem, SectionedListSection, SectionedListProps } from "./components/data/sectioned-list"
 export { Sparkline, smoothPath } from "./components/data/sparkline"
@@ -474,6 +499,7 @@ export type {
   AssistantMessage,
   AssistantPage,
   AssistantSendContext,
+  AssistantSendOptions,
   AssistantContextValue,
   AssistantProviderProps,
   AssistantDockProps,
@@ -495,13 +521,14 @@ export type {
   TypingIndicatorProps,
   ToolCallProps,
 } from "./components/ai/chat"
-export { CodeSnippet, InlineCode, Prose } from "./components/ai/code-block"
+export { CodeSnippet, InlineCode, Prose, ProseBlockquote } from "./components/ai/code-block"
 export type { CodeSnippetProps, InlineCodeProps } from "./components/ai/code-block"
 export { ConversationList, NewConversationButton, formatWhen, groupByDate } from "./components/ai/conversation-list"
 export type {
   Conversation,
   ConversationGroup,
   ConversationListProps,
+  GroupByDateOptions,
   NewConversationButtonProps,
 } from "./components/ai/conversation-list"
 export { DictationButton, browserSpeechSource, useDictation } from "./components/ai/dictation"

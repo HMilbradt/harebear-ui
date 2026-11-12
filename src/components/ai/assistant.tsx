@@ -34,6 +34,13 @@ export interface AssistantSendContext {
   append: (message: Omit<AssistantMessage, "id"> & { id?: string }) => string
   /** Replace a message's content, e.g. while a reply streams in. */
   update: (id: string, content: React.ReactNode) => void
+  /** Aborted when the user presses Stop. Pass it to `fetch`, or listen for `abort` to tell your server to stop. */
+  signal: AbortSignal
+}
+
+export interface AssistantSendOptions {
+  /** Open the dock. Default true; false for an AskBox that shows the answer inline. */
+  open?: boolean
 }
 
 export interface AssistantContextValue {
@@ -43,10 +50,14 @@ export interface AssistantContextValue {
   messages: AssistantMessage[]
   /** True while the send handler runs. */
   pending: boolean
+  /** The assistant messages after the latest user message, ready for `AskBox` `reply`; null until there is one. */
+  reply: React.ReactNode
   page: AssistantPage | null
   setPage: (page: AssistantPage | null) => void
-  /** Adds the user message, opens the dock and runs the app's onSend. */
-  send: (text: string) => Promise<void>
+  /** Adds the user message, opens the dock (unless `{ open: false }`) and runs the app's onSend. */
+  send: (text: string, options?: AssistantSendOptions) => Promise<void>
+  /** Stops the running send: aborts its `signal`, ends `pending` and drops its return value and later `append`/`update` calls. */
+  stop: () => void
   append: AssistantSendContext["append"]
   update: AssistantSendContext["update"]
   clear: () => void
@@ -57,7 +68,7 @@ const AssistantContext = React.createContext<AssistantContextValue | null>(null)
 export interface AssistantProviderProps {
   /**
    * The app's send handler. Return the reply (text or nodes) to append it, or call `append` / `update` yourself
-   * (for streaming or receipts) and return nothing. A thrown error is shown as the reply.
+   * (for streaming or receipts) and return nothing. A thrown error is shown as the reply. Stop aborts `signal`.
    */
   onSend: (text: string, context: AssistantSendContext) => React.ReactNode | Promise<React.ReactNode>
   initialMessages?: AssistantMessage[]
@@ -83,6 +94,7 @@ function AssistantProvider({ onSend, initialMessages = [], defaultOpen = false, 
   pageRef.current = page
   const onSendRef = React.useRef(onSend)
   onSendRef.current = onSend
+  const runRef = React.useRef<AbortController | null>(null)
 
   const append = React.useCallback<AssistantSendContext["append"]>((m) => {
     const id = m.id ?? newId()
@@ -93,22 +105,49 @@ function AssistantProvider({ onSend, initialMessages = [], defaultOpen = false, 
     setMessages((list) => list.map((m) => (m.id === id ? { ...m, content } : m)))
   }, [])
   const send = React.useCallback(
-    async (text: string) => {
+    async (text: string, options?: AssistantSendOptions) => {
       const before = messagesRef.current
+      runRef.current?.abort()
+      const run = new AbortController()
+      runRef.current = run
       append({ role: "user", content: text })
-      setOpen(true)
+      if (options?.open !== false) setOpen(true)
       setPending(true)
       try {
-        const reply = await onSendRef.current(text, { page: pageRef.current, messages: before, append, update })
+        const reply = await onSendRef.current(text, {
+          page: pageRef.current,
+          messages: before,
+          // Run-scoped: after Stop, late appends and streamed updates are dropped.
+          append: (m) => (run.signal.aborted ? "" : append(m)),
+          update: (id, content) => {
+            if (!run.signal.aborted) update(id, content)
+          },
+          signal: run.signal,
+        })
+        if (run.signal.aborted) return
         if (reply !== undefined && reply !== null && reply !== false) append({ role: "assistant", content: reply })
       } catch (e) {
+        if (run.signal.aborted) return
         append({ role: "assistant", content: e instanceof Error ? e.message : "Something went wrong." })
       } finally {
-        setPending(false)
+        if (runRef.current === run) {
+          runRef.current = null
+          setPending(false)
+        }
       }
     },
     [append, update],
   )
+  const stop = React.useCallback(() => {
+    runRef.current?.abort()
+    runRef.current = null
+    setPending(false)
+  }, [])
+  const reply = React.useMemo(() => {
+    const start = messages.findLastIndex((m) => m.role === "user")
+    const answer = start === -1 ? [] : messages.slice(start + 1)
+    return answer.length ? answer.map((m) => <div key={m.id}>{m.content}</div>) : null
+  }, [messages])
 
   const value = React.useMemo<AssistantContextValue>(
     () => ({
@@ -117,14 +156,16 @@ function AssistantProvider({ onSend, initialMessages = [], defaultOpen = false, 
       toggle: () => setOpen((v) => !v),
       messages,
       pending,
+      reply,
       page,
       setPage,
       send,
+      stop,
       append,
       update,
       clear: () => setMessages([]),
     }),
-    [open, messages, pending, page, send, append, update],
+    [open, messages, pending, reply, page, send, stop, append, update],
   )
   return <AssistantContext.Provider value={value}>{children}</AssistantContext.Provider>
 }
@@ -193,7 +234,7 @@ function AssistantDock({
   className,
   ...props
 }: AssistantDockProps) {
-  const { open, setOpen, messages, pending, page, send } = useAssistant()
+  const { open, setOpen, messages, pending, page, send, stop } = useAssistant()
   const [draft, setDraft] = React.useState("")
   const titleId = React.useId()
   const panelRef = React.useRef<HTMLElement>(null)
@@ -296,6 +337,8 @@ function AssistantDock({
           placeholder={placeholder ?? `Ask ${title}`}
           suggestions={messages.length === 0 ? pills : undefined}
           dictation={dictation}
+          pending={pending}
+          onStop={stop}
         />
       </div>
     </section>

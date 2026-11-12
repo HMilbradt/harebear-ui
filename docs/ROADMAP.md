@@ -34,7 +34,7 @@ Calendar views and SmartInput follow when a second app needs them.
 | AppNav (built)                       | Takes one config (places, a collapsible group such as Lists, an "add" action, the profile menu). Renders the desktop sidebar (no border, active item as a raised card, profile popover at the bottom, sticky on long pages) and, under a breakpoint, a bottom tab bar with one round action button. | Extends SidebarLayout and UserMenu. The phone half is new. |
 | FocusLayout (built)                  | A page outside the app frame: slim top bar with a close or back link and a title, then one centred column.                                                                                                                                                                                          | Settings, onboarding, setup flows.                         |
 | SettingsSection, SettingsRow (built) | Card with a heading; rows with label, one-line description and a control slot (switch, select, segmented control, button). Rows can expand inline (change password, add a connection).                                                                                                              | Most settings pages become composition only.               |
-| DetailSheet                          | A record's details: side sheet on desktop, full-screen sheet on a phone, with a close button and a scrollable body.                                                                                                                                                                                 | Extends Sheet and Drawer with one responsive API.          |
+| DetailSheet (built)                  | A record's details: side sheet on desktop, full-screen sheet on a phone, with a close button and a scrollable body.                                                                                                                                                                                 | Extends Sheet and Drawer with one responsive API.          |
 | ReaderLayout                         | Back link, title, author and updated line, actions at the top (Edit, Chat with HomeBot), then Prose.                                                                                                                                                                                                | Docs, help, notes.                                         |
 | PageColumn                           | Centred column with a standard header slot (greeting or title, filter, primary input).                                                                                                                                                                                                              | Today, Upcoming, list pages.                               |
 | AuthLayout, single card variant      | Calm centred card with the product mark, for sign in, invite and first-run setup.                                                                                                                                                                                                                   | Extends AuthLayout.                                        |
@@ -62,21 +62,22 @@ Calendar views and SmartInput follow when a second app needs them.
 | TaskRow (built)                            | Check, title, one meta line, optional assignee avatar, opens a DetailSheet.                                                            | Works in any to-do or checklist app.  |
 | SectionedList (built)                      | Sections, one add box, finished items folded into "Show N done", empty state, items leaving without layout shift.                      | Uses the motion helpers below.        |
 | SmartInput                                 | A text input that turns phrases into removable chips; the app supplies the rules (dates, people, lists).                               | Shared by quick add and the AskBox.   |
-| AgendaRow, DayStrip, WeekScroll, MiniMonth | Time, icon or check, title and whose dot; a strip of day buttons that jump to a day; stacked days you scroll; a month with event dots. | Calendar today is a date picker only. |
+| AgendaRow, DayStrip, WeekScroll, MiniMonth | Time, icon or check, title and whose dot; a strip of day buttons that jump to a day; stacked days you scroll; a month with event dots. | Built so far: AgendaRow and DayStrip. |
 | SegmentedControl                           | Two or three options, raised selected segment (Mine / Everyone, Agenda / Week).                                                        | Restyle of ToggleGroup.               |
-| FilterChips, VisibilityBadge               | On/off chips; "Only you" with a lock or "Everyone" with faces.                                                                         |                                       |
+| FilterChips, VisibilityBadge (built)       | On/off chips; "Only you" with a lock or "Everyone" with faces.                                                                         | FilterChips still proposed.           |
 | InlineConfirm                              | A plain confirmation shown in place, for the few destructive actions that keep one.                                                    | Lighter than ConfirmDialog.           |
 | ChoiceCards                                | Two or three large side-by-side options (Google or Calendar link, Adult or Child).                                                     |                                       |
 | SearchHero, CardGrid                       | Big search box over a grid of LinkTiles grouped by topic.                                                                              |                                       |
 
 ## 4. People
 
-| Component         | What it does                                                                                |
-| :---------------- | :------------------------------------------------------------------------------------------ |
-| MemberAvatar      | Photo, falling back to initial on the member's colour; sizes; ring variant. Extends Avatar. |
-| AvatarStack       | Overlapping faces with a "+N".                                                              |
-| AvatarUpload      | Upload, change or remove a photo with live preview.                                         |
-| ColorSwatchPicker | Radio group of category colours; colours used by someone else are marked and disabled.      |
+| Component                 | What it does                                                                                        |
+| :------------------------ | :-------------------------------------------------------------------------------------------------- |
+| MemberAvatar (built)      | Photo, falling back to initial on the member's colour; sizes; ring via AvatarStack. Extends Avatar. |
+| AvatarStack (built)       | Overlapping faces with a "+N".                                                                      |
+| AvatarUpload (built)      | Upload, change or remove a photo with live preview.                                                 |
+| ColorSwatchPicker (built) | Radio group of category colours; colours used by someone else are marked and disabled.              |
+| CategoryDot (built)       | Dot in a category colour, optional lock for private items.                                          |
 
 ## 5. Feedback and motion
 
@@ -84,12 +85,12 @@ Calendar views and SmartInput follow when a second app needs them.
 | :-------------------- | :----------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `toastUndo()` (built) | Standard wrapper around Sonner: action label, Undo, 9 second window, pause on hover, stacking and entry animation. | Sonner is already the toast layer. Check its current API before building.                                                                             |
 | Motion helpers        | Check pop, collapse without layout shift, an optimistic list hook (`useOptimisticList`).                           | Built as CSS with no new dependency: `animate-check-pop`, `Collapse`. `useOptimisticList` is still proposed (React 19 `useOptimistic` may be enough). |
-| Celebration           | Occasional confetti when a day is cleared. Off under reduced motion.                                               | Candidate: canvas-confetti.                                                                                                                           |
+| Celebration (built)   | Occasional confetti when a day is cleared. Off under reduced motion.                                               | Built as CSS with no new dependency: `Celebration` + `celebrate()`.                                                                                   |
 
 ## 6. Foundations (`src/styles.css`)
 
 - **Category palette (built: `category-1..6`).** Six or so non-status colours for members, lists and calendars, each with a dark-mode value. Homeclub hard-codes hex values that stay the same in dark mode. Status colours (`success`, `warning`, `destructive`) must never double as category colours.
 - **Composite focus (built: `focus-box`).** A documented class or token for "the box around a bare field shows the focus ring" (`focus-within`), so apps stop working around inline styles.
-- **Size floors.** Checks 24px, phone touch targets 44px, no text under 12px. New components follow them; existing avatar initials and `kbd` are still 11px.
+- **Size floors.** Checks 24px, phone touch targets 44px, no text under 12px. Avatar initials and `kbd` are 12px.
 - **Brand mark slot.** AppNav (`brand`) and AuthLayout (`brand`) take the product mark as a prop.
 - **Design canvas loading.** The design system artifact's README names `window.HarebearUI` but not which files to load on a Design canvas, so designs copy components as markup. Add a "Consuming this system" section listing the bundle and stylesheet.

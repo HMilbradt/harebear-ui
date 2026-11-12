@@ -40,10 +40,12 @@ A household or personal app where an assistant sits on every page and safe actio
 </ThemeProvider>
 ```
 
-- Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo`.
+- Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo` and set `lingerMs` to its window so a ticked row stays struck through for about as long as Undo shows.
+- A week agenda: `DayStrip` above one `SectionedList` with a section per day (`empty` keeps empty days) and `AgendaRow` rows from `renderItem`.
 - In the assistant thread, each action it took is an `ActionReceipt` with Undo (append it from `onSend`).
+- A page with its own ask box (Today) answers under it: `AskBox` with `reply` and `pending` from `useAssistant()`, `onStop={stop}`, and `send(text, { open: false })`.
 - Settings and setup flows leave the frame: `FocusLayout` around `SettingsSection`s of `SettingsRow`s.
-- Members, lists and calendars take a `category-1..6` color; status colors never double as categories.
+- Members, lists and calendars take a `category-1..6` color (`CategoryColor`); status colors never double as categories. People are `MemberAvatar` (`AvatarStack`, `VisibilityBadge`), list dots are `CategoryDot`, profile settings use `AvatarUpload` and `ColorSwatchPicker`.
 - Live example: `playground/screens/household.tsx` (`#household`) and `settings.tsx` (`#settings`).
 
 ## Theme
@@ -75,7 +77,7 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 | Alert dialog     | `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogHeader`, `AlertDialogFooter`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogAction`, `AlertDialogCancel`, `AlertDialogMedia`, `AlertDialogOverlay`, `AlertDialogPortal`                                                                                                                                                                                                   | Use for destructive confirmations.                                                                                                                                                                                                                                                                                                                                        |
 | Aspect ratio     | `AspectRatio`                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                           |
 | Attachment       | `Attachment`, `AttachmentGroup`, `AttachmentMedia`, `AttachmentContent`, `AttachmentTitle`, `AttachmentDescription`, `AttachmentActions`, `AttachmentAction`, `AttachmentTrigger`                                                                                                                                                                                                                                                                            | File/image chips on messages and composers. `size`: `default`, `sm`, `xs`; `orientation`: `horizontal`, `vertical`.                                                                                                                                                                                                                                                       |
-| Avatar           | `Avatar`, `AvatarImage`, `AvatarFallback`, `AvatarGroup`, `AvatarGroupCount`, `AvatarBadge`                                                                                                                                                                                                                                                                                                                                                                  | `size`: `sm` 28px, `default` 36px, `lg` 56px. Fallback is tinted initials.                                                                                                                                                                                                                                                                                                |
+| Avatar           | `Avatar`, `AvatarImage`, `AvatarFallback`, `AvatarGroup`, `AvatarGroupCount`, `AvatarBadge`                                                                                                                                                                                                                                                                                                                                                                  | `size`: `sm` 28px, `default` 36px, `lg` 56px. Fallback is tinted initials, 12px at `sm`. For people use `MemberAvatar`.                                                                                                                                                                                                                                                   |
 | Badge            | `Badge`, `badgeVariants`                                                                                                                                                                                                                                                                                                                                                                                                                                     | 24px pill. `variant`: `default` (primary), `secondary` (neutral, the common one), `soft` (tinted primary), `outline`, `success`, `warning`, `destructive`, `ghost`, `link`. harebear adds `size="lg"` (32px, lines up with sm buttons) and `tone` (`success \| warning \| danger \| info \| neutral`, the StatusBadge words; wins over `variant`).                        |
 | Bubble           | `Bubble`, `BubbleGroup`, `BubbleContent`, `BubbleReactions`                                                                                                                                                                                                                                                                                                                                                                                                  | Chat bubble. `variant`: `default` (primary), `secondary`, `muted`, `tinted`, `outline`, `ghost`, `destructive`; `align`: `start`, `end`.                                                                                                                                                                                                                                  |
 | Breadcrumb       | `Breadcrumb`, `BreadcrumbList`, `BreadcrumbItem`, `BreadcrumbLink`, `BreadcrumbPage`, `BreadcrumbSeparator`, `BreadcrumbEllipsis`                                                                                                                                                                                                                                                                                                                            |                                                                                                                                                                                                                                                                                                                                                                           |
@@ -103,7 +105,7 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 | Input group      | `InputGroup`, `InputGroupAddon`, `InputGroupButton`, `InputGroupText`, `InputGroupInput`, `InputGroupTextarea`                                                                                                                                                                                                                                                                                                                                               | Inputs with icons, prefixes, buttons.                                                                                                                                                                                                                                                                                                                                     |
 | Input OTP        | `InputOTP`, `InputOTPGroup`, `InputOTPSlot`, `InputOTPSeparator`                                                                                                                                                                                                                                                                                                                                                                                             |                                                                                                                                                                                                                                                                                                                                                                           |
 | Item             | `Item`, `ItemMedia`, `ItemContent`, `ItemTitle`, `ItemDescription`, `ItemActions`, `ItemGroup`, `ItemSeparator`, `ItemHeader`, `ItemFooter`                                                                                                                                                                                                                                                                                                                  | Generic list rows. harebear fix: `ItemTitle` clamps to one line (long words break) and shows the full text as a tooltip when clamped, `ItemContent` has `min-w-0`. harebear adds `ItemTitle mono` for commands, paths and IDs.                                                                                                                                            |
-| Kbd              | `Kbd`, `KbdGroup`                                                                                                                                                                                                                                                                                                                                                                                                                                            | Mono keycap.                                                                                                                                                                                                                                                                                                                                                              |
+| Kbd              | `Kbd`, `KbdGroup`                                                                                                                                                                                                                                                                                                                                                                                                                                            | Mono keycap, 12px text.                                                                                                                                                                                                                                                                                                                                                   |
 | Marker           | `Marker`, `MarkerIcon`, `MarkerContent`, `markerVariants`                                                                                                                                                                                                                                                                                                                                                                                                    | Inline status line in a thread ("Conversation saved"). `variant`: `default`, `separator` (date dividers), `border`.                                                                                                                                                                                                                                                       |
 | Label            | `Label`                                                                                                                                                                                                                                                                                                                                                                                                                                                      |                                                                                                                                                                                                                                                                                                                                                                           |
 | Menubar          | `Menubar`, `MenubarMenu`, `MenubarTrigger`, `MenubarContent`, `MenubarItem`, `MenubarCheckboxItem`, `MenubarRadioGroup`, `MenubarRadioItem`, `MenubarLabel`, `MenubarSeparator`, `MenubarShortcut`, `MenubarGroup`, `MenubarPortal`, `MenubarSub`, `MenubarSubTrigger`, `MenubarSubContent`                                                                                                                                                                  |                                                                                                                                                                                                                                                                                                                                                                           |
@@ -242,11 +244,11 @@ Label-over-value pairs as a `<dl>`. Props: `items: { label; value }[]`, `columns
 
 ### `UserChip`
 
-Avatar + name + subtitle. Props: `name`, `subtitle?`, `avatarUrl?`, `action?`, `size?`. In a sidebar icon rail only the avatar shows. Also exports `initials(name)`.
+Avatar + name + subtitle. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`CategoryColor` behind the initials), `action?`, `size?`. In a sidebar icon rail only the avatar shows. Also exports `initials(name)`.
 
 ### `UserMenu`
 
-The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. In a sidebar icon rail the trigger is just the avatar and the menu opens to the side. Props: `name`, `subtitle?`, `avatarUrl?`, `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`.
+The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. In a sidebar icon rail the trigger is just the avatar and the menu opens to the side. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`CategoryColor` behind the initials), `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`.
 
 ```tsx
 ;<UserMenu name={email} subtitle="Signed in" onSignOut={signOut}>
@@ -257,6 +259,50 @@ The signed-in user as a menu button (sidebar footer or top bar). The menu has a 
 </UserMenu>
 ```
 
+### `MemberAvatar`
+
+A person's photo, or their initials on their category colour (`bg-category-N`, `text-category-foreground`). Props: `name`, `avatarUrl?`, `color?: CategoryColor` (1 to 6; without it the soft primary tint), `size?` (`sm` 28px, `default` 36px, `lg` 56px). It is `role="img"` named after the person; pass `aria-hidden` when the name is shown next to it. Used by `UserChip`, `UserMenu` and `TaskRow`.
+
+```tsx
+;<MemberAvatar name="Sam Rivera" avatarUrl={sam.photoUrl ?? undefined} color={sam.color} size="sm" />
+```
+
+### `AvatarStack`, `VisibilityBadge`
+
+`AvatarStack`: overlapping small `MemberAvatar`s. Props: `members: { name; avatarUrl?; color? }[]`, `max?` (default 4): total slots; past it, `max - 1` faces and a "+N" chip (read as "N more"). `VisibilityBadge`: who can see something. Props: `visibility: "shared" | "private"`, `members?` (faces when shared), `label?` (default "Shared with everyone" or "Only you"; the lock shows when private).
+
+```tsx
+;<VisibilityBadge visibility={list.private ? "private" : "shared"} members={household} />
+```
+
+### `CategoryDot`
+
+A 10px dot in a category colour, e.g. as the `icon` of a list in `AppNav`'s group. Props: `color: CategoryColor`, `label?` (accessible name when the colour means something on its own, e.g. whose event; decorative without it), `locked?` (adds a lock named `lockLabel?`, default "Only you").
+
+### `ColorSwatchPicker`
+
+The six category colours as a radio group (arrow keys skip taken ones). 32px swatches with 44px touch targets; the chosen one has a check and a ring. Props: `value?: CategoryColor`, `onValueChange?(color)`, `taken?: Partial<Record<CategoryColor, string>>` (colour to who has it: shown with their initial, disabled, named "Violet, taken by Riley"). Name it with `aria-label` or `aria-labelledby`.
+
+```tsx
+;<ColorSwatchPicker aria-label="Your colour" value={me.color} onValueChange={setColor} taken={{ 3: "Riley" }} />
+```
+
+### `AvatarUpload`, `cropImageToSquare`
+
+Profile photo: a 72px avatar, "Upload a photo" / "Change photo" and "Remove photo". The chosen image is cropped to its centred square at 256x256 in the browser (canvas, JPEG) and previewed at once. Props: `name`, `color?`, `avatarUrl?` (current photo), `onChange(photo: Blob | null)` (an event, not a controlled value) (`null` after Remove), `maxBytes?` (JPEG quality steps down to fit), `onError?(error)` ("Could not read that image." or "That photo is too big."), `description?`. `cropImageToSquare(file, { size?, maxBytes? })` is the crop on its own: a `Promise<Blob>`.
+
+```tsx
+;<AvatarUpload
+  name={me.name}
+  color={me.color}
+  avatarUrl={me.photoUrl ?? undefined}
+  maxBytes={512 * 1024}
+  onChange={(photo) => (photo ? uploadPhoto(photo) : removePhoto())}
+  onError={(e) => toast.error(e.message)}
+  description="Without a photo, your initial and colour are used."
+/>
+```
+
 ### `ConfirmDialog`
 
 Controlled "are you sure" dialog. Props: `open`, `onOpenChange`, `title`, `description?`, `confirmLabel?`, `cancelLabel?`, `destructive?` (red confirm), `onConfirm`.
@@ -265,19 +311,62 @@ Controlled "are you sure" dialog. Props: `open`, `onOpenChange`, `title`, `descr
 
 Read-only value with a copy button (IDs, paths, URLs). Props: `value` (copied), `display?` (shown instead, full value as tooltip), `label?` (leading addon), `aria-label?`, `mono?` (default true).
 
+### `DateTimePicker`
+
+Date field: a button that opens a `Calendar` in a `Popover`, with an optional time field and a Clear button. Value is a floating local date, no time zone: `DateTimeValue = { date: "YYYY-MM-DD", time?: "HH:MM" }`. Props: `value: DateTimeValue | null`, `onValueChange(value | null)`, `withTime?` (time field under the calendar; enabled once a date is set), `placeholder?` (default "Pick a date"). Other props (`id`, `aria-label`, `disabled`) go to the trigger button. Day cells are 44px on phones.
+
+### `DetailSheet`
+
+A record's details, one API for both sizes: a floating side sheet from 768px up, a full-screen drawer with a close button on phones. Props: `open`, `onOpenChange`, `title` (heading and accessible name), `description?`, `footer?` (pinned under the scrolling body, e.g. Delete), `children` (the fields). `data-layout` is `"sheet"` or `"drawer"`.
+
+```tsx
+;<DetailSheet
+  open={!!task}
+  onOpenChange={(o) => !o && close()}
+  title="To-do"
+  footer={
+    <Button variant="ghost" onClick={askDelete}>
+      Delete
+    </Button>
+  }
+>
+  <Field>
+    <FieldLabel htmlFor="when">When</FieldLabel>
+    <DateTimePicker id="when" withTime value={due} onValueChange={setDue} />
+  </Field>
+</DetailSheet>
+```
+
 ### `Callout`
 
 Quiet note with an icon (sparkle by default). Props: `icon?`, `tone?` (`"muted" | "soft"`).
+
+### `Celebration`, `celebrate`
+
+An occasional confetti burst, e.g. when the last to-do of the day is ticked. Mount `<Celebration />` once near the root (like `Toaster`), then call `celebrate()` from anywhere. CSS only, about 1.5 s, renders nothing between bursts (`data-slot="celebration"` while it plays), and does nothing under `prefers-reduced-motion`. Keep it rare.
 
 ### `LinkTile`
 
 Muted tile that lifts on hover, for service launchers. Props: `title`, `subtitle?` (mono), `icon?`, `status?: { tone; label }`, `href`, or `asChild` with your router `<Link>` as the only child.
 
+### `MarkdownEditor`
+
+Markdown field with Write and Preview tabs; Preview renders inside `Prose`. Props: `value`, `onValueChange(value)`, `renderPreview(markdown)` (the library has no Markdown parser; pass yours), `wrapperClassName?`. Other props (`id`, `placeholder`, `aria-*`, `className`) go to the `Textarea`.
+
+```tsx
+;<MarkdownEditor
+  id="body"
+  value={body}
+  onValueChange={setBody}
+  renderPreview={(md) => <Markdown components={{ blockquote: ProseBlockquote }}>{md}</Markdown>}
+/>
+```
+
 ### `AppNav`
 
 One nav config, two renderings: on desktop a `SidebarLayout` sidebar (brand, action button, places, one collapsible group, footer; active place is a raised card; collapses to the icon rail), under 768px a bottom tab bar (first 5 places, 56px targets, `aria-current="page"`) plus a round floating action button. Use it instead of `AppShell` for consumer apps that need phone navigation.
 
-Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar), `group?: AppNavGroup` (`label`, `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect }`, `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `children`.
+Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar, `sidebar?: false` for a tab-bar-only place such as Lists when the sidebar has a Lists group), `group?: AppNavGroup` (`label`, `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect; sidebar?: false }` (`sidebar: false` keeps only the round phone button), `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `children`.
 On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger` in the page header if users need them there. Render `AssistantDock` inside `children` so it clears the tab bar. Toasts stack above the tab bar, the action button and the dock launcher on their own; no `Toaster` offset needed.
 
 ### `FocusLayout`
@@ -385,11 +474,16 @@ Mini bar history (pings, uptime). Props: `data: (number | { value; tone?; label?
 
 ### `TaskRow`
 
-One to-do: `CheckCircle` aligned with the first line, title, one meta line, optional assignee avatar. Props: `title`, `checked`, `onCheckedChange(checked)`, `meta?`, `assignee?: { name; avatarUrl? }`, `important?` (say it in `meta` too), `onOpen?` (title becomes a button, e.g. to open a sheet), `disabled?`.
+One to-do: `CheckCircle` aligned with the first line, title, one meta line, optional assignee avatar. Props: `title`, `checked`, `onCheckedChange(checked)`, `meta?`, `assignee?: { name; avatarUrl?; color? }` (a `MemberAvatar`), `important?` (say it in `meta` too), `onOpen?` (title becomes a button, e.g. to open a sheet), `disabled?`.
 
 ### `SectionedList`
 
-A to-do list: one add box at the top, sections with headings, done items folded into a "Show N done" toggle, an empty state. A ticked row stays visible for a moment, then folds away with `Collapse`. Props: `sections: { id; title?; items: SectionedListItem[] }[]` (item: `id`, `title`, `meta?`, `done?`, `important?`, `assignee?`), `onToggle(id, done)`, `onAdd?(text)`, `addPlaceholder?` (default "Add a to-do"), `onOpen?(id)`, `empty?`, `defaultShowDone?`.
+A to-do list: one add box at the top, sections with headings, done items folded into a "Show N done" toggle, an empty state. A ticked row stays struck through for `lingerMs`, then folds away with `Collapse`. Props: `sections: { id; title?; action?; empty?; items: SectionedListItem[] }[]` (item: `id`, `title`, `meta?`, `done?`, `important?`, `assignee?`), `onToggle(id, done)`, `lingerMs?` (default 600; 9000 matches `toastUndo`), `renderItem?(item, toggle)`, `onAdd?(text)`, `addPlaceholder?` (default "Add a to-do"), `addChips?(text)`, `onOpen?(id)`, `empty?`, `defaultShowDone?`.
+
+- Section `id` is also the `<section>`'s DOM id, so `DayStrip` or an `#id` link can jump to it. Keep ids unique on the page.
+- `action` sits at the right of the heading (a small ghost `Button`, e.g. "Move to today"; stretched to 44px on phones). `empty` keeps the section shown with that text when nothing in it is open ("Nothing planned").
+- `renderItem` draws other rows, e.g. `AgendaRow`. Its `toggle(done)` lingers and folds the row like a `TaskRow`. Items without `done` (events) always stay. Type the items with `SectionedList<MyItem>`.
+- `addChips(text)` returns chips shown at the right of the add box while it has text, like `AskBox` `chips` (the date or person parsed from the text).
 
 ```tsx
 ;<SectionedList
@@ -398,6 +492,38 @@ A to-do list: one add box at the top, sections with headings, done items folded 
   onAdd={addTodo}
   empty={<Empty title="All clear" />}
 />
+```
+
+### `AgendaRow`
+
+One line of a day's agenda: time column, event icon (or a `CheckCircle` for a to-do), title, one meta line, whose dot and name. Props: `title`, `time?` ("3:15", "All day"), `meta?`, `who?: { name; color: CategoryColor }` (`CategoryDot` before the name), `checked?` + `onCheckedChange?(checked)` (draws the check instead of the icon), `important?`, `onOpen?` (title becomes a button, e.g. to open an event dialog).
+
+### `DayStrip`
+
+A row of day links (short weekday, date, a dot when `hasPlans`) that smooth-scroll to the element whose id is the day's `id` (instant under reduced motion) and move focus to it; scrolls sideways when the days do not fit. Props: `days: { id; date: "YYYY-MM-DD"; hasPlans? }[]` (floating local date, like `DateTimePicker`), `value?` (selected id, `aria-current`), `onValueChange?(id)`, `aria-label?` (default "Jump to a day"). Make it sticky with `className="sticky top-0 bg-background"` and give the scroll container `scroll-padding-top` so headings land below it.
+
+```tsx
+;<>
+  <DayStrip
+    days={week.map((d) => ({ id: d.key, date: d.date, hasPlans: d.items.length > 0 }))}
+    value={day}
+    onValueChange={setDay}
+  />
+  <SectionedList<WeekItem>
+    lingerMs={9000}
+    sections={week.map((d) => ({ id: d.key, title: d.label, empty: "Nothing planned", items: d.items }))}
+    onToggle={setDone}
+    renderItem={(i, toggle) => (
+      <AgendaRow
+        time={i.time}
+        title={i.title}
+        who={i.who}
+        {...(i.kind === "todo" && { checked: !!i.done, onCheckedChange: toggle })}
+        onOpen={() => open(i)}
+      />
+    )}
+  />
+</>
 ```
 
 ## AI and chat
@@ -495,7 +621,7 @@ Pill showing the active model with a status dot, opening a menu. Props: `models:
 Grouped thread list. Props: `groups: { label; items: Conversation[] }[]`, `activeId?`, `onSelect?(id)`, `onDelete?(conversation)` (adds a delete button per row that confirms first; `deleteDescription?` is the confirmation body), `renderAction?(conversation)` (any other trailing control; wins over `onDelete`; on desktop it shows on hover/focus), `empty?`.
 `Conversation = { id; title; description?; tone?; pulse?; deleteDisabled? }`: `description` is the second line (time, or a live state with a `tone` dot); `deleteDisabled` blocks delete for that row (a string is the reason, shown as the tooltip).
 Inside a `Sidebar` it closes the mobile sheet on select and hides in the icon rail.
-`groupByDate(items, getDate, toConversation, now?)` buckets items into Today / Yesterday / Previous 7 days / Earlier, newest first.
+`groupByDate(items, getDate, toConversation, options?)` buckets items into Today / Yesterday / Previous 7 days / Earlier, newest first. `options` is `{ now?, buckets? }` (or just `now`); `buckets: "week"` gives Today / This week (the 6 days before today) / Earlier.
 `formatWhen(date, now?, locale?)`: short timestamp for rows and headers: the time today ("9:41 AM"), the date this year ("Nov 3"), else with the year.
 
 ### `NewConversationButton`
@@ -530,15 +656,32 @@ Agent tool calls as a bordered, collapsible card. `ToolStatus = "queued" | "wait
 
 ### `AssistantProvider`, `useAssistant`, `useAssistantPage`
 
-One assistant conversation across pages. `AssistantProvider` props: `onSend(text, { page, messages, append, update })` (return the reply, or `append`/`update` messages yourself for streaming and receipts; a thrown error becomes the reply), `initialMessages?`, `defaultOpen?`. `useAssistant()` returns `{ open, setOpen, toggle, messages, pending, page, setPage, send, append, update, clear }`. A page calls `useAssistantPage({ id, title?, data?, suggestions? })` to become the context while mounted.
+One assistant conversation across pages. `AssistantProvider` props: `onSend(text, { page, messages, append, update, signal })` (return the reply, or `append`/`update` messages yourself for streaming and receipts; a thrown error becomes the reply; `signal` aborts when the user presses Stop, so pass it to `fetch` or listen for `abort` to tell your server), `initialMessages?`, `defaultOpen?`. `useAssistant()` returns `{ open, setOpen, toggle, messages, pending, reply, page, setPage, send, stop, append, update, clear }`: `send(text, { open: false }?)` skips opening the dock, `stop()` aborts the running send, ends `pending` and drops its late reply, `reply` is the assistant messages after the latest user message (null until there is one), for `AskBox`. A page calls `useAssistantPage({ id, title?, data?, suggestions? })` to become the context while mounted.
 
 ### `AssistantDock`
 
-The assistant as a floating panel over the page (never reflows it): header (icon, title, full-screen link, close), empty state with suggestions, thread, `AskBox`. Closed, it is a soft launcher button. Escape closes and returns focus to the launcher. Props: `title?` (default "Assistant"), `icon?`, `fullScreenHref?`, `emptyTitle?`, `emptyDescription?`, `suggestions?` (default: the page's), `placeholder?`, `dictation?`, `launcher?` (false when another control opens it), `launcherLabel?`.
+The assistant as a floating panel over the page (never reflows it): header (icon, title, full-screen link, close), empty state with suggestions, thread, `AskBox` (Stop while the assistant works, wired to `useAssistant().stop`). Closed, it is a soft launcher button. Escape closes and returns focus to the launcher. Props: `title?` (default "Assistant"), `icon?`, `fullScreenHref?`, `emptyTitle?`, `emptyDescription?`, `suggestions?` (default: the page's), `placeholder?`, `dictation?`, `launcher?` (false when another control opens it), `launcherLabel?`.
 
 ### `AskBox`
 
-Large rounded composer: auto-growing text, `chips` shown while there is text, suggestion pills, `DictationButton`. The focus ring is on the box (`focus-box`). Props: `value`, `onValueChange`, `onSubmit(text)`, `placeholder?` (also the label, default "Ask anything"), `chips?`, `suggestions?`, `onSuggestion?` (default submits), `dictation?` (`SpeechSource`, or `false` to hide the mic), `lang?`, `disabled?`.
+Large rounded composer: auto-growing text, `chips` shown while there is text, suggestion pills, `DictationButton`. The focus ring is on the box (`focus-box`). Props: `value`, `onValueChange`, `onSubmit(text)`, `placeholder?` (also the label, default "Ask anything"), `chips?`, `suggestions?`, `onSuggestion?` (default submits), `dictation?` (`SpeechSource`, or `false` to hide the mic), `lang?`, `disabled?`, `pending?` (blocks sending; with `onStop?` the send button becomes Stop), `reply?` (the answer under the box; passing it, even `null`, shows "Working" while `pending`), `chatHref?` (an "Open chat" link under the reply).
+
+```tsx
+// Inline answer under the box (no dock), e.g. a Today page
+const { send, pending, stop, reply } = useAssistant()
+;<AskBox
+  value={text}
+  onValueChange={setText}
+  onSubmit={(t) => {
+    setText("")
+    send(t, { open: false })
+  }}
+  pending={pending}
+  onStop={stop}
+  reply={reply}
+  chatHref={`/chat/${conversationId}`}
+/>
+```
 
 ### `DictationButton`, `useDictation`, `browserSpeechSource`
 
@@ -549,11 +692,12 @@ Large rounded composer: auto-growing text, `chips` shown while there is text, su
 
 What the assistant did, as a compact card: round check, `title` (past tense), `meta?`, Undo (`onUndo?`, `undoLabel?`). `undone` strikes it through and shows "Undone".
 
-### `CodeSnippet`, `InlineCode`, `Prose`
+### `CodeSnippet`, `InlineCode`, `Prose`, `ProseBlockquote`
 
 `CodeSnippet`: one-prop code panel with language label, copy button and shiki syntax highlighting (each language loads on first use). Props: `code`, `language?` (`bash`, `tsx`, `ts`, `js`, `json`, `python`, `sql`, `yaml`, `css`, `html`, `markdown`, `diff`; others render plain), `highlight?` (default true), `lineNumbers?`, `hideCopy?`. Built on the `CodeBlock` primitives; drop to those for diffs or highlighted lines.
 `InlineCode`: monospace span. `truncate?: number` cuts longer string children with an ellipsis and puts the full text in the tooltip.
 `Prose`: typography for model output and markdown. Styles plain `p, ul, ol, li, strong, a, code, pre, h1-h4, blockquote, table` children, so it works with `react-markdown`.
+Tip boxes: a blockquote whose first word is `Tip:` (`> Tip: Turn the power off first.`) renders as a `Callout` without the word. Prose does this for plain `<blockquote>` children; with react-markdown pass `components={{ blockquote: ProseBlockquote }}`.
 
 ### Chat primitives vs. composites
 
@@ -570,6 +714,10 @@ Full-page wrapper. Props: `variant` (`"centered"` card on the page, `"muted"` sa
 ### `LoginForm`
 
 Props: `onSubmit?({ email, password? })` (omit to submit natively to an `action`), `mode?` (`"password"` or `"email-only"` for magic links), `providers?: { id; label; icon? }[]` + `onProviderClick?(id)` (3+ providers with icons collapse to an icon row), `providersFirst?`, `forgotPasswordHref?`, `signupHref?`, `title?`, `description?`, `submitLabel?`, `loading?`, `error?`.
+
+### `PasswordInput`
+
+Password `Input` with a Show/Hide button (`aria-label` "Show password" / "Hide password") that switches `type` between `password` and `text`. Input props go to the input; `wrapperClassName?` styles the wrapper. `LoginForm` and `SignupForm` use it for every password field.
 
 ### `SignupForm`
 
@@ -605,6 +753,7 @@ Props: `onSubmit?({ name?, email, password })`, `nameField?` (default true), `co
 | `useIsMobile()`                                                     | `true` under 768px.                                                                                                                                     |
 | `useAssistant()`, `useAssistantPage(page)`, `useDictation(options)` | See [`AssistantProvider`](#assistantprovider-useassistant-useassistantpage) and [`DictationButton`](#dictationbutton-usedictation-browserspeechsource). |
 | `useMediaQuery(query)`                                              | `true` while the media query matches; `false` during SSR.                                                                                               |
+| `categoryBg[color]`, type `CategoryColor`                           | `bg-category-N` class for a colour `1..6`, as a complete class name.                                                                                    |
 | `cn(...classes)`                                                    | clsx + tailwind-merge. Use for every `className` you compose.                                                                                           |
 
 ## Tokens
@@ -623,6 +772,7 @@ Use these as Tailwind utilities (`bg-*`, `text-*`, `border-*`, `ring-*`, `fill-*
 | `border`, `input`, `ring`           | Hairlines, input borders, focus rings.                                                                  |
 | `chart-1` … `chart-5`, `chart-grid` | Data series and gridlines.                                                                              |
 | `category-1` … `category-6`         | Members, lists, calendars: blue, teal, violet, rose, slate, cyan, each with a dark value. Never status. |
+| `category-foreground`               | Text and icons on a category fill (initials, a swatch's check).                                         |
 | `sidebar-*`                         | Sidebar surfaces (default to the page tokens).                                                          |
 
 Other theme values: `rounded-sm/md/lg/xl/2xl` scale from `--radius` (default 14px; cards use `xl`, buttons and inputs `md`), `shadow-card` (the one elevation), `font-sans` (Geist), `font-mono` (Geist Mono), `animate-typing`.

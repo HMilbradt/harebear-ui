@@ -2,6 +2,7 @@ import {
   CalendarIcon,
   FileTextIcon,
   HouseIcon,
+  ListIcon,
   ListTodoIcon,
   MessageCircleIcon,
   PlusIcon,
@@ -11,22 +12,36 @@ import {
 import { useState } from "react"
 import {
   ActionReceipt,
+  AgendaRow,
+  type AgendaRowWho,
   AppBrand,
   AppNav,
+  AskBox,
   AssistantDock,
   AssistantProvider,
   type AssistantSendContext,
   Badge,
+  Button,
+  DayStrip,
+  type CategoryColor,
+  CategoryDot,
   DropdownMenuItem,
   SectionedList,
   type SectionedListSection,
   SidebarTrigger,
   toastUndo,
+  useAssistant,
   useAssistantPage,
   UserMenu,
+  VisibilityBadge,
 } from "@/index"
 
 const initial: SectionedListSection[] = [
+  {
+    id: "overdue",
+    title: "Overdue",
+    items: [{ id: "o1", title: "Take out the bins", meta: "Overdue · yesterday", assignee: { name: "Sam Rivera" } }],
+  },
   {
     id: "today",
     title: "Today",
@@ -36,7 +51,7 @@ const initial: SectionedListSection[] = [
         title: "Book the dentist for Ada",
         meta: "Important · 3 pm",
         important: true,
-        assignee: { name: "Maya Chen" },
+        assignee: { name: "Maya Chen", color: 1 },
       },
       { id: "t2", title: "Pick up the dry cleaning", meta: "Errands" },
       { id: "t3", title: "Water the plants", meta: "Home", done: true },
@@ -46,31 +61,103 @@ const initial: SectionedListSection[] = [
     id: "groceries",
     title: "Groceries",
     items: [
-      { id: "g1", title: "Oat milk", meta: "Groceries · added by HomeBot", assignee: { name: "Sam Rivera" } },
+      { id: "g1", title: "Oat milk", meta: "Groceries · added by HomeBot", assignee: { name: "Sam Rivera", color: 2 } },
       { id: "g2", title: "Lemons", meta: "Groceries" },
     ],
   },
 ]
 
-const lists = ["Groceries", "Errands", "House projects"].map((label, i) => ({
+interface WeekItem {
+  id: string
+  title: string
+  time: string
+  who: AgendaRowWho
+  kind: "todo" | "event"
+  done?: boolean
+}
+
+const maya: AgendaRowWho = { name: "Maya", color: 1 }
+const sam: AgendaRowWho = { name: "Sam", color: 2 }
+const week = [0, 1, 2, 3, 4, 5, 6].map((n) => {
+  const local = new Date(2026, 10, 11 + n)
+  const date = `2026-11-${local.getDate()}`
+  const items: WeekItem[] =
+    n === 0
+      ? [
+          { id: "w1", title: "School pickup", time: "3:15", who: maya, kind: "event" },
+          { id: "w2", title: "Call the plumber", time: "5:00", who: sam, kind: "todo" },
+        ]
+      : n === 3
+        ? [
+            { id: "w3", title: "Hockey", time: "10:00", who: sam, kind: "event" },
+            { id: "w4", title: "Clean the gutters", time: "All day", who: maya, kind: "todo" },
+          ]
+        : []
+  const title = local.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
+  return { id: `day-${local.getDate()}`, date, title, empty: "Nothing planned", items }
+})
+
+/** Upcoming in miniature: a DayStrip over one SectionedList with a section per day and AgendaRow rows. */
+function WeekAgenda() {
+  const [days, setDays] = useState(week)
+  const [day, setDay] = useState(week[0]?.id)
+  const setDone = (id: string, done: boolean) =>
+    setDays((d) => d.map((sec) => ({ ...sec, items: sec.items.map((i) => (i.id === id ? { ...i, done } : i)) })))
+  return (
+    <section aria-label="This week" className="flex flex-col gap-3">
+      <h2 className="text-lg font-semibold">This week</h2>
+      <DayStrip
+        days={days.map((d) => ({ id: d.id, date: d.date, hasPlans: d.items.length > 0 }))}
+        value={day}
+        onValueChange={setDay}
+        className="sticky top-0 z-10 bg-background"
+      />
+      <SectionedList<WeekItem>
+        sections={days}
+        lingerMs={9000}
+        onToggle={(id, done) => {
+          setDone(id, done)
+          if (done) toastUndo("Marked done", { onUndo: () => setDone(id, false) })
+        }}
+        renderItem={(i, toggle) =>
+          i.kind === "event" ? (
+            <AgendaRow time={i.time} title={i.title} who={i.who} onOpen={() => {}} />
+          ) : (
+            <AgendaRow
+              time={i.time}
+              title={i.title}
+              who={i.who}
+              checked={!!i.done}
+              onCheckedChange={toggle}
+              onOpen={() => {}}
+            />
+          )
+        }
+      />
+    </section>
+  )
+}
+
+const lists = [
+  { label: "Groceries", color: 1 },
+  { label: "Errands", color: 2 },
+  { label: "Birthday ideas", color: 3, locked: true },
+].map(({ label, color, locked }) => ({
   label,
   href: "#household",
-  icon: (
-    <span
-      aria-hidden="true"
-      className={
-        [
-          "size-2.5 rounded-full bg-category-1",
-          "size-2.5 rounded-full bg-category-2",
-          "size-2.5 rounded-full bg-category-3",
-        ][i]
-      }
-    />
-  ),
+  icon: <CategoryDot color={color as CategoryColor} locked={locked} />,
 }))
 
-/** The demo agent: adds whatever you ask for to Groceries and answers with a receipt. */
-function reply(text: string, { append }: AssistantSendContext) {
+const household: { name: string; color: CategoryColor }[] = [
+  { name: "Maya Chen", color: 1 },
+  { name: "Sam Rivera", color: 2 },
+  { name: "Ada Chen", color: 4 },
+]
+
+/** The demo agent: thinks for a moment (Stop aborts it), then adds what you asked for to Groceries with a receipt. */
+async function reply(text: string, { append, signal }: AssistantSendContext) {
+  await new Promise((resolve) => setTimeout(resolve, 1200))
+  if (signal.aborted) return
   const item = text.replace(/^add\s+/i, "").replace(/\s+to groceries$/i, "")
   append({
     role: "assistant",
@@ -85,6 +172,19 @@ function TodayPage() {
   const setDone = (id: string, done: boolean) =>
     setSections((s) => s.map((sec) => ({ ...sec, items: sec.items.map((i) => (i.id === id ? { ...i, done } : i)) })))
   const open = sections.flatMap((s) => s.items).filter((i) => !i.done).length
+  const moveToToday = () =>
+    setSections((s) => {
+      const overdue = s.find((sec) => sec.id === "overdue")?.items ?? []
+      return s.map((sec) =>
+        sec.id === "overdue"
+          ? { ...sec, items: [] }
+          : sec.id === "today"
+            ? { ...sec, items: [...overdue, ...sec.items] }
+            : sec,
+      )
+    })
+  const assistant = useAssistant()
+  const [ask, setAsk] = useState("")
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 pt-6 pb-24 md:pt-10">
       <header className="flex items-center gap-2">
@@ -93,13 +193,41 @@ function TodayPage() {
           <h1 className="text-2xl font-semibold">Good morning, Maya</h1>
           <p className="text-sm text-muted-foreground">Tuesday, November 11 · {open} to do</p>
         </div>
-        <Badge variant="soft">Everyone</Badge>
+        <VisibilityBadge visibility="shared" members={household} className="max-sm:hidden" />
       </header>
+      <AskBox
+        value={ask}
+        onValueChange={setAsk}
+        onSubmit={(text) => {
+          setAsk("")
+          void assistant.send(text, { open: false })
+        }}
+        placeholder="Ask HomeBot anything"
+        pending={assistant.pending}
+        onStop={assistant.stop}
+        reply={assistant.reply}
+        chatHref="#household"
+      />
       <SectionedList
-        sections={sections}
+        sections={sections.map((sec) =>
+          sec.id === "overdue"
+            ? {
+                ...sec,
+                action: (
+                  <Button variant="ghost" size="sm" onClick={moveToToday}>
+                    Move to today
+                  </Button>
+                ),
+              }
+            : sec,
+        )}
+        lingerMs={9000}
+        addChips={(text) => (/\btomorrow\b/i.test(text) ? <Badge tone="info">Tomorrow</Badge> : null)}
         onAdd={(title) =>
           setSections((s) =>
-            s.map((sec, i) => (i === 0 ? { ...sec, items: [{ id: crypto.randomUUID(), title }, ...sec.items] } : sec)),
+            s.map((sec) =>
+              sec.id === "today" ? { ...sec, items: [{ id: crypto.randomUUID(), title }, ...sec.items] } : sec,
+            ),
           )
         }
         onToggle={(id, done) => {
@@ -108,6 +236,7 @@ function TodayPage() {
         }}
         empty={<p className="px-2 text-sm text-muted-foreground">Nothing left for today.</p>}
       />
+      <WeekAgenda />
     </div>
   )
 }
@@ -123,7 +252,8 @@ export function HouseholdScreen() {
           { label: "Upcoming", icon: <ListTodoIcon />, href: "#household" },
           { label: "Calendar", icon: <CalendarIcon />, href: "#household" },
           { label: "Docs", icon: <FileTextIcon />, href: "#household" },
-          { label: "Chats", icon: <MessageCircleIcon />, href: "#household" },
+          { label: "Lists", icon: <ListIcon />, href: "#household", sidebar: false },
+          { label: "Chats", icon: <MessageCircleIcon />, href: "#household", tab: false },
           { label: "Settings", icon: <SettingsIcon />, href: "#settings", tab: false },
         ]}
         group={{ label: "Lists", items: lists, onAdd: () => {}, addLabel: "New list" }}
@@ -133,7 +263,7 @@ export function HouseholdScreen() {
           onSelect: () => document.querySelector<HTMLInputElement>("[data-slot=sectioned-list-add] input")?.focus(),
         }}
         footer={
-          <UserMenu name="Maya Chen" subtitle="The Chen household">
+          <UserMenu name="Maya Chen" color={1} subtitle="The Chen household">
             <DropdownMenuItem asChild>
               <a href="#settings">
                 <SettingsIcon />
