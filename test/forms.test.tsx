@@ -3,17 +3,26 @@ import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
+  AuthForm,
   Celebration,
+  Combobox,
+  ComboboxInput,
+  CopyField,
   celebrate,
   DateTimePicker,
   type DateTimeValue,
   DetailSheet,
   LoginForm,
   MarkdownEditor,
+  NewPasswordForm,
   PasswordInput,
+  PromptDialog,
   Prose,
   ProseBlockquote,
   SignupForm,
+  TimeZonePicker,
+  Toaster,
+  toast,
 } from "@/index"
 
 // jsdom has no pointer capture; vaul's Drawer calls it on pointer down.
@@ -184,5 +193,202 @@ describe("Celebration", () => {
     render(<Celebration />)
     act(() => celebrate())
     expect(document.querySelector("[data-slot=celebration]")).toBeNull()
+  })
+})
+
+describe("CopyField", () => {
+  it("says copiedLabel on the button and next to it for a moment after copying", async () => {
+    const user = userEvent.setup()
+    const { container } = render(<CopyField value="abc-123" aria-label="ID" copiedLabel="Copied!" />)
+    await user.click(screen.getByRole("button", { name: "Copy id" }))
+    expect(await navigator.clipboard.readText()).toBe("abc-123")
+    expect(screen.getByRole("button", { name: "Copied!" })).toBeInTheDocument()
+    expect(container.querySelector("[data-slot=copy-field-status]")).toHaveTextContent("Copied!")
+  })
+
+  it("defaults copiedLabel to Copied and shows nothing before copying", async () => {
+    const user = userEvent.setup()
+    const { container } = render(<CopyField value="x" />)
+    expect(container.querySelector("[data-slot=copy-field-status]")).toBeEmptyDOMElement()
+    await user.click(screen.getByRole("button", { name: "Copy value" }))
+    expect(screen.getByRole("button", { name: "Copied" })).toBeInTheDocument()
+  })
+})
+
+describe("ComboboxInput", () => {
+  it("names its built-in trigger button", () => {
+    render(
+      <Combobox items={["Apple"]}>
+        <ComboboxInput aria-label="Fruit" />
+      </Combobox>,
+    )
+    expect(screen.getByRole("button", { name: "Show options" })).toBeInTheDocument()
+  })
+})
+
+describe("AuthForm", () => {
+  it("passes its fields as FormData once they are valid", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    render(
+      <AuthForm title="Join" submitLabel="Join" onSubmit={onSubmit}>
+        <label htmlFor="code">Invite code</label>
+        <input id="code" name="code" required />
+      </AuthForm>,
+    )
+    expect(screen.getByRole("heading", { name: "Join" })).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Join" }))
+    expect(onSubmit).not.toHaveBeenCalled()
+    await user.type(screen.getByLabelText("Invite code"), "abc")
+    await user.click(screen.getByRole("button", { name: "Join" }))
+    expect((onSubmit.mock.calls[0]![0] as FormData).get("code")).toBe("abc")
+  })
+
+  it("disables every control while loading and shows the error", () => {
+    render(
+      <AuthForm title="Join" submitLabel="Join" loading error="Link expired">
+        <input aria-label="Code" name="code" />
+      </AuthForm>,
+    )
+    expect(screen.getByLabelText("Code")).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Join" })).toBeDisabled()
+    expect(screen.getByText("Link expired")).toBeInTheDocument()
+  })
+})
+
+describe("SignupForm leading fields", () => {
+  it("shows children before the name field and passes them in FormData", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    render(
+      <SignupForm confirmPassword={false} onSubmit={onSubmit}>
+        <input aria-label="Home name" name="householdName" required />
+      </SignupForm>,
+    )
+    const inputs = screen.getAllByRole("textbox")
+    expect(inputs[0]).toBe(screen.getByLabelText("Home name"))
+    await user.type(screen.getByLabelText("Home name"), "Maple St")
+    await user.type(screen.getByLabelText("Full name"), "Ada")
+    await user.type(screen.getByLabelText("Email"), "a@b.co")
+    await user.type(screen.getByLabelText("Password"), "longpassword")
+    await user.click(screen.getByRole("button", { name: "Create account" }))
+    const [values, data] = onSubmit.mock.calls[0] as [unknown, FormData]
+    expect(values).toEqual({ name: "Ada", email: "a@b.co", password: "longpassword" })
+    expect(data.get("householdName")).toBe("Maple St")
+  })
+})
+
+describe("NewPasswordForm", () => {
+  it("submits only when both fields match and are long enough", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    render(<NewPasswordForm minPasswordLength={10} onSubmit={onSubmit} />)
+    expect(screen.getByText("At least 10 characters.")).toBeInTheDocument()
+    expect(screen.getByLabelText("New password")).toHaveAttribute("minlength", "10")
+    await user.type(screen.getByLabelText("New password"), "longpassword")
+    await user.type(screen.getByLabelText("Confirm password"), "longpasswore")
+    await user.click(screen.getByRole("button", { name: "Save password" }))
+    expect(onSubmit).not.toHaveBeenCalled()
+    await user.clear(screen.getByLabelText("Confirm password"))
+    await user.type(screen.getByLabelText("Confirm password"), "longpassword")
+    await user.click(screen.getByRole("button", { name: "Save password" }))
+    expect(onSubmit).toHaveBeenCalledWith({ password: "longpassword" })
+  })
+})
+
+function PromptHarness({ onSubmit }: { onSubmit: (value: string) => void | Promise<void> }) {
+  const [open, setOpen] = useState(true)
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open
+      </button>
+      <PromptDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Rename list"
+        label="Name"
+        defaultValue="Groceries"
+        submitLabel="Rename"
+        maxLength={20}
+        onSubmit={onSubmit}
+      />
+    </>
+  )
+}
+
+describe("PromptDialog", () => {
+  it("shows a thrown error under the field, then closes on success", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn().mockRejectedValueOnce(new Error("That name is taken")).mockResolvedValueOnce(undefined)
+    render(<PromptHarness onSubmit={onSubmit} />)
+    const field = await screen.findByLabelText("Name")
+    expect(field).toHaveValue("Groceries")
+    expect(field).toHaveAttribute("maxlength", "20")
+    await user.clear(field)
+    expect(screen.getByRole("button", { name: "Rename" })).toBeDisabled()
+    await user.type(field, "  Food  ")
+    await user.click(screen.getByRole("button", { name: "Rename" }))
+    expect(onSubmit).toHaveBeenLastCalledWith("Food")
+    expect(await screen.findByText("That name is taken")).toBeInTheDocument()
+    expect(field).toHaveAttribute("aria-invalid", "true")
+    await user.click(screen.getByRole("button", { name: "Rename" }))
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+  })
+
+  it("starts fresh on reopen and accepts a synchronous handler", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn<(value: string) => void>(() => {
+      throw new Error("That name is taken")
+    })
+    render(<PromptHarness onSubmit={onSubmit} />)
+    const field = await screen.findByLabelText("Name")
+    await user.clear(field)
+    await user.type(field, "Food")
+    await user.click(screen.getByRole("button", { name: "Rename" }))
+    expect(await screen.findByText("That name is taken")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Cancel" }))
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Open" }))
+    const reopened = await screen.findByLabelText("Name")
+    expect(reopened).toHaveValue("Groceries")
+    expect(reopened).not.toHaveAttribute("aria-invalid")
+    expect(screen.queryByText("That name is taken")).not.toBeInTheDocument()
+  })
+})
+
+describe("TimeZonePicker", () => {
+  it("filters IANA zones and reports the chosen one", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(<TimeZonePicker id="tz" value="UTC" onValueChange={onValueChange} />)
+    const input = screen.getByRole("combobox")
+    expect(input).toHaveAttribute("id", "tz")
+    await user.clear(input)
+    await user.type(input, "vancouver")
+    await user.click(await screen.findByRole("option", { name: "America/Vancouver" }))
+    expect(onValueChange).toHaveBeenCalledWith("America/Vancouver")
+  })
+
+  it("keeps a value that is not in the supported list, such as an alias", async () => {
+    const user = userEvent.setup()
+    render(<TimeZonePicker value="US/Pacific" onValueChange={() => {}} />)
+    const input = screen.getByRole("combobox")
+    expect(input).toHaveValue("US/Pacific")
+    await user.clear(input)
+    await user.type(input, "US/Pac")
+    expect(await screen.findByRole("option", { name: "US/Pacific" })).toBeInTheDocument()
+  })
+})
+
+describe("toast", () => {
+  it("is sonner's toast, shown by the harebear Toaster", async () => {
+    render(<Toaster />)
+    act(() => {
+      toast.success("Saved")
+      toast.error("Could not save")
+    })
+    expect(await screen.findByText("Saved")).toBeInTheDocument()
+    expect(screen.getByText("Could not save")).toBeInTheDocument()
   })
 })

@@ -7,7 +7,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { parseLocalDate } from "@/lib/date"
+import { parseLocalDate } from "@/lib/internal/date"
 import { cn } from "@/lib/utils"
 
 /** A floating local date and optional time, e.g. `{ date: "2026-11-12", time: "09:30" }`. No time zone. */

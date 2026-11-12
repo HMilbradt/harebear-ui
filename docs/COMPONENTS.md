@@ -15,6 +15,7 @@ Full working screens that combine these live in the repo under `playground/scree
 - **Compose, don't fork.** Every component accepts `className` (merged with `cn`, later classes win). Reach for a primitive before writing a new component.
 - **Icons are lucide-react elements.** Pass `<SearchIcon />`, not the component. Buttons size icons automatically.
 - **Status uses tones**, not colors: `"success" | "warning" | "danger" | "info" | "neutral"`.
+- **Touch targets are built in.** Under `pointer: coarse`, `Button` (every size) and `Toggle`/`ToggleGroupItem` get a 44px hit area (an invisible `::after`, which an `overflow-hidden` ancestor or a later sibling clips: in such a spot, size the button itself, e.g. `pointer-coarse:size-11`, as the `CodeBlock` and `CodeSnippet` copy buttons do) and `Input`/`InputGroup` grow to 44px.
 
 ## Agent-first apps
 
@@ -27,7 +28,7 @@ A household or personal app where an assistant sits on every page and safe actio
       <AppNav
         brand={<AppBrand name="Homeclub" icon={<HouseIcon />} />}
         places={[{ label: "Today", icon: <SunIcon />, href: "/", active: true, count: 3 }, ...]}
-        group={{ label: "Lists", items: lists, onAdd: newList, addLabel: "New list" }}
+        group={{ label: "Lists", href: "/lists", items: lists, onAdd: newList, addLabel: "New list" }}
         action={{ label: "New to-do", icon: <PlusIcon />, onSelect: openQuickAdd }}
         footer={<UserMenu name={user.name} onSignOut={signOut} />}
       >
@@ -40,8 +41,10 @@ A household or personal app where an assistant sits on every page and safe actio
 </ThemeProvider>
 ```
 
+- Pages: `Page` (the column) with a `PageHeader` (h1; `UserMenu compact className="md:hidden"` in `actions`, hidden from md up, since the sidebar footer is hidden on phones) and `PageSection`s (h2 regions). A chat page sets `fill` on `AppNav`.
 - Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo` and set `lingerMs` to its window so a ticked row stays struck through for about as long as Undo shows.
-- A week agenda: `DayStrip` above one `SectionedList` with a section per day (`empty` keeps empty days) and `AgendaRow` rows from `renderItem`.
+- A week agenda: `DayStrip sticky` above one `SectionedList` with a section per day (`empty` keeps empty days) and `AgendaRow` rows from `renderItem`.
+- A record's details (`DetailSheet`): `ChecklistEditor` for steps, `CommentThread` for comments, `MarkdownEditor` for notes.
 - In the assistant thread, each action it took is an `ActionReceipt` with Undo (append it from `onSend`).
 - A page with its own ask box (Today) answers under it: `AskBox` with `reply` and `pending` from `useAssistant()`, `onStop={stop}`, and `send(text, { open: false })`.
 - Settings and setup flows leave the frame: `FocusLayout` around `SettingsSection`s of `SettingsRow`s.
@@ -89,9 +92,9 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 | Carousel         | `Carousel`, `CarouselContent`, `CarouselItem`, `CarouselPrevious`, `CarouselNext`, `useCarousel`, type `CarouselApi`                                                                                                                                                                                                                                                                                                                                         | embla.                                                                                                                                                                                                                                                                                                                                                                    |
 | Chart            | `ChartContainer`, `ChartTooltip`, `ChartTooltipContent`, `ChartLegend`, `ChartLegendContent`, `ChartStyle`                                                                                                                                                                                                                                                                                                                                                   | Recharts wrappers. Prefer `TrendChart` for line/area; use these for custom charts.                                                                                                                                                                                                                                                                                        |
 | Checkbox         | `Checkbox`                                                                                                                                                                                                                                                                                                                                                                                                                                                   |                                                                                                                                                                                                                                                                                                                                                                           |
-| Check circle     | `CheckCircle`                                                                                                                                                                                                                                                                                                                                                                                                                                                | harebear. 24px round checkbox for to-do rows (44px touch target), pops when ticked. `tone="important"` tints it; pair with a word. Name it with `aria-labelledby` the row title.                                                                                                                                                                                          |
+| Check circle     | `CheckCircle`                                                                                                                                                                                                                                                                                                                                                                                                                                                | harebear. 24px round checkbox for to-do rows (44px touch target), pops when ticked (no pop or fade under reduced motion). Focus shows a solid primary outline whatever the `tone`. `tone="important"` tints it; pair with a word. Name it with `aria-labelledby` the row title.                                                                                           |
 | Collapsible      | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent`                                                                                                                                                                                                                                                                                                                                                                                                    |                                                                                                                                                                                                                                                                                                                                                                           |
-| Combobox         | `Combobox`, `ComboboxInput`, `ComboboxContent`, `ComboboxList`, `ComboboxItem`, `ComboboxGroup`, `ComboboxLabel`, `ComboboxCollection`, `ComboboxEmpty`, `ComboboxSeparator`, `ComboboxChips`, `ComboboxChip`, `ComboboxChipsInput`, `ComboboxTrigger`, `ComboboxValue`, `useComboboxAnchor`                                                                                                                                                                 | Searchable select (Base UI). `<Combobox items={list}>` + `<ComboboxList>{(item) => <ComboboxItem value={item}>…}</ComboboxList>`. Chips for multi-select.                                                                                                                                                                                                                 |
+| Combobox         | `Combobox`, `ComboboxInput`, `ComboboxContent`, `ComboboxList`, `ComboboxItem`, `ComboboxGroup`, `ComboboxLabel`, `ComboboxCollection`, `ComboboxEmpty`, `ComboboxSeparator`, `ComboboxChips`, `ComboboxChip`, `ComboboxChipsInput`, `ComboboxTrigger`, `ComboboxValue`, `useComboboxAnchor`                                                                                                                                                                 | Searchable select (Base UI). `<Combobox items={list}>` + `<ComboboxList>{(item) => <ComboboxItem value={item}>…}</ComboboxList>`. Chips for multi-select. `ComboboxInput`'s built-in trigger is named "Show options".                                                                                                                                                     |
 | Command          | `Command`, `CommandDialog`, `CommandInput`, `CommandList`, `CommandEmpty`, `CommandGroup`, `CommandItem`, `CommandShortcut`, `CommandSeparator`                                                                                                                                                                                                                                                                                                              | Use for ⌘K palettes.                                                                                                                                                                                                                                                                                                                                                      |
 | Direction        | `DirectionProvider`, `useDirection`                                                                                                                                                                                                                                                                                                                                                                                                                          | RTL/LTR context for Radix components.                                                                                                                                                                                                                                                                                                                                     |
 | Context menu     | `ContextMenu`, `ContextMenuTrigger`, `ContextMenuContent`, `ContextMenuItem`, `ContextMenuCheckboxItem`, `ContextMenuRadioItem`, `ContextMenuRadioGroup`, `ContextMenuLabel`, `ContextMenuSeparator`, `ContextMenuShortcut`, `ContextMenuGroup`, `ContextMenuPortal`, `ContextMenuSub`, `ContextMenuSubContent`, `ContextMenuSubTrigger`                                                                                                                     |                                                                                                                                                                                                                                                                                                                                                                           |
@@ -101,7 +104,7 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 | Empty state      | `Empty`, `EmptyHeader`, `EmptyMedia`, `EmptyTitle`, `EmptyDescription`, `EmptyContent`                                                                                                                                                                                                                                                                                                                                                                       | Use for zero-data screens. harebear adds `size="sm"`: compact, no flex-grow, for empties inside cards and panels.                                                                                                                                                                                                                                                         |
 | Field            | `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldGroup`, `FieldLegend`, `FieldSeparator`, `FieldSet`, `FieldContent`, `FieldTitle`                                                                                                                                                                                                                                                                                                             | Form layout. Works with react-hook-form or plain state.                                                                                                                                                                                                                                                                                                                   |
 | Hover card       | `HoverCard`, `HoverCardTrigger`, `HoverCardContent`                                                                                                                                                                                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                                                                                                                                                           |
-| Input            | `Input`                                                                                                                                                                                                                                                                                                                                                                                                                                                      | 40px, filled `bg-muted`, turns `bg-card` with a primary ring on focus.                                                                                                                                                                                                                                                                                                    |
+| Input            | `Input`                                                                                                                                                                                                                                                                                                                                                                                                                                                      | 40px, filled `bg-muted`, turns `bg-card` with a primary ring on focus. 44px under `pointer: coarse` (also `InputGroup`).                                                                                                                                                                                                                                                  |
 | Input group      | `InputGroup`, `InputGroupAddon`, `InputGroupButton`, `InputGroupText`, `InputGroupInput`, `InputGroupTextarea`                                                                                                                                                                                                                                                                                                                                               | Inputs with icons, prefixes, buttons.                                                                                                                                                                                                                                                                                                                                     |
 | Input OTP        | `InputOTP`, `InputOTPGroup`, `InputOTPSlot`, `InputOTPSeparator`                                                                                                                                                                                                                                                                                                                                                                                             |                                                                                                                                                                                                                                                                                                                                                                           |
 | Item             | `Item`, `ItemMedia`, `ItemContent`, `ItemTitle`, `ItemDescription`, `ItemActions`, `ItemGroup`, `ItemSeparator`, `ItemHeader`, `ItemFooter`                                                                                                                                                                                                                                                                                                                  | Generic list rows. harebear fix: `ItemTitle` clamps to one line (long words break) and shows the full text as a tooltip when clamped, `ItemContent` has `min-w-0`. harebear adds `ItemTitle mono` for commands, paths and IDs.                                                                                                                                            |
@@ -131,8 +134,8 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 | Table            | `Table`, `TableHeader`, `TableBody`, `TableFooter`, `TableRow`, `TableHead`, `TableCell`, `TableCaption`                                                                                                                                                                                                                                                                                                                                                     | Borderless rows with rounded hover; quiet 12px headers. `data-state="selected"` tints a row.                                                                                                                                                                                                                                                                              |
 | Tabs             | `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`, `tabsListVariants`                                                                                                                                                                                                                                                                                                                                                                                         | `TabsList variant`: `default` (segmented control), `pill` (rounded top-level nav), `line`. Use `Tabs` as a segmented filter too (date ranges, status filters).                                                                                                                                                                                                            |
 | Textarea         | `Textarea`                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Same filled style as `Input`, auto-grows.                                                                                                                                                                                                                                                                                                                                 |
-| Toast            | `Toaster`                                                                                                                                                                                                                                                                                                                                                                                                                                                    | sonner. Mount once; call `toast("Saved")` from `sonner`. Follows the theme mode. `toastUndo(message, { onUndo, undoLabel?, duration = 9000 })` shows an Undo toast for something already done.                                                                                                                                                                            |
-| Toggle           | `Toggle`, `toggleVariants`, `ToggleGroup`, `ToggleGroupItem`                                                                                                                                                                                                                                                                                                                                                                                                 |                                                                                                                                                                                                                                                                                                                                                                           |
+| Toast            | `Toaster`, `toast`, `toastUndo`                                                                                                                                                                                                                                                                                                                                                                                                                              | sonner. Mount once; call `toast("Saved")`, `toast.success(...)`, `toast.error(...)` (sonner's `toast`, re-exported by harebear-ui). Follows the theme mode. `toastUndo(message, { onUndo, undoLabel?, duration = 9000 })` shows an Undo toast for something already done.                                                                                                 |
+| Toggle           | `Toggle`, `toggleVariants`, `ToggleGroup`, `ToggleGroupItem`                                                                                                                                                                                                                                                                                                                                                                                                 | 44px hit area under `pointer: coarse`.                                                                                                                                                                                                                                                                                                                                    |
 | Tooltip          | `TooltipProvider`, `Tooltip`, `TooltipTrigger`, `TooltipContent`                                                                                                                                                                                                                                                                                                                                                                                             | Mount `TooltipProvider` once near the root.                                                                                                                                                                                                                                                                                                                               |
 | Trace            | `Trace`, `TraceLine`, `TraceIcon`, `TraceTitle`, `TraceDescription`, `TraceCollapsible`, `TraceCollapsibleTrigger`, `TraceCollapsibleContent`                                                                                                                                                                                                                                                                                                                | Agent step log (searched, read, ran). `TraceLine status`: `running` (shimmer), `error`, `pending`.                                                                                                                                                                                                                                                                        |
 
@@ -198,7 +201,31 @@ Logo tile + name. Props: `name`, `subtitle?`, `icon?`, `action?` (trailing contr
 
 ### `PageHeader`
 
-Title row. Props: `title`, `description?`, `count?` (badge after title), `eyebrow?` (small text above), `actions?` (right side, wraps on mobile).
+Title row with the page's `h1`. Props: `title`, `description?`, `count?` (badge after title), `eyebrow?` (small text above), `icon?` (leading mark before the title: `CategoryDot`, `MemberAvatar`, a lucide icon at 24px), `actions?` (right side, wraps on mobile).
+
+### `Page`, `PageSection`
+
+`Page`: the page column inside `AppNav` or `SidebarLayout`: centred, 16px gutters on phones (32px from 768px), children spaced `gap-7`. Props: `width?` (`sm | md | lg`, default `md` = 42rem, like `FocusLayout`), div props. `PageSection`: a region named by its `h2` (so headings go h1, h2 without skipping), with `title`, `action?` (right of the heading, 44px tall on touch screens) and `children`. Inside a card, use `Heading level={3}`.
+
+```tsx
+;<Page>
+  <PageHeader
+    title="Groceries"
+    icon={<CategoryDot color={1} />}
+    actions={<UserMenu compact name={user.name} className="md:hidden" />}
+  />
+  <PageSection
+    title="This week"
+    action={
+      <Button variant="ghost" size="sm">
+        See all
+      </Button>
+    }
+  >
+    <SectionedList sections={sections} onToggle={setDone} />
+  </PageSection>
+</Page>
+```
 
 ### `StatCard`
 
@@ -248,7 +275,7 @@ Avatar + name + subtitle. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`C
 
 ### `UserMenu`
 
-The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. In a sidebar icon rail the trigger is just the avatar and the menu opens to the side. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`CategoryColor` behind the initials), `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`.
+The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. The trigger is named by its visible name and subtitle (in a sidebar icon rail, where it is just the avatar, by `name`) and the menu opens to the side there. `compact` makes the trigger just the avatar anywhere (40px, 44px on touch screens, named "Account menu for {name}") with the menu below it, for a phone page header. Upgrading from 0.9: the non-compact trigger is no longer named "Account menu for {name}"; find it by `name` instead. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`CategoryColor` behind the initials), `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`, `compact?`.
 
 ```tsx
 ;<UserMenu name={email} subtitle="Signed in" onSignOut={signOut}>
@@ -307,13 +334,42 @@ Profile photo: a 72px avatar, "Upload a photo" / "Change photo" and "Remove phot
 
 Controlled "are you sure" dialog. Props: `open`, `onOpenChange`, `title`, `description?`, `confirmLabel?`, `cancelLabel?`, `destructive?` (red confirm), `onConfirm`.
 
+### `PromptDialog`
+
+Controlled dialog that asks for one line of text (New list, Rename). Props: `open`, `onOpenChange`, `title`, `description?`, `label` (field label), `defaultValue?`, `submitLabel?` (default "Save"), `cancelLabel?` (default "Cancel"), `maxLength?`, `onSubmit(value): void | Promise<void>` (trimmed; empty is blocked). It closes when `onSubmit` returns or resolves and starts fresh on every open; a thrown error's message shows under the field and the dialog stays open.
+
+```tsx
+;<PromptDialog
+  open={renaming}
+  onOpenChange={setRenaming}
+  title="Rename list"
+  label="Name"
+  defaultValue={list.name}
+  submitLabel="Rename"
+  maxLength={60}
+  onSubmit={(name) => api.renameList(list.id, name)}
+/>
+```
+
 ### `CopyField`
 
-Read-only value with a copy button (IDs, paths, URLs). Props: `value` (copied), `display?` (shown instead, full value as tooltip), `label?` (leading addon), `aria-label?`, `mono?` (default true).
+Read-only value with a copy button (IDs, paths, URLs). Props: `value` (copied), `display?` (shown instead, full value as tooltip), `label?` (leading addon), `aria-label?`, `mono?` (default true), `copiedLabel?` (default "Copied"; after copying, the button's name and a label beside it read this for a moment).
 
 ### `DateTimePicker`
 
 Date field: a button that opens a `Calendar` in a `Popover`, with an optional time field and a Clear button. Value is a floating local date, no time zone: `DateTimeValue = { date: "YYYY-MM-DD", time?: "HH:MM" }`. Props: `value: DateTimeValue | null`, `onValueChange(value | null)`, `withTime?` (time field under the calendar; enabled once a date is set), `placeholder?` (default "Pick a date"). Other props (`id`, `aria-label`, `disabled`) go to the trigger button. Day cells are 44px on phones.
+
+### `TimeZonePicker`
+
+Searchable IANA time zone field built on `Combobox`, listing `Intl.supportedValuesOf("timeZone")` (underscores shown as spaces, so "new york" matches). A `value` not in that list (an alias such as "US/Pacific") is kept at the top so it still shows. Props: `value` (e.g. `"America/Vancouver"`), `onValueChange(zone)`, `id?` (for a `FieldLabel` or `SettingsRow` `htmlFor`), `className?`.
+
+```tsx
+;<SettingsRow
+  label="Time zone"
+  htmlFor="tz"
+  control={<TimeZonePicker id="tz" value={me.timeZone} onValueChange={(timeZone) => save({ timeZone })} />}
+/>
+```
 
 ### `DetailSheet`
 
@@ -351,23 +407,49 @@ Muted tile that lifts on hover, for service launchers. Props: `title`, `subtitle
 
 ### `MarkdownEditor`
 
-Markdown field with Write and Preview tabs; Preview renders inside `Prose`. Props: `value`, `onValueChange(value)`, `renderPreview(markdown)` (the library has no Markdown parser; pass yours), `wrapperClassName?`. Other props (`id`, `placeholder`, `aria-*`, `className`) go to the `Textarea`.
+Markdown field with Write and Preview tabs; Preview renders with `Markdown`. Props: `value`, `onValueChange(value)`, `renderPreview?(markdown)` (custom renderer, wrapped in `Prose`), `wrapperClassName?`. Other props (`id`, `placeholder`, `aria-*`, `className`) go to the `Textarea`.
 
 ```tsx
-;<MarkdownEditor
-  id="body"
-  value={body}
-  onValueChange={setBody}
-  renderPreview={(md) => <Markdown components={{ blockquote: ProseBlockquote }}>{md}</Markdown>}
+;<MarkdownEditor id="body" value={body} onValueChange={setBody} />
+```
+
+### `ChecklistEditor`
+
+Steps inside a record, e.g. a to-do's checklist: `CheckCircle` per item (the text is its label), a Remove button, an add field (Enter adds the trimmed text and clears), and an "x of y done" line when there are items. Props: `items: { id; text; done }[]`, `onToggle(id, done)`, `onRemove(id)`, `onAdd(text)`, `addPlaceholder?` (also the field's name, default "Add an item"), `progressLabel?(done, total)`. The root is a `role="group"`: name it with `aria-label` or `aria-labelledby`.
+
+```tsx
+;<ChecklistEditor
+  aria-label="Checklist"
+  items={task.checklist}
+  onToggle={toggleStep}
+  onRemove={removeStep}
+  onAdd={addStep}
+  addPlaceholder="Add a step"
 />
+```
+
+### `CommentThread`
+
+Comments on a record, oldest first, then a box and a submit button (disabled while empty; submits the trimmed text and clears). Bodies render with `Markdown`. Props: `comments: { id; author: { name; color?; avatarUrl? }; meta?; body }[]` (`meta` is muted text after the name, e.g. "via HomeBot · 2 h ago"), `onSubmit(text)`, `placeholder?` (also the box's name, default "Add a comment"), `submitLabel?` (default "Comment"). Show your own empty state if you want one.
+
+```tsx
+;<CommentThread comments={task.comments} onSubmit={(text) => api.comment(task.id, text)} />
 ```
 
 ### `AppNav`
 
 One nav config, two renderings: on desktop a `SidebarLayout` sidebar (brand, action button, places, one collapsible group, footer; active place is a raised card; collapses to the icon rail), under 768px a bottom tab bar (first 5 places, 56px targets, `aria-current="page"`) plus a round floating action button. Use it instead of `AppShell` for consumer apps that need phone navigation.
 
-Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar, `sidebar?: false` for a tab-bar-only place such as Lists when the sidebar has a Lists group), `group?: AppNavGroup` (`label`, `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect; sidebar?: false }` (`sidebar: false` keeps only the round phone button), `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `children`.
-On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger` in the page header if users need them there. Render `AssistantDock` inside `children` so it clears the tab bar. Toasts stack above the tab bar, the action button and the dock launcher on their own; no `Toaster` offset needed.
+Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar, `sidebar?: false` for a tab-bar-only place such as Lists when the sidebar has a Lists group), `group?: AppNavGroup` (`label`, `href?` (heading becomes a link, e.g. to all lists; the chevron is a separate "Collapse Lists" button), `active?` (the heading link is the current page), `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect; sidebar?: false }` (`sidebar: false` keeps only the round phone button), `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `fill?` (main column is exactly the screen height minus the tab bar (and the round action button's space when `action` is set) and does not scroll, for a chat: the child takes it with `flex-1 min-h-0`, which `ChatPanel` already has), `children`.
+On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger` in the page header if users need them there. With `action`, the main column's bottom padding also clears the round button, so a trailing control on the last row is not under it. Render `AssistantDock` inside `children` so it clears the tab bar. Toasts stack above the tab bar, the action button and the dock launcher on their own; no `Toaster` offset needed.
+
+```tsx
+;<AppNav fill places={places} footer={<UserMenu name={user.name} />}>
+  <ChatPanel title="Assistant" composer={<PromptInput … />}>
+    {thread}
+  </ChatPanel>
+</AppNav>
+```
 
 ### `FocusLayout`
 
@@ -375,7 +457,7 @@ A page outside the app frame (settings, onboarding, setup): slim sticky top bar,
 
 ### `SettingsSection`, `SettingsRow`
 
-`SettingsSection`: card with `title`, `description?` and rows divided by hairlines (a labelled `region`). `SettingsRow`: `label`, `description?`, `control?` (Switch, Select, ToggleGroup, Button), `htmlFor?` (makes the label a `<label>` for the control). Add `content` to expand inline (change password, add a connection): without a `control` the row gets a "Change"/"Cancel" button (`expandLabel?`); control it with `open`/`onOpenChange` or `defaultOpen`.
+`SettingsSection`: card with `title`, `description?` and rows divided by hairlines (a labelled `region`). `SettingsRow`: `label`, `description?`, `control?` (Switch, Select, ToggleGroup, Button), `htmlFor?` (makes the label a `<label>` for the control), `body?` (always shown under the label, full width, no toggle: a list, a hint, a short form). Add `content` to expand inline (change password, add a connection): without a `control` the row gets a "Change"/"Cancel" button (`expandLabel?`); control it with `open`/`onOpenChange` or `defaultOpen`.
 
 ```tsx
 ;<FocusLayout
@@ -396,6 +478,7 @@ A page outside the app frame (settings, onboarding, setup): slim sticky top bar,
       control={<Switch id="daily" />}
     />
     <SettingsRow label="Password" content={<ChangePasswordForm />} />
+    <SettingsRow label="Connections" body={<ConnectionList />} />
   </SettingsSection>
 </FocusLayout>
 ```
@@ -410,7 +493,7 @@ Props instead of class names, for blocks that should look right without styling 
 
 ### `Text`, `Heading`
 
-`Text` takes `size` (`xs | sm | base | lg | xl | 2xl`), `tone` (`default | muted | success | warning | danger | info`), `weight`, `mono`, `truncate`, `lines` (1 to 3) and `tabular`, and renders `as` a span, p or div. `Heading` is a card section title (`level={3}`) or a small uppercase group label (`level={4}`).
+`Text` takes `size` (`xs | sm | base | lg | xl | 2xl`), `tone` (`default | muted | success | warning | danger | info`), `weight`, `mono`, `truncate`, `lines` (1 to 3) and `tabular`, and renders `as` a span, p or div. `Heading` is a page section title (`level={2}`, under the page `h1`; `PageSection` uses it), a card section title (`level={3}`, default) or a small uppercase group label (`level={4}`). Do not skip levels: a page with an h1 needs h2s before h3s.
 
 ### `Metric`, `MetricGroup`
 
@@ -426,7 +509,7 @@ Shows the first `initial` children (default 5) and a "Show N more" button for th
 
 ### `Collapse`
 
-Animates children between full height and 0 (CSS `grid-template-rows`), so neighbours slide instead of jumping. Closed content is `inert` and `aria-hidden`. Props: `open`, `contentClassName?`. No motion under `prefers-reduced-motion`.
+Animates children between full height and 0 (CSS `grid-template-rows`), so neighbours slide instead of jumping. Closed content is `inert` and `aria-hidden`. Clips vertically only, so focus rings and hit areas at the sides are not cut off. Props: `open`, `contentClassName?`. No motion under `prefers-reduced-motion`.
 
 ## Data display
 
@@ -500,11 +583,12 @@ One line of a day's agenda: time column, event icon (or a `CheckCircle` for a to
 
 ### `DayStrip`
 
-A row of day links (short weekday, date, a dot when `hasPlans`) that smooth-scroll to the element whose id is the day's `id` (instant under reduced motion) and move focus to it; scrolls sideways when the days do not fit. Props: `days: { id; date: "YYYY-MM-DD"; hasPlans? }[]` (floating local date, like `DateTimePicker`), `value?` (selected id, `aria-current`), `onValueChange?(id)`, `aria-label?` (default "Jump to a day"). Make it sticky with `className="sticky top-0 bg-background"` and give the scroll container `scroll-padding-top` so headings land below it.
+A row of day links (short weekday, date, a dot when `hasPlans`) that smooth-scroll to the element whose id is the day's `id` (instant under reduced motion) and move focus to it; scrolls sideways when the days do not fit. Props: `days: { id; date: "YYYY-MM-DD"; hasPlans? }[]` (floating local date, like `DateTimePicker`), `value?` (selected id, `aria-current`), `onValueChange?(id)`, `aria-label?` (default "Jump to a day"), `sticky?` (sticks at `top-0` with the page background while the page or any container scrolls, and gives the jumped-to element a `scroll-margin-top` as tall as the strip so its heading lands below it; add `className="top-14"` under a sticky header). Each link's name is the full date ("Thursday, November 12, has plans") as visually hidden text, so it contains what is shown.
 
 ```tsx
 ;<>
   <DayStrip
+    sticky
     days={week.map((d) => ({ id: d.key, date: d.date, hasPlans: d.items.length > 0 }))}
     value={day}
     onValueChange={setDay}
@@ -696,8 +780,16 @@ What the assistant did, as a compact card: round check, `title` (past tense), `m
 
 `CodeSnippet`: one-prop code panel with language label, copy button and shiki syntax highlighting (each language loads on first use). Props: `code`, `language?` (`bash`, `tsx`, `ts`, `js`, `json`, `python`, `sql`, `yaml`, `css`, `html`, `markdown`, `diff`; others render plain), `highlight?` (default true), `lineNumbers?`, `hideCopy?`. Built on the `CodeBlock` primitives; drop to those for diffs or highlighted lines.
 `InlineCode`: monospace span. `truncate?: number` cuts longer string children with an ellipsis and puts the full text in the tooltip.
-`Prose`: typography for model output and markdown. Styles plain `p, ul, ol, li, strong, a, code, pre, h1-h4, blockquote, table` children, so it works with `react-markdown`.
-Tip boxes: a blockquote whose first word is `Tip:` (`> Tip: Turn the power off first.`) renders as a `Callout` without the word. Prose does this for plain `<blockquote>` children; with react-markdown pass `components={{ blockquote: ProseBlockquote }}`.
+`Prose`: typography for model output and markdown. Styles plain `p, ul, ol, li, strong, a, code, pre, h1-h4, blockquote, table` children.
+Tip boxes: a blockquote whose first word is `Tip:` (`> Tip: Turn the power off first.`) renders as a `Callout` without the word. Prose does this for plain `<blockquote>` children; with your own react-markdown pass `components={{ blockquote: ProseBlockquote }}`.
+
+### `Markdown`
+
+Renders a Markdown string inside `Prose`: GitHub flavoured (tables, task lists, strikethrough, autolinks), `> Tip:` blockquotes as a `Callout`. Safe for user and model text: raw HTML is dropped and `javascript:` links are removed. Props: `children: string`, `linkComponent?` (your router `Link`, gets `href`; used for links without a scheme such as `/lists/2`). Other props go to the `Prose` wrapper.
+
+```tsx
+;<Markdown linkComponent={Link}>{message.text}</Markdown>
+```
 
 ### Chat primitives vs. composites
 
@@ -711,17 +803,49 @@ Parameterized versions of shadcn's login-01..05 and signup-01..05 blocks.
 
 Full-page wrapper. Props: `variant` (`"centered"` card on the page, `"muted"` same on a muted background, `"split"` form left and cover image right, `"card-image"` one wide card with form and image), `brand?` (usually `AppBrand`), `image?: { src; alt }` (split and card-image), `footer?` (terms text), `children` (the form).
 
+### `AuthForm`
+
+The shell the auth forms share; use it for other signed-out steps (join with a code, verify an email). Props: `title`, `description?`, `children` (fields, each with a `name`), `error?`, `submitLabel`, `loading?` (spinner, disables every control), `onSubmit?(data: FormData)` (after browser validation, which `noValidate` skips; omit to submit natively), `footer?` (under the button: links, provider buttons).
+
+```tsx
+;<AuthForm title="Join your household" submitLabel="Join" onSubmit={(d) => join(String(d.get("code")))}>
+  <Field>
+    <FieldLabel htmlFor="code">Invite code</FieldLabel>
+    <Input id="code" name="code" required />
+  </Field>
+</AuthForm>
+```
+
 ### `LoginForm`
 
 Props: `onSubmit?({ email, password? })` (omit to submit natively to an `action`), `mode?` (`"password"` or `"email-only"` for magic links), `providers?: { id; label; icon? }[]` + `onProviderClick?(id)` (3+ providers with icons collapse to an icon row), `providersFirst?`, `forgotPasswordHref?`, `signupHref?`, `title?`, `description?`, `submitLabel?`, `loading?`, `error?`.
 
 ### `PasswordInput`
 
-Password `Input` with a Show/Hide button (`aria-label` "Show password" / "Hide password") that switches `type` between `password` and `text`. Input props go to the input; `wrapperClassName?` styles the wrapper. `LoginForm` and `SignupForm` use it for every password field.
+Password `Input` with a Show/Hide button (`aria-label` "Show password" / "Hide password") that switches `type` between `password` and `text`. Input props go to the input; `wrapperClassName?` styles the wrapper. `LoginForm`, `SignupForm` and `NewPasswordForm` use it for every password field.
 
 ### `SignupForm`
 
-Props: `onSubmit?({ name?, email, password })`, `nameField?` (default true), `confirmPassword?` (default true; mismatches are blocked with a browser validation message), `minPasswordLength?` (default 8), `passwordHint?`, `providers?`, `onProviderClick?`, `providersFirst?`, `loginHref?`, `title?`, `description?`, `submitLabel?`, `loading?`, `error?`.
+Props: `onSubmit?({ name?, email, password }, data: FormData)`, `children?` (extra fields before the name, e.g. a household name; read them from `data`), `nameField?` (default true), `confirmPassword?` (default true; mismatches are blocked with a browser validation message), `minPasswordLength?` (default 8), `passwordHint?`, `providers?`, `onProviderClick?`, `providersFirst?`, `loginHref?`, `title?`, `description?`, `submitLabel?`, `loading?`, `error?`.
+
+```tsx
+;<SignupForm onSubmit={(v, data) => create({ ...v, household: String(data.get("household")) })}>
+  <Field>
+    <FieldLabel htmlFor="household">Household name</FieldLabel>
+    <Input id="household" name="household" required />
+  </Field>
+</SignupForm>
+```
+
+### `NewPasswordForm`
+
+Reset or first password: "New password" + "Confirm password" (a mismatch is blocked with a browser validation message). Props: `onSubmit?({ password })`, `minPasswordLength?` (default 8), `passwordHint?`, `title?` (default "Choose a new password"), `description?`, `submitLabel?` (default "Save password"), `loading?`, `error?`.
+
+```tsx
+;<AuthLayout variant="centered">
+  <NewPasswordForm onSubmit={({ password }) => reset(token, password)} loading={pending} error={error} />
+</AuthLayout>
+```
 
 `GitHubIcon`, `GoogleIcon`, `AppleIcon`: brand marks for provider buttons.
 

@@ -18,6 +18,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  type ChecklistItem,
+  ChecklistEditor,
   CodeBlock,
   CodeBlockContent,
   CodeBlockLine,
@@ -30,13 +32,17 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
+  CommentThread,
+  type CommentThreadComment,
   DateTimePicker,
   type DateTimeValue,
   DetailSheet,
   Field,
   FieldLabel,
   Input,
+  Markdown,
   MarkdownEditor,
+  NewPasswordForm,
   Marker,
   MarkerContent,
   MarkerIcon,
@@ -49,7 +55,7 @@ import {
   NativeSelectOption,
   PageHeader,
   PasswordInput,
-  Prose,
+  PromptDialog,
   Questionnaire,
   QuestionnaireActions,
   QuestionnaireChoice,
@@ -65,6 +71,8 @@ import {
   SelectTrigger,
   SelectValue,
   ThemeToggle,
+  TimeZonePicker,
+  toast,
   Trace,
   TraceDescription,
   TraceIcon,
@@ -91,19 +99,46 @@ function Section({ title, description, children }: { title: string; description:
   )
 }
 
-// Tiny stand-in for react-markdown: headings, "> " quotes, paragraphs.
-function previewMarkdown(md: string) {
-  return md.split(/\n{2,}/).map((block, i) => {
-    const key = `${i}-${block.slice(0, 8)}`
-    if (block.startsWith("# ")) return <h1 key={key}>{block.slice(2)}</h1>
-    if (block.startsWith("> "))
-      return (
-        <blockquote key={key}>
-          <p>{block.slice(2)}</p>
-        </blockquote>
-      )
-    return <p key={key}>{block}</p>
-  })
+function RecordDetails() {
+  const [steps, setSteps] = useState<ChecklistItem[]>([
+    { id: "1", text: "Buy a 16x25 filter", done: true },
+    { id: "2", text: "Swap the filter", done: false },
+  ])
+  const [comments, setComments] = useState<CommentThreadComment[]>([
+    {
+      id: "1",
+      author: { name: "Maya Chen", color: 2 },
+      meta: "2 h ago",
+      body: "Got the **16x25** one. Notes are in [Home](#home).",
+    },
+    {
+      id: "2",
+      author: { name: "Sam Rivera", color: 4 },
+      meta: "via HomeBot · 1 h ago",
+      body: "Thanks, swapping it tonight.",
+    },
+  ])
+  return (
+    <>
+      <ChecklistEditor
+        aria-label="Checklist"
+        items={steps}
+        onToggle={(id, done) => setSteps((s) => s.map((i) => (i.id === id ? { ...i, done } : i)))}
+        onRemove={(id) => setSteps((s) => s.filter((i) => i.id !== id))}
+        onAdd={(text) => setSteps((s) => [...s, { id: crypto.randomUUID(), text, done: false }])}
+        addPlaceholder="Add a step"
+      />
+      <CommentThread
+        comments={comments}
+        onSubmit={(body) =>
+          setComments((c) => [
+            ...c,
+            { id: crypto.randomUUID(), author: { name: "Maya Chen", color: 2 }, meta: "now", body },
+          ])
+        }
+      />
+    </>
+  )
 }
 
 function NewFormControls() {
@@ -112,9 +147,12 @@ function NewFormControls() {
     "# Furnace filter\n\nSwap it every three months.\n\n> Tip: Turn the power off first.",
   )
   const [details, setDetails] = useState(false)
+  const [zone, setZone] = useState("America/Vancouver")
+  const [listName, setListName] = useState("Groceries")
+  const [renaming, setRenaming] = useState(false)
   return (
     <>
-      <Section title="Forms" description="PasswordInput, DateTimePicker and MarkdownEditor.">
+      <Section title="Forms" description="PasswordInput, DateTimePicker, TimeZonePicker and MarkdownEditor.">
         <Field>
           <FieldLabel htmlFor="c-password">Password</FieldLabel>
           <PasswordInput id="c-password" defaultValue="correct horse" />
@@ -124,14 +162,61 @@ function NewFormControls() {
           <DateTimePicker id="c-when" withTime value={when} onValueChange={setWhen} />
         </Field>
         <Field>
+          <FieldLabel htmlFor="c-zone">Time zone</FieldLabel>
+          <TimeZonePicker id="c-zone" value={zone} onValueChange={setZone} />
+        </Field>
+        <Field>
           <FieldLabel htmlFor="c-body">Body</FieldLabel>
-          <MarkdownEditor id="c-body" value={body} onValueChange={setBody} renderPreview={previewMarkdown} />
+          <MarkdownEditor id="c-body" value={body} onValueChange={setBody} />
         </Field>
       </Section>
-      <Section title="Details and joy" description="DetailSheet, Prose tips and Celebration.">
-        <Prose>
-          {previewMarkdown("> Tip: A blockquote starting with Tip: is a Callout.\n\n> A plain quote stays a quote.")}
-        </Prose>
+      <Section title="Dialogs and toasts" description="PromptDialog and toast.">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setRenaming(true)}>
+            Rename {listName}
+          </Button>
+          <Button variant="outline" onClick={() => toast("Saved")}>
+            Toast
+          </Button>
+          <Button variant="outline" onClick={() => toast.success("Invite sent")}>
+            Success
+          </Button>
+          <Button variant="outline" onClick={() => toast.error("Could not reach the server")}>
+            Error
+          </Button>
+        </div>
+        <PromptDialog
+          open={renaming}
+          onOpenChange={setRenaming}
+          title="Rename list"
+          description="Type taken to see a server error."
+          label="Name"
+          defaultValue={listName}
+          submitLabel="Rename"
+          maxLength={60}
+          onSubmit={async (name) => {
+            await new Promise((r) => setTimeout(r, 600))
+            if (name.toLowerCase() === "taken") throw new Error("A list with that name already exists.")
+            setListName(name)
+          }}
+        />
+      </Section>
+      <Section title="New password" description="NewPasswordForm, built on AuthForm.">
+        <NewPasswordForm
+          onSubmit={() => {
+            toast.success("Password saved")
+          }}
+        />
+      </Section>
+      <Section title="Record details" description="ChecklistEditor and CommentThread, as in a to-do's DetailSheet.">
+        <RecordDetails />
+      </Section>
+      <Section title="Details and joy" description="DetailSheet, Markdown tips and Celebration.">
+        <Markdown>
+          {
+            "> Tip: A blockquote starting with Tip: is a Callout.\n\n> A plain quote stays a quote, and [links](https://example.com) are underlined."
+          }
+        </Markdown>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setDetails(true)}>
             Open details

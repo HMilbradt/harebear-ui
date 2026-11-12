@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
-import { useToastClearance } from "@/lib/toast-clearance"
+import { useToastClearance } from "@/lib/internal/toast-clearance"
 import { cn } from "@/lib/utils"
 
 export interface AppNavPlace extends Omit<AppNavItem, "badge"> {
@@ -23,6 +23,10 @@ export interface AppNavPlace extends Omit<AppNavItem, "badge"> {
 export interface AppNavGroup {
   /** Group heading, e.g. "Lists". */
   label: string
+  /** Makes the heading a link, e.g. "/lists"; the chevron next to it still collapses the group. */
+  href?: string
+  /** The heading link is the current page: aria-current and the active text style. */
+  active?: boolean
   items: AppNavPlace[]
   /** Expanded at first. Default true. */
   defaultOpen?: boolean
@@ -60,6 +64,12 @@ export interface AppNavProps {
   defaultOpen?: boolean
   /** Sidebar width. Default "15.75rem". */
   width?: string
+  /**
+   * Main column exactly fills the screen (minus the tab bar on phones, and the round action button's space when
+   * `action` is set) and does not scroll, for a chat or map. The
+   * child takes the height with `flex-1 min-h-0` (ChatPanel does) and scrolls inside itself.
+   */
+  fill?: boolean
   /** Classes for the main column. */
   className?: string
   children?: React.ReactNode
@@ -85,6 +95,7 @@ function AppNav({
   storageKey,
   defaultOpen,
   width = "15.75rem",
+  fill,
   className,
   children,
 }: AppNavProps) {
@@ -128,7 +139,8 @@ function AppNav({
       }
       className={cn(
         "max-md:pb-[calc(4.5rem+env(safe-area-inset-bottom))] max-md:[--hb-bottom-inset:calc(4.5rem+env(safe-area-inset-bottom))]",
-        action && "max-md:[--hb-fab-inset:4.5rem]",
+        action && "max-md:pb-[calc(9rem+env(safe-area-inset-bottom))] max-md:[--hb-fab-inset:4.5rem]",
+        fill && "h-dvh overflow-hidden",
         className,
       )}
     >
@@ -180,6 +192,12 @@ function PlaceItem({ place, Link }: { place: AppNavPlace; Link: React.ElementTyp
 
 function NavGroup({ group, Link }: { group: AppNavGroup; Link: React.ElementType }) {
   const [open, setOpen] = React.useState(group.defaultOpen ?? true)
+  const chevron = (
+    <ChevronDownIcon
+      aria-hidden="true"
+      className={cn("size-3.5 transition-transform motion-reduce:transition-none", !open && "-rotate-90")}
+    />
+  )
   return (
     <Collapsible
       open={open}
@@ -188,13 +206,32 @@ function NavGroup({ group, Link }: { group: AppNavGroup; Link: React.ElementType
       className="flex flex-col gap-1 group-data-[collapsible=icon]:hidden"
     >
       <div className="flex items-center gap-1 pr-1">
-        <CollapsibleTrigger className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40">
-          <span className="truncate">{group.label}</span>
-          <ChevronDownIcon
-            aria-hidden="true"
-            className={cn("size-3.5 transition-transform motion-reduce:transition-none", !open && "-rotate-90")}
-          />
-        </CollapsibleTrigger>
+        {group.href ? (
+          <>
+            <Link
+              href={group.href}
+              aria-current={group.active ? "page" : undefined}
+              className={cn(
+                "flex h-8 min-w-0 items-center rounded-md px-3 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:h-11",
+                group.active && "text-foreground",
+              )}
+            >
+              <span className="truncate">{group.label}</span>
+            </Link>
+            <CollapsibleTrigger
+              aria-label={`${open ? "Collapse" : "Expand"} ${group.label}`}
+              className="-ml-1 grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:size-11"
+            >
+              {chevron}
+            </CollapsibleTrigger>
+            <span className="flex-1" />
+          </>
+        ) : (
+          <CollapsibleTrigger className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+            <span className="truncate">{group.label}</span>
+            {chevron}
+          </CollapsibleTrigger>
+        )}
         {group.onAdd && (
           <Button
             type="button"

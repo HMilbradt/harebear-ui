@@ -61,6 +61,7 @@ function ComboboxInput({
             variant="ghost"
             asChild
             data-slot="input-group-button"
+            aria-label="Show options"
             className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
             disabled={disabled}
           >

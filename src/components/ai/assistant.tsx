@@ -6,7 +6,7 @@ import { AskBox } from "@/components/ai/ask-box"
 import { AssistantAvatar, ChatMessage, ChatThread, TypingIndicator } from "@/components/ai/chat"
 import type { SpeechSource } from "@/components/ai/dictation"
 import { Button } from "@/components/ui/button"
-import { useToastClearance } from "@/lib/toast-clearance"
+import { useToastClearance } from "@/lib/internal/toast-clearance"
 import { cn } from "@/lib/utils"
 
 export interface AssistantMessage {

@@ -14,7 +14,12 @@ import {
   Collapse,
   DayStrip,
   DictationButton,
+  DropdownMenuItem,
   FocusLayout,
+  Heading,
+  Page,
+  PageHeader,
+  PageSection,
   SectionedList,
   type SectionedListSection,
   SettingsRow,
@@ -25,6 +30,8 @@ import {
   ThemeProvider,
   useAssistant,
   useAssistantPage,
+  SidebarProvider,
+  UserMenu,
 } from "@/index"
 
 function fakeSpeech() {
@@ -51,6 +58,22 @@ describe("CheckCircle", () => {
     await user.click(box)
     expect(onCheckedChange).toHaveBeenCalledWith(true)
     expect(box).toHaveAttribute("data-pop")
+  })
+
+  it("pops and fades only when motion is allowed", () => {
+    render(<CheckCircle aria-label="Buy milk" />)
+    const box = screen.getByRole("checkbox")
+    expect(box).toHaveClass("motion-safe:data-[pop]:animate-check-pop", "motion-reduce:transition-none")
+    expect(box.className).not.toMatch(/(^|\s)data-\[pop\]:animate-check-pop/)
+  })
+
+  it("has a 44px hit area and a solid focus outline that tone does not override", () => {
+    render(<CheckCircle aria-label="Buy milk" tone="important" />)
+    const box = screen.getByRole("checkbox")
+    // ::after is placed against the padding box (inside the 2px border): 20px + 2 * 12px = 44px.
+    expect(box).toHaveClass("size-6", "border-2", "after:-inset-3")
+    expect(box).toHaveClass("focus-visible:outline-2", "focus-visible:outline-solid", "focus-visible:outline-primary")
+    expect(box.className).not.toMatch(/focus-visible:(border|ring)-/)
   })
 })
 
@@ -87,6 +110,13 @@ describe("Collapse", () => {
     expect(el).toHaveAttribute("data-state", "closed")
     expect(el).toHaveAttribute("aria-hidden", "true")
     expect(el).toHaveAttribute("inert")
+  })
+
+  it("clips only vertically, so hit areas and focus rings at the sides are not cut off", () => {
+    render(<Collapse open>Body</Collapse>)
+    const inner = screen.getByText("Body")
+    expect(inner).toHaveClass("overflow-y-clip", "overflow-x-visible", "min-w-0")
+    expect(inner).not.toHaveClass("overflow-hidden")
   })
 })
 
@@ -285,6 +315,9 @@ describe("DayStrip", () => {
     expect(links[0]).toHaveAttribute("aria-current", "true")
     expect(links[0]).toHaveAccessibleName(/has plans$/)
     expect(links[1]).not.toHaveAccessibleName(/has plans/)
+    // The full date is visually hidden text, not an aria-label that drops the visible "Thu 12".
+    for (const link of links) expect(link).not.toHaveAttribute("aria-label")
+    expect(links[1]!.querySelector(".sr-only")).toHaveTextContent(/12/)
     // A floating date is local: "2026-11-12" shows 12 in any time zone.
     expect(links[1]).toHaveTextContent("12")
     expect(links[1]).not.toHaveTextContent("11")
@@ -307,6 +340,27 @@ describe("DayStrip", () => {
     )
     await user.click(screen.getByRole("link"))
     expect(scroll).toHaveBeenCalledWith({ behavior: "auto", block: "start" })
+  })
+
+  it("sticks and lands jumped-to days below itself when sticky", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(() => {})
+    render(
+      <>
+        <DayStrip sticky days={[{ id: "d14", date: "2026-11-14" }]} />
+        <section id="d14">Saturday</section>
+        <DayStrip aria-label="Plain" days={[{ id: "d15", date: "2026-11-15" }]} />
+        <section id="d15">Sunday</section>
+      </>,
+    )
+    expect(screen.getByRole("navigation", { name: "Jump to a day" })).toHaveClass("sticky", "top-0")
+    expect(screen.getByRole("navigation", { name: "Plain" })).not.toHaveClass("sticky")
+    const [sticky, plain] = screen.getAllByRole("link")
+    await user.click(sticky as HTMLElement)
+    // jsdom has no layout: the strip measures 0px tall, so only the 8px gap remains.
+    expect(document.getElementById("d14")?.style.scrollMarginTop).toBe("8px")
+    await user.click(plain as HTMLElement)
+    expect(document.getElementById("d15")?.style.scrollMarginTop).toBe("")
   })
 })
 
@@ -617,6 +671,44 @@ describe("AppNav", () => {
     expect(screen.getByText("Page")).toBeInTheDocument()
   })
 
+  it("makes the group heading a link with a separate collapse button", async () => {
+    const user = userEvent.setup()
+    const { container } = render(
+      <ThemeProvider>
+        <AppNav
+          places={[{ label: "Today", href: "/" }]}
+          group={{ label: "Lists", href: "/lists", active: true, items: [{ label: "Groceries", href: "/l/1" }] }}
+        />
+      </ThemeProvider>,
+    )
+    const sidebar = container.querySelector<HTMLElement>("[data-slot=app-nav]")!
+    expect(within(sidebar).getByRole("link", { name: "Lists" })).toHaveAttribute("href", "/lists")
+    expect(within(sidebar).getByRole("link", { name: "Lists" })).toHaveAttribute("aria-current", "page")
+    expect(within(sidebar).getByRole("link", { name: "Lists" })).toHaveClass("text-foreground")
+    const toggle = within(sidebar).getByRole("button", { name: "Collapse Lists" })
+    expect(toggle).toHaveAttribute("aria-expanded", "true")
+    expect(toggle).not.toContainElement(within(sidebar).getByRole("link", { name: "Lists" }))
+    await user.click(toggle)
+    expect(within(sidebar).getByRole("button", { name: "Expand Lists" })).toHaveAttribute("aria-expanded", "false")
+    expect(within(sidebar).queryByRole("link", { name: "Groceries" })).not.toBeInTheDocument()
+  })
+
+  it("fills the screen without scrolling when fill is set", () => {
+    const { container, rerender } = render(
+      <ThemeProvider>
+        <AppNav places={[{ label: "Chat", href: "/chat" }]} fill />
+      </ThemeProvider>,
+    )
+    const main = container.querySelector("[data-slot=sidebar-layout]")
+    expect(main).toHaveClass("h-dvh", "overflow-hidden")
+    rerender(
+      <ThemeProvider>
+        <AppNav places={[{ label: "Chat", href: "/chat" }]} />
+      </ThemeProvider>,
+    )
+    expect(main).not.toHaveClass("h-dvh")
+  })
+
   it("keeps sidebar: false places and actions out of the desktop sidebar", () => {
     const { container } = render(
       <ThemeProvider>
@@ -636,6 +728,27 @@ describe("AppNav", () => {
     const buttons = screen.getAllByRole("button", { name: "New chat" })
     expect(buttons).toHaveLength(1)
     expect(buttons[0]).toHaveAttribute("data-slot", "app-nav-fab")
+  })
+
+  it("pads the main column past the round action button only when there is one", () => {
+    const main = (action?: boolean) => {
+      const { container, unmount } = render(
+        <ThemeProvider>
+          <AppNav
+            places={[{ label: "Today", href: "/" }]}
+            action={action ? { label: "New", icon: <span />, onSelect: () => {} } : undefined}
+          >
+            <p>Page</p>
+          </AppNav>
+        </ThemeProvider>,
+      )
+      const cls = container.querySelector("[data-slot=sidebar-layout]")!.className
+      unmount()
+      return cls
+    }
+    expect(main(true)).toContain("max-md:pb-[calc(9rem+env(safe-area-inset-bottom))]")
+    expect(main(true)).not.toContain("max-md:pb-[calc(4.5rem+env(safe-area-inset-bottom))]")
+    expect(main(false)).toContain("max-md:pb-[calc(4.5rem+env(safe-area-inset-bottom))]")
   })
 })
 
@@ -683,5 +796,78 @@ describe("Settings and FocusLayout", () => {
     expect(button).toHaveAttribute("aria-expanded", "false")
     await user.click(button)
     expect(screen.getByRole("button", { name: "Cancel" })).toHaveAttribute("aria-expanded", "true")
+  })
+})
+
+describe("UserMenu compact", () => {
+  it("shows only the avatar and still opens the full menu", async () => {
+    const user = userEvent.setup()
+    const onSettings = vi.fn()
+    render(
+      <ThemeProvider defaultMode="light" storageKey={null}>
+        <UserMenu compact name="Maya Chen" subtitle="The Chen household" color={1}>
+          <DropdownMenuItem onSelect={onSettings}>Settings</DropdownMenuItem>
+        </UserMenu>
+      </ThemeProvider>,
+    )
+    const trigger = screen.getByRole("button", { name: "Account menu for Maya Chen" })
+    expect(trigger).not.toHaveTextContent("Maya Chen")
+    // Initials are CSS content, so axe label-content-name-mismatch sees no visible text that the name leaves out.
+    expect(trigger).not.toHaveTextContent("MC")
+    expect(trigger.querySelector("[data-slot=avatar]")).toBeInTheDocument()
+    await user.click(trigger)
+    expect(await screen.findByText("The Chen household")).toBeInTheDocument()
+    await user.click(screen.getByRole("menuitem", { name: "Settings" }))
+    expect(onSettings).toHaveBeenCalledOnce()
+  })
+})
+
+describe("UserMenu in a sidebar icon rail", () => {
+  it("is named by name alone and shows only the avatar", () => {
+    render(
+      <ThemeProvider defaultMode="light" storageKey={null}>
+        <SidebarProvider defaultOpen={false}>
+          <UserMenu name="Maya Chen" subtitle="The Chen household" />
+        </SidebarProvider>
+      </ThemeProvider>,
+    )
+    const trigger = screen.getByRole("button", { name: "Maya Chen" })
+    expect(trigger).toHaveAccessibleName("Maya Chen")
+    // The initials are CSS content, so the name has no visible text to mismatch.
+    expect(trigger).not.toHaveTextContent("MC")
+    expect(trigger).not.toHaveTextContent("The Chen household")
+  })
+})
+
+describe("Page, PageHeader and PageSection", () => {
+  it("lays out a page with an h1, an icon, and h2 regions", () => {
+    render(
+      <Page width="sm">
+        <PageHeader title="Groceries" icon={<span data-testid="dot" />} />
+        <PageSection title="This week" action={<button type="button">See all</button>}>
+          <p>Body</p>
+        </PageSection>
+      </Page>,
+    )
+    expect(screen.getByText("Body").closest("[data-slot=page]")).toHaveClass("max-w-xl", "px-4")
+    expect(screen.getByTestId("dot").closest("[data-slot=page-header-icon]")).toBeInTheDocument()
+    expect(screen.getByRole("heading", { level: 1, name: "Groceries" })).toBeInTheDocument()
+    const region = screen.getByRole("region", { name: "This week" })
+    expect(within(region).getByRole("heading", { level: 2, name: "This week" })).toBeInTheDocument()
+    expect(within(region).getByRole("button", { name: "See all" })).toBeInTheDocument()
+    expect(within(region).getByText("Body")).toBeInTheDocument()
+  })
+
+  it("renders Heading level 2 as an h2", () => {
+    render(<Heading level={2}>Upcoming</Heading>)
+    expect(screen.getByRole("heading", { level: 2, name: "Upcoming" })).toBeInTheDocument()
+  })
+})
+
+describe("SettingsRow body", () => {
+  it("shows the body under the label without a toggle", () => {
+    render(<SettingsRow label="Connected calendars" body={<p>Family calendar</p>} />)
+    expect(screen.getByText("Family calendar")).toBeVisible()
+    expect(screen.queryByRole("button")).toBeNull()
   })
 })

@@ -29,7 +29,7 @@ function Collapse({ open, contentClassName, className, children, ...props }: Col
       )}
       {...props}
     >
-      <div className={cn("min-h-0 overflow-hidden", contentClassName)}>{children}</div>
+      <div className={cn("min-h-0 min-w-0 overflow-x-visible overflow-y-clip", contentClassName)}>{children}</div>
     </div>
   )
 }

@@ -356,7 +356,7 @@ export {
 } from "./components/ui/sidebar"
 export { Skeleton } from "./components/ui/skeleton"
 export { Slider } from "./components/ui/slider"
-export { Toaster, toastUndo } from "./components/ui/sonner"
+export { Toaster, toast, toastUndo } from "./components/ui/sonner"
 export type { ToastUndoOptions } from "./components/ui/sonner"
 export { Spinner } from "./components/ui/spinner"
 export { Switch } from "./components/ui/switch"
@@ -400,8 +400,12 @@ export { CategoryDot, categoryBg } from "./components/admin/category"
 export type { CategoryColor, CategoryDotProps } from "./components/admin/category"
 export { Celebration, celebrate } from "./components/admin/celebration"
 export type { CelebrationProps } from "./components/admin/celebration"
+export { ChecklistEditor } from "./components/admin/checklist-editor"
+export type { ChecklistItem, ChecklistEditorProps } from "./components/admin/checklist-editor"
 export { ColorSwatchPicker } from "./components/admin/color-swatch-picker"
 export type { ColorSwatchPickerProps } from "./components/admin/color-swatch-picker"
+export { CommentThread } from "./components/admin/comment-thread"
+export type { CommentThreadComment, CommentThreadProps } from "./components/admin/comment-thread"
 export { ConfirmDialog } from "./components/admin/confirm-dialog"
 export type { ConfirmDialogProps } from "./components/admin/confirm-dialog"
 export { CopyField } from "./components/admin/copy-field"
@@ -420,6 +424,10 @@ export { MarkdownEditor } from "./components/admin/markdown-editor"
 export type { MarkdownEditorProps } from "./components/admin/markdown-editor"
 export { PageHeader } from "./components/admin/page-header"
 export type { PageHeaderProps } from "./components/admin/page-header"
+export { Page, PageSection } from "./components/admin/page"
+export type { PageProps, PageSectionProps } from "./components/admin/page"
+export { PromptDialog } from "./components/admin/prompt-dialog"
+export type { PromptDialogProps } from "./components/admin/prompt-dialog"
 export { SearchInput } from "./components/admin/search-input"
 export type { SearchInputProps } from "./components/admin/search-input"
 export { SettingsSection, SettingsRow } from "./components/admin/settings"
@@ -430,6 +438,8 @@ export { StatCard } from "./components/admin/stat-card"
 export type { StatCardProps } from "./components/admin/stat-card"
 export { StatusDot, StatusBadge } from "./components/admin/status"
 export type { StatusTone, StatusDotProps, StatusBadgeProps } from "./components/admin/status"
+export { TimeZonePicker } from "./components/admin/time-zone-picker"
+export type { TimeZonePickerProps } from "./components/admin/time-zone-picker"
 export { Timeline } from "./components/admin/timeline"
 export type { TimelineItem } from "./components/admin/timeline"
 export { UsageMeter } from "./components/admin/usage-meter"
@@ -538,6 +548,8 @@ export type {
   UseDictationOptions,
   DictationButtonProps,
 } from "./components/ai/dictation"
+export { Markdown } from "./components/ai/markdown"
+export type { MarkdownProps } from "./components/ai/markdown"
 export { ModelPicker } from "./components/ai/model-picker"
 export type { ModelOption, ModelPickerProps } from "./components/ai/model-picker"
 export { PromptInput, PromptInputChip, PromptInputSelect } from "./components/ai/prompt-input"
@@ -551,14 +563,25 @@ export { ToolGroup, ToolStep, ToolStatusIcon } from "./components/ai/tool-steps"
 export type { ToolStatus, ToolGroupProps, ToolStepProps } from "./components/ai/tool-steps"
 
 // Auth
-export { AuthLayout, LoginForm, SignupForm, GitHubIcon, GoogleIcon, AppleIcon } from "./components/auth/auth"
+export {
+  AuthLayout,
+  AuthForm,
+  LoginForm,
+  SignupForm,
+  NewPasswordForm,
+  GitHubIcon,
+  GoogleIcon,
+  AppleIcon,
+} from "./components/auth/auth"
 export type {
   AuthLayoutProps,
   AuthProvider,
+  AuthFormProps,
   LoginValues,
   LoginFormProps,
   SignupValues,
   SignupFormProps,
+  NewPasswordFormProps,
 } from "./components/auth/auth"
 
 // Hooks

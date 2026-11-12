@@ -261,6 +261,7 @@ function Details({ mode }: { mode: string }) {
             aria-label="Session file"
             value="/srv/appdata/netadmin/pi-agent/sessions/2026-11-10T09-41-12_disk.jsonl"
             display="2026-11-10T09-41-12_disk.jsonl"
+            copiedLabel="Path copied"
           />
         </CardContent>
       </Card>
