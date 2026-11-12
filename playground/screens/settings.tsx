@@ -1,9 +1,13 @@
 import { XIcon } from "lucide-react"
 import { useState } from "react"
 import {
+  AvatarUpload,
   Button,
+  type CategoryColor,
+  ColorSwatchPicker,
   FocusLayout,
   Input,
+  MemberAvatar,
   SettingsRow,
   SettingsSection,
   Switch,
@@ -13,15 +17,16 @@ import {
   type ThemeMode,
 } from "@/index"
 
-const members = [
-  { name: "Maya Chen", color: "bg-category-1" },
-  { name: "Sam Rivera", color: "bg-category-2" },
-  { name: "Ada Chen", color: "bg-category-4" },
+const members: { name: string; color: CategoryColor }[] = [
+  { name: "Maya Chen", color: 1 },
+  { name: "Sam Rivera", color: 2 },
+  { name: "Ada Chen", color: 4 },
 ]
 
 export function SettingsScreen() {
   const { mode, setMode } = useTheme()
   const [password, setPassword] = useState(false)
+  const [color, setColor] = useState<CategoryColor>(1)
   return (
     <FocusLayout
       title="Settings"
@@ -33,6 +38,28 @@ export function SettingsScreen() {
         </Button>
       }
     >
+      <SettingsSection title="You">
+        <div className="flex flex-col gap-5 py-4">
+          <AvatarUpload
+            name="Maya Chen"
+            color={color}
+            maxBytes={512 * 1024}
+            onChange={() => {}}
+            description="Shows next to your name everywhere. Without a photo, your initial and colour are used."
+          />
+          <div className="flex flex-col gap-2">
+            <span id="colour-label" className="text-[13px] font-medium">
+              Your colour
+            </span>
+            <ColorSwatchPicker
+              aria-labelledby="colour-label"
+              value={color}
+              onValueChange={setColor}
+              taken={{ 2: "Sam Rivera", 4: "Ada Chen" }}
+            />
+          </div>
+        </div>
+      </SettingsSection>
       <SettingsSection title="Appearance">
         <SettingsRow
           label="Theme"
@@ -66,7 +93,7 @@ export function SettingsScreen() {
             key={m.name}
             label={
               <span className="flex items-center gap-2">
-                <span aria-hidden="true" className={`size-3 rounded-full ${m.color}`} />
+                <MemberAvatar name={m.name} color={m.color} size="sm" aria-hidden="true" />
                 {m.name}
               </span>
             }

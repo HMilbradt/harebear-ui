@@ -391,7 +391,13 @@ export { AppNav } from "./components/admin/app-nav"
 export type { AppNavPlace, AppNavGroup, AppNavAction, AppNavProps } from "./components/admin/app-nav"
 export { AppShell, AppBrand } from "./components/admin/app-shell"
 export type { AppNavItem, AppNavSection, AppBrandProps, AppShellProps } from "./components/admin/app-shell"
+export { AvatarUpload, cropImageToSquare } from "./components/admin/avatar-upload"
+export type { AvatarUploadProps } from "./components/admin/avatar-upload"
 export { Callout } from "./components/admin/callout"
+export { CategoryDot, categoryBg } from "./components/admin/category"
+export type { CategoryColor, CategoryDotProps } from "./components/admin/category"
+export { ColorSwatchPicker } from "./components/admin/color-swatch-picker"
+export type { ColorSwatchPickerProps } from "./components/admin/color-swatch-picker"
 export { ConfirmDialog } from "./components/admin/confirm-dialog"
 export type { ConfirmDialogProps } from "./components/admin/confirm-dialog"
 export { CopyField } from "./components/admin/copy-field"
@@ -418,8 +424,13 @@ export { Timeline } from "./components/admin/timeline"
 export type { TimelineItem } from "./components/admin/timeline"
 export { UsageMeter } from "./components/admin/usage-meter"
 export type { UsageMeterProps } from "./components/admin/usage-meter"
-export { UserChip, initials } from "./components/admin/user-chip"
-export type { UserChipProps } from "./components/admin/user-chip"
+export { AvatarStack, MemberAvatar, UserChip, VisibilityBadge, initials } from "./components/admin/user-chip"
+export type {
+  MemberAvatarProps,
+  AvatarStackProps,
+  VisibilityBadgeProps,
+  UserChipProps,
+} from "./components/admin/user-chip"
 export { UserMenu } from "./components/admin/user-menu"
 export type { UserMenuProps } from "./components/admin/user-menu"
 

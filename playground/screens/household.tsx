@@ -23,6 +23,8 @@ import {
   Badge,
   Button,
   DayStrip,
+  type CategoryColor,
+  CategoryDot,
   DropdownMenuItem,
   SectionedList,
   type SectionedListSection,
@@ -31,6 +33,7 @@ import {
   useAssistant,
   useAssistantPage,
   UserMenu,
+  VisibilityBadge,
 } from "@/index"
 
 const initial: SectionedListSection[] = [
@@ -48,7 +51,7 @@ const initial: SectionedListSection[] = [
         title: "Book the dentist for Ada",
         meta: "Important · 3 pm",
         important: true,
-        assignee: { name: "Maya Chen" },
+        assignee: { name: "Maya Chen", color: 1 },
       },
       { id: "t2", title: "Pick up the dry cleaning", meta: "Errands" },
       { id: "t3", title: "Water the plants", meta: "Home", done: true },
@@ -58,7 +61,7 @@ const initial: SectionedListSection[] = [
     id: "groceries",
     title: "Groceries",
     items: [
-      { id: "g1", title: "Oat milk", meta: "Groceries · added by HomeBot", assignee: { name: "Sam Rivera" } },
+      { id: "g1", title: "Oat milk", meta: "Groceries · added by HomeBot", assignee: { name: "Sam Rivera", color: 2 } },
       { id: "g2", title: "Lemons", meta: "Groceries" },
     ],
   },
@@ -134,22 +137,21 @@ function WeekAgenda() {
   )
 }
 
-const lists = ["Groceries", "Errands", "House projects"].map((label, i) => ({
+const lists = [
+  { label: "Groceries", color: 1 },
+  { label: "Errands", color: 2 },
+  { label: "Birthday ideas", color: 3, locked: true },
+].map(({ label, color, locked }) => ({
   label,
   href: "#household",
-  icon: (
-    <span
-      aria-hidden="true"
-      className={
-        [
-          "size-2.5 rounded-full bg-category-1",
-          "size-2.5 rounded-full bg-category-2",
-          "size-2.5 rounded-full bg-category-3",
-        ][i]
-      }
-    />
-  ),
+  icon: <CategoryDot color={color as CategoryColor} locked={locked} />,
 }))
+
+const household: { name: string; color: CategoryColor }[] = [
+  { name: "Maya Chen", color: 1 },
+  { name: "Sam Rivera", color: 2 },
+  { name: "Ada Chen", color: 4 },
+]
 
 /** The demo agent: thinks for a moment (Stop aborts it), then adds what you asked for to Groceries with a receipt. */
 async function reply(text: string, { append, signal }: AssistantSendContext) {
@@ -190,7 +192,7 @@ function TodayPage() {
           <h1 className="text-2xl font-semibold">Good morning, Maya</h1>
           <p className="text-sm text-muted-foreground">Tuesday, November 11 · {open} to do</p>
         </div>
-        <Badge variant="soft">Everyone</Badge>
+        <VisibilityBadge visibility="shared" members={household} className="max-sm:hidden" />
       </header>
       <AskBox
         value={ask}
@@ -260,7 +262,7 @@ export function HouseholdScreen() {
           onSelect: () => document.querySelector<HTMLInputElement>("[data-slot=sectioned-list-add] input")?.focus(),
         }}
         footer={
-          <UserMenu name="Maya Chen" subtitle="The Chen household">
+          <UserMenu name="Maya Chen" color={1} subtitle="The Chen household">
             <DropdownMenuItem asChild>
               <a href="#settings">
                 <SettingsIcon />

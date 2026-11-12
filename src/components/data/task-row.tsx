@@ -1,14 +1,16 @@
 "use client"
 
 import * as React from "react"
-import { initials } from "@/components/admin/user-chip"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import type { CategoryColor } from "@/components/admin/category"
+import { MemberAvatar } from "@/components/admin/user-chip"
 import { CheckCircle } from "@/components/ui/check-circle"
 import { cn } from "@/lib/utils"
 
 export interface TaskRowAssignee {
   name: string
   avatarUrl?: string
+  /** Category colour behind the initials when there is no photo. */
+  color?: CategoryColor
 }
 
 export interface TaskRowProps extends Omit<React.ComponentProps<"div">, "title"> {
@@ -79,12 +81,13 @@ function TaskRow({
         {meta && <span className="truncate text-xs text-muted-foreground">{meta}</span>}
       </div>
       {assignee && (
-        <Avatar size="sm" role="img" aria-label={assignee.name} title={assignee.name}>
-          {assignee.avatarUrl && <AvatarImage src={assignee.avatarUrl} alt="" />}
-          <AvatarFallback aria-hidden="true" className="group-data-[size=sm]/avatar:text-xs">
-            {initials(assignee.name)}
-          </AvatarFallback>
-        </Avatar>
+        <MemberAvatar
+          size="sm"
+          name={assignee.name}
+          avatarUrl={assignee.avatarUrl}
+          color={assignee.color}
+          title={assignee.name}
+        />
       )}
     </div>
   )

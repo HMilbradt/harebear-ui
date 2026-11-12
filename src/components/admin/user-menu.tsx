@@ -2,6 +2,7 @@
 
 import { ChevronsUpDownIcon, LogOutIcon, MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
 import type * as React from "react"
+import type { CategoryColor } from "@/components/admin/category"
 import { UserChip } from "@/components/admin/user-chip"
 import { useTheme, type ThemeMode } from "@/components/theme/theme-provider"
 import {
@@ -23,6 +24,8 @@ export interface UserMenuProps {
   /** Second line, e.g. the email or "Signed in". */
   subtitle?: React.ReactNode
   avatarUrl?: string
+  /** Category colour behind the initials when there is no photo. */
+  color?: CategoryColor
   /** Extra items between the header and the theme choice, e.g. a Settings DropdownMenuItem. */
   children?: React.ReactNode
   /** Show the Light / Dark / System choice. Default true. Needs ThemeProvider. */
@@ -48,6 +51,7 @@ function UserMenu({
   name,
   subtitle,
   avatarUrl,
+  color,
   children,
   themeSwitch = true,
   onSignOut,
@@ -67,7 +71,7 @@ function UserMenu({
           className,
         )}
       >
-        <UserChip name={name} subtitle={subtitle} avatarUrl={avatarUrl} className="flex-1" />
+        <UserChip name={name} subtitle={subtitle} avatarUrl={avatarUrl} color={color} className="flex-1" />
         <ChevronsUpDownIcon className="size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden" />
       </DropdownMenuTrigger>
       <DropdownMenuContent
