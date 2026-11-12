@@ -64,19 +64,20 @@ Calendar views and SmartInput follow when a second app needs them.
 | SmartInput                                 | A text input that turns phrases into removable chips; the app supplies the rules (dates, people, lists).                               | Shared by quick add and the AskBox.   |
 | AgendaRow, DayStrip, WeekScroll, MiniMonth | Time, icon or check, title and whose dot; a strip of day buttons that jump to a day; stacked days you scroll; a month with event dots. | Calendar today is a date picker only. |
 | SegmentedControl                           | Two or three options, raised selected segment (Mine / Everyone, Agenda / Week).                                                        | Restyle of ToggleGroup.               |
-| FilterChips, VisibilityBadge               | On/off chips; "Only you" with a lock or "Everyone" with faces.                                                                         |                                       |
+| FilterChips, VisibilityBadge (built)       | On/off chips; "Only you" with a lock or "Everyone" with faces.                                                                         | FilterChips still proposed.           |
 | InlineConfirm                              | A plain confirmation shown in place, for the few destructive actions that keep one.                                                    | Lighter than ConfirmDialog.           |
 | ChoiceCards                                | Two or three large side-by-side options (Google or Calendar link, Adult or Child).                                                     |                                       |
 | SearchHero, CardGrid                       | Big search box over a grid of LinkTiles grouped by topic.                                                                              |                                       |
 
 ## 4. People
 
-| Component         | What it does                                                                                |
-| :---------------- | :------------------------------------------------------------------------------------------ |
-| MemberAvatar      | Photo, falling back to initial on the member's colour; sizes; ring variant. Extends Avatar. |
-| AvatarStack       | Overlapping faces with a "+N".                                                              |
-| AvatarUpload      | Upload, change or remove a photo with live preview.                                         |
-| ColorSwatchPicker | Radio group of category colours; colours used by someone else are marked and disabled.      |
+| Component                 | What it does                                                                                |
+| :------------------------ | :------------------------------------------------------------------------------------------ |
+| MemberAvatar (built)      | Photo, falling back to initial on the member's colour; sizes; ring variant. Extends Avatar. |
+| AvatarStack (built)       | Overlapping faces with a "+N".                                                              |
+| AvatarUpload (built)      | Upload, change or remove a photo with live preview.                                         |
+| ColorSwatchPicker (built) | Radio group of category colours; colours used by someone else are marked and disabled.      |
+| CategoryDot (built)       | Dot in a category colour, optional lock for private items.                                  |
 
 ## 5. Feedback and motion
 
@@ -90,6 +91,6 @@ Calendar views and SmartInput follow when a second app needs them.
 
 - **Category palette (built: `category-1..6`).** Six or so non-status colours for members, lists and calendars, each with a dark-mode value. Homeclub hard-codes hex values that stay the same in dark mode. Status colours (`success`, `warning`, `destructive`) must never double as category colours.
 - **Composite focus (built: `focus-box`).** A documented class or token for "the box around a bare field shows the focus ring" (`focus-within`), so apps stop working around inline styles.
-- **Size floors.** Checks 24px, phone touch targets 44px, no text under 12px. New components follow them; existing avatar initials and `kbd` are still 11px.
+- **Size floors.** Checks 24px, phone touch targets 44px, no text under 12px. Avatar initials and `kbd` are 12px.
 - **Brand mark slot.** AppNav (`brand`) and AuthLayout (`brand`) take the product mark as a prop.
 - **Design canvas loading.** The design system artifact's README names `window.HarebearUI` but not which files to load on a Design canvas, so designs copy components as markup. Add a "Consuming this system" section listing the bundle and stylesheet.

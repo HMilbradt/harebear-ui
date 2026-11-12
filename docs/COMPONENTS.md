@@ -43,7 +43,7 @@ A household or personal app where an assistant sits on every page and safe actio
 - Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo`.
 - In the assistant thread, each action it took is an `ActionReceipt` with Undo (append it from `onSend`).
 - Settings and setup flows leave the frame: `FocusLayout` around `SettingsSection`s of `SettingsRow`s.
-- Members, lists and calendars take a `category-1..6` color; status colors never double as categories.
+- Members, lists and calendars take a `category-1..6` color (`CategoryColor`); status colors never double as categories. People are `MemberAvatar` (`AvatarStack`, `VisibilityBadge`), list dots are `CategoryDot`, profile settings use `AvatarUpload` and `ColorSwatchPicker`.
 - Live example: `playground/screens/household.tsx` (`#household`) and `settings.tsx` (`#settings`).
 
 ## Theme
@@ -75,7 +75,7 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 | Alert dialog     | `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogHeader`, `AlertDialogFooter`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogAction`, `AlertDialogCancel`, `AlertDialogMedia`, `AlertDialogOverlay`, `AlertDialogPortal`                                                                                                                                                                                                   | Use for destructive confirmations.                                                                                                                                                                                                                                                                                                                                        |
 | Aspect ratio     | `AspectRatio`                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                           |
 | Attachment       | `Attachment`, `AttachmentGroup`, `AttachmentMedia`, `AttachmentContent`, `AttachmentTitle`, `AttachmentDescription`, `AttachmentActions`, `AttachmentAction`, `AttachmentTrigger`                                                                                                                                                                                                                                                                            | File/image chips on messages and composers. `size`: `default`, `sm`, `xs`; `orientation`: `horizontal`, `vertical`.                                                                                                                                                                                                                                                       |
-| Avatar           | `Avatar`, `AvatarImage`, `AvatarFallback`, `AvatarGroup`, `AvatarGroupCount`, `AvatarBadge`                                                                                                                                                                                                                                                                                                                                                                  | `size`: `sm` 28px, `default` 36px, `lg` 56px. Fallback is tinted initials.                                                                                                                                                                                                                                                                                                |
+| Avatar           | `Avatar`, `AvatarImage`, `AvatarFallback`, `AvatarGroup`, `AvatarGroupCount`, `AvatarBadge`                                                                                                                                                                                                                                                                                                                                                                  | `size`: `sm` 28px, `default` 36px, `lg` 56px. Fallback is tinted initials, 12px at `sm`. For people use `MemberAvatar`.                                                                                                                                                                                                                                                   |
 | Badge            | `Badge`, `badgeVariants`                                                                                                                                                                                                                                                                                                                                                                                                                                     | 24px pill. `variant`: `default` (primary), `secondary` (neutral, the common one), `soft` (tinted primary), `outline`, `success`, `warning`, `destructive`, `ghost`, `link`. harebear adds `size="lg"` (32px, lines up with sm buttons) and `tone` (`success \| warning \| danger \| info \| neutral`, the StatusBadge words; wins over `variant`).                        |
 | Bubble           | `Bubble`, `BubbleGroup`, `BubbleContent`, `BubbleReactions`                                                                                                                                                                                                                                                                                                                                                                                                  | Chat bubble. `variant`: `default` (primary), `secondary`, `muted`, `tinted`, `outline`, `ghost`, `destructive`; `align`: `start`, `end`.                                                                                                                                                                                                                                  |
 | Breadcrumb       | `Breadcrumb`, `BreadcrumbList`, `BreadcrumbItem`, `BreadcrumbLink`, `BreadcrumbPage`, `BreadcrumbSeparator`, `BreadcrumbEllipsis`                                                                                                                                                                                                                                                                                                                            |                                                                                                                                                                                                                                                                                                                                                                           |
@@ -103,7 +103,7 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 | Input group      | `InputGroup`, `InputGroupAddon`, `InputGroupButton`, `InputGroupText`, `InputGroupInput`, `InputGroupTextarea`                                                                                                                                                                                                                                                                                                                                               | Inputs with icons, prefixes, buttons.                                                                                                                                                                                                                                                                                                                                     |
 | Input OTP        | `InputOTP`, `InputOTPGroup`, `InputOTPSlot`, `InputOTPSeparator`                                                                                                                                                                                                                                                                                                                                                                                             |                                                                                                                                                                                                                                                                                                                                                                           |
 | Item             | `Item`, `ItemMedia`, `ItemContent`, `ItemTitle`, `ItemDescription`, `ItemActions`, `ItemGroup`, `ItemSeparator`, `ItemHeader`, `ItemFooter`                                                                                                                                                                                                                                                                                                                  | Generic list rows. harebear fix: `ItemTitle` clamps to one line (long words break) and shows the full text as a tooltip when clamped, `ItemContent` has `min-w-0`. harebear adds `ItemTitle mono` for commands, paths and IDs.                                                                                                                                            |
-| Kbd              | `Kbd`, `KbdGroup`                                                                                                                                                                                                                                                                                                                                                                                                                                            | Mono keycap.                                                                                                                                                                                                                                                                                                                                                              |
+| Kbd              | `Kbd`, `KbdGroup`                                                                                                                                                                                                                                                                                                                                                                                                                                            | Mono keycap, 12px text.                                                                                                                                                                                                                                                                                                                                                   |
 | Marker           | `Marker`, `MarkerIcon`, `MarkerContent`, `markerVariants`                                                                                                                                                                                                                                                                                                                                                                                                    | Inline status line in a thread ("Conversation saved"). `variant`: `default`, `separator` (date dividers), `border`.                                                                                                                                                                                                                                                       |
 | Label            | `Label`                                                                                                                                                                                                                                                                                                                                                                                                                                                      |                                                                                                                                                                                                                                                                                                                                                                           |
 | Menubar          | `Menubar`, `MenubarMenu`, `MenubarTrigger`, `MenubarContent`, `MenubarItem`, `MenubarCheckboxItem`, `MenubarRadioGroup`, `MenubarRadioItem`, `MenubarLabel`, `MenubarSeparator`, `MenubarShortcut`, `MenubarGroup`, `MenubarPortal`, `MenubarSub`, `MenubarSubTrigger`, `MenubarSubContent`                                                                                                                                                                  |                                                                                                                                                                                                                                                                                                                                                                           |
@@ -242,11 +242,11 @@ Label-over-value pairs as a `<dl>`. Props: `items: { label; value }[]`, `columns
 
 ### `UserChip`
 
-Avatar + name + subtitle. Props: `name`, `subtitle?`, `avatarUrl?`, `action?`, `size?`. In a sidebar icon rail only the avatar shows. Also exports `initials(name)`.
+Avatar + name + subtitle. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`CategoryColor` behind the initials), `action?`, `size?`. In a sidebar icon rail only the avatar shows. Also exports `initials(name)`.
 
 ### `UserMenu`
 
-The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. In a sidebar icon rail the trigger is just the avatar and the menu opens to the side. Props: `name`, `subtitle?`, `avatarUrl?`, `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`.
+The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. In a sidebar icon rail the trigger is just the avatar and the menu opens to the side. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`CategoryColor` behind the initials), `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`.
 
 ```tsx
 ;<UserMenu name={email} subtitle="Signed in" onSignOut={signOut}>
@@ -255,6 +255,50 @@ The signed-in user as a menu button (sidebar footer or top bar). The menu has a 
     Settings
   </DropdownMenuItem>
 </UserMenu>
+```
+
+### `MemberAvatar`
+
+A person's photo, or their initials on their category colour (`bg-category-N`, `text-category-foreground`). Props: `name`, `avatarUrl?`, `color?: CategoryColor` (1 to 6; without it the soft primary tint), `size?` (`sm` 28px, `default` 36px, `lg` 56px). It is `role="img"` named after the person; pass `aria-hidden` when the name is shown next to it. Used by `UserChip`, `UserMenu` and `TaskRow`.
+
+```tsx
+;<MemberAvatar name="Sam Rivera" avatarUrl={sam.photoUrl ?? undefined} color={sam.color} size="sm" />
+```
+
+### `AvatarStack`, `VisibilityBadge`
+
+`AvatarStack`: overlapping small `MemberAvatar`s. Props: `members: { name; avatarUrl?; color? }[]`, `max?` (default 4; the rest show as "+N", read as "N more"). `VisibilityBadge`: who can see something. Props: `visibility: "shared" | "private"`, `members?` (faces when shared), `label?` (default "Shared with everyone" or "Only you"; the lock shows when private).
+
+```tsx
+;<VisibilityBadge visibility={list.private ? "private" : "shared"} members={household} />
+```
+
+### `CategoryDot`
+
+A 10px dot in a category colour, e.g. as the `icon` of a list in `AppNav`'s group. Props: `color: CategoryColor`, `label?` (accessible name when the colour means something on its own, e.g. whose event; decorative without it), `locked?` (adds a lock named `lockLabel?`, default "Only you").
+
+### `ColorSwatchPicker`
+
+The six category colours as a radio group (arrow keys skip taken ones). 32px swatches with 44px touch targets; the chosen one has a check and a ring. Props: `value?: CategoryColor`, `onValueChange?(color)`, `taken?: Partial<Record<CategoryColor, string>>` (colour to who has it: shown with their initial, disabled, named "Violet, taken by Riley"). Name it with `aria-label` or `aria-labelledby`.
+
+```tsx
+;<ColorSwatchPicker aria-label="Your colour" value={me.color} onValueChange={setColor} taken={{ 3: "Riley" }} />
+```
+
+### `AvatarUpload`, `cropImageToSquare`
+
+Profile photo: a 72px avatar, "Upload a photo" / "Change photo" and "Remove photo". The chosen image is cropped to its centred square at 256x256 in the browser (canvas, JPEG) and previewed at once. Props: `name`, `color?`, `avatarUrl?` (current photo), `onChange(photo: Blob | null)` (`null` after Remove), `maxBytes?` (JPEG quality steps down to fit), `onError?(error)` ("Could not read that image." or "That photo is too big."), `description?`. `cropImageToSquare(file, { size?, maxBytes? })` is the crop on its own: a `Promise<Blob>`.
+
+```tsx
+;<AvatarUpload
+  name={me.name}
+  color={me.color}
+  avatarUrl={me.photoUrl ?? undefined}
+  maxBytes={512 * 1024}
+  onChange={(photo) => (photo ? uploadPhoto(photo) : removePhoto())}
+  onError={(e) => toast.error(e.message)}
+  description="Without a photo, your initial and colour are used."
+/>
 ```
 
 ### `ConfirmDialog`
@@ -385,7 +429,7 @@ Mini bar history (pings, uptime). Props: `data: (number | { value; tone?; label?
 
 ### `TaskRow`
 
-One to-do: `CheckCircle` aligned with the first line, title, one meta line, optional assignee avatar. Props: `title`, `checked`, `onCheckedChange(checked)`, `meta?`, `assignee?: { name; avatarUrl? }`, `important?` (say it in `meta` too), `onOpen?` (title becomes a button, e.g. to open a sheet), `disabled?`.
+One to-do: `CheckCircle` aligned with the first line, title, one meta line, optional assignee avatar. Props: `title`, `checked`, `onCheckedChange(checked)`, `meta?`, `assignee?: { name; avatarUrl?; color? }` (a `MemberAvatar`), `important?` (say it in `meta` too), `onOpen?` (title becomes a button, e.g. to open a sheet), `disabled?`.
 
 ### `SectionedList`
 
@@ -605,6 +649,7 @@ Props: `onSubmit?({ name?, email, password })`, `nameField?` (default true), `co
 | `useIsMobile()`                                                     | `true` under 768px.                                                                                                                                     |
 | `useAssistant()`, `useAssistantPage(page)`, `useDictation(options)` | See [`AssistantProvider`](#assistantprovider-useassistant-useassistantpage) and [`DictationButton`](#dictationbutton-usedictation-browserspeechsource). |
 | `useMediaQuery(query)`                                              | `true` while the media query matches; `false` during SSR.                                                                                               |
+| `categoryBg[color]`, type `CategoryColor`                           | `bg-category-N` class for a colour `1..6`, as a complete class name.                                                                                    |
 | `cn(...classes)`                                                    | clsx + tailwind-merge. Use for every `className` you compose.                                                                                           |
 
 ## Tokens
@@ -623,6 +668,7 @@ Use these as Tailwind utilities (`bg-*`, `text-*`, `border-*`, `ring-*`, `fill-*
 | `border`, `input`, `ring`           | Hairlines, input borders, focus rings.                                                                  |
 | `chart-1` … `chart-5`, `chart-grid` | Data series and gridlines.                                                                              |
 | `category-1` … `category-6`         | Members, lists, calendars: blue, teal, violet, rose, slate, cyan, each with a dark value. Never status. |
+| `category-foreground`               | Text and icons on a category fill (initials, a swatch's check).                                         |
 | `sidebar-*`                         | Sidebar surfaces (default to the page tokens).                                                          |
 
 Other theme values: `rounded-sm/md/lg/xl/2xl` scale from `--radius` (default 14px; cards use `xl`, buttons and inputs `md`), `shadow-card` (the one elevation), `font-sans` (Geist), `font-mono` (Geist Mono), `animate-typing`.
