@@ -106,7 +106,7 @@ export interface ApprovalResultProps extends React.ComponentProps<"div"> {
   time?: React.ReactNode
 }
 
-/** One-line record of a decision in the thread, e.g. "You approved `docker restart x`, once". */
+/** Short record of a decision in the thread, e.g. "You approved `docker restart x`, once". */
 function ApprovalResult({ decision, time, className, children, ...props }: ApprovalResultProps) {
   const denied = decision === "denied"
   return (
@@ -125,7 +125,7 @@ function ApprovalResult({ decision, time, className, children, ...props }: Appro
       >
         {denied ? <XIcon /> : <CheckIcon />}
       </span>
-      <span className="min-w-0 flex-1 truncate">{children}</span>
+      <span className="min-w-0 flex-1 wrap-anywhere">{children}</span>
       {time && <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{time}</span>}
     </div>
   )

@@ -24,6 +24,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
+          // harebear: stay clickable while a modal (Sheet, Drawer, Dialog) sets pointer-events: none on <body>.
+          pointerEvents: "auto",
         } as React.CSSProperties
       }
       toastOptions={{

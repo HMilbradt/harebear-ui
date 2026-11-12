@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 export interface ActionReceiptProps extends Omit<React.ComponentProps<"div">, "title"> {
   /** What was done, past tense: "Added milk to Groceries". */
   title: React.ReactNode
-  /** One line, e.g. "Groceries · just now". */
+  /** Short line under the title, e.g. "Groceries · just now". Wraps when long. */
   meta?: React.ReactNode
   /** Shows an Undo button. */
   onUndo?: () => void
@@ -40,7 +40,7 @@ function ActionReceipt({ title, meta, onUndo, undoLabel = "Undo", undone, classN
         <span className={cn("text-sm font-medium wrap-anywhere", undone && "text-muted-foreground line-through")}>
           {title}
         </span>
-        {meta && <span className="truncate text-xs text-muted-foreground">{meta}</span>}
+        {meta && <span className="text-xs text-muted-foreground wrap-anywhere">{meta}</span>}
       </div>
       {undone ? (
         <span className="shrink-0 text-xs font-medium text-muted-foreground">Undone</span>

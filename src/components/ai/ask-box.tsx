@@ -141,7 +141,7 @@ function AskBox({
           data-slot="ask-box-reply"
           aria-live="polite"
           aria-busy={pending || undefined}
-          className="flex min-w-0 flex-col gap-3 px-2 text-[15px] leading-relaxed"
+          className="flex min-w-0 flex-col gap-3 px-2 text-[15px] leading-relaxed wrap-anywhere"
         >
           {hasReply ? reply : <TypingIndicator label="Working" />}
           {chatHref && (

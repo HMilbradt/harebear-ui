@@ -83,7 +83,7 @@ function ChatMessage({ role, avatar, actions, variant = "muted", className, chil
   return (
     <div data-slot="chat-message" data-role="assistant" className={cn("flex items-start gap-4", className)} {...props}>
       {avatar === false ? null : (avatar ?? <AssistantAvatar />)}
-      <div className="flex min-w-0 flex-1 flex-col gap-3.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-3.5 wrap-anywhere">
         {children}
         {actions}
       </div>

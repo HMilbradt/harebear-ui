@@ -1,6 +1,7 @@
 "use client"
 
 import type * as React from "react"
+import { keepOpenOnToast } from "@/lib/internal/toast-clearance"
 import { cn } from "@/lib/utils"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
@@ -40,6 +41,7 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onInteractOutside,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
@@ -54,6 +56,7 @@ function DialogContent({
           className,
         )}
         {...props}
+        onInteractOutside={keepOpenOnToast(onInteractOutside)}
       >
         {children}
         {showCloseButton && (

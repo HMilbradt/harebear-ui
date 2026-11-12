@@ -81,7 +81,7 @@ function ToolGroup({
         <ChevronRightIcon
           className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
         />
-        <span className="min-w-0 flex-1 truncate font-medium">{title}</span>
+        <span className="min-w-0 flex-1 font-medium wrap-anywhere">{title}</span>
         {meta !== undefined && <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{meta}</span>}
         <ToolStatusIcon status={status} />
       </CollapsibleTrigger>
@@ -93,9 +93,9 @@ function ToolGroup({
 export interface ToolStepProps extends Omit<React.ComponentProps<"div">, "title"> {
   /** Tool icon, e.g. <TerminalIcon />. */
   icon?: React.ReactNode
-  /** Short verb column, e.g. "Run", "Read", "Edit". */
+  /** Short verb column, e.g. "Run", "Read", "Edit". With an empty `detail` it is the whole label, e.g. "Added milk". */
   kind: React.ReactNode
-  /** What it acted on, shown monospace: the command or path. */
+  /** What it acted on, shown monospace: the command or path. Empty for a plain-language step. */
   detail: string
   status: ToolStatus
   /** Trailing text. Default derived from status ("running", "failed"…). */
@@ -126,8 +126,16 @@ function ToolStep({ icon, kind, detail, status, meta, output, autoOpen, classNam
           {icon}
         </span>
       )}
-      <span className="w-18 shrink-0 truncate text-[13px] text-muted-foreground">{kind}</span>
-      <span className="min-w-0 flex-1 truncate font-mono text-[12.5px]">{detail}</span>
+      <span
+        data-slot="tool-step-kind"
+        className={cn(
+          "text-[13px] text-muted-foreground wrap-anywhere",
+          detail ? "w-18 shrink-0" : "min-w-0 flex-1 text-foreground",
+        )}
+      >
+        {kind}
+      </span>
+      {detail && <span className="min-w-0 flex-1 font-mono text-[12.5px] wrap-anywhere">{detail}</span>}
       <span
         className={cn(
           "shrink-0 text-xs whitespace-nowrap text-muted-foreground tabular-nums",
