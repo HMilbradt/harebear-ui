@@ -356,7 +356,7 @@ export {
 } from "./components/ui/sidebar"
 export { Skeleton } from "./components/ui/skeleton"
 export { Slider } from "./components/ui/slider"
-export { Toaster, toastUndo } from "./components/ui/sonner"
+export { Toaster, toast, toastUndo } from "./components/ui/sonner"
 export type { ToastUndoOptions } from "./components/ui/sonner"
 export { Spinner } from "./components/ui/spinner"
 export { Switch } from "./components/ui/switch"
@@ -422,6 +422,8 @@ export { PageHeader } from "./components/admin/page-header"
 export type { PageHeaderProps } from "./components/admin/page-header"
 export { Page, PageSection } from "./components/admin/page"
 export type { PageProps, PageSectionProps } from "./components/admin/page"
+export { PromptDialog } from "./components/admin/prompt-dialog"
+export type { PromptDialogProps } from "./components/admin/prompt-dialog"
 export { SearchInput } from "./components/admin/search-input"
 export type { SearchInputProps } from "./components/admin/search-input"
 export { SettingsSection, SettingsRow } from "./components/admin/settings"
@@ -432,6 +434,8 @@ export { StatCard } from "./components/admin/stat-card"
 export type { StatCardProps } from "./components/admin/stat-card"
 export { StatusDot, StatusBadge } from "./components/admin/status"
 export type { StatusTone, StatusDotProps, StatusBadgeProps } from "./components/admin/status"
+export { TimeZonePicker } from "./components/admin/time-zone-picker"
+export type { TimeZonePickerProps } from "./components/admin/time-zone-picker"
 export { Timeline } from "./components/admin/timeline"
 export type { TimelineItem } from "./components/admin/timeline"
 export { UsageMeter } from "./components/admin/usage-meter"
@@ -553,14 +557,25 @@ export { ToolGroup, ToolStep, ToolStatusIcon } from "./components/ai/tool-steps"
 export type { ToolStatus, ToolGroupProps, ToolStepProps } from "./components/ai/tool-steps"
 
 // Auth
-export { AuthLayout, LoginForm, SignupForm, GitHubIcon, GoogleIcon, AppleIcon } from "./components/auth/auth"
+export {
+  AuthLayout,
+  AuthForm,
+  LoginForm,
+  SignupForm,
+  NewPasswordForm,
+  GitHubIcon,
+  GoogleIcon,
+  AppleIcon,
+} from "./components/auth/auth"
 export type {
   AuthLayoutProps,
   AuthProvider,
+  AuthFormProps,
   LoginValues,
   LoginFormProps,
   SignupValues,
   SignupFormProps,
+  NewPasswordFormProps,
 } from "./components/auth/auth"
 
 // Hooks

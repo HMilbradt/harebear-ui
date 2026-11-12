@@ -133,7 +133,7 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 | Table            | `Table`, `TableHeader`, `TableBody`, `TableFooter`, `TableRow`, `TableHead`, `TableCell`, `TableCaption`                                                                                                                                                                                                                                                                                                                                                     | Borderless rows with rounded hover; quiet 12px headers. `data-state="selected"` tints a row.                                                                                                                                                                                                                                                                              |
 | Tabs             | `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`, `tabsListVariants`                                                                                                                                                                                                                                                                                                                                                                                         | `TabsList variant`: `default` (segmented control), `pill` (rounded top-level nav), `line`. Use `Tabs` as a segmented filter too (date ranges, status filters).                                                                                                                                                                                                            |
 | Textarea         | `Textarea`                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Same filled style as `Input`, auto-grows.                                                                                                                                                                                                                                                                                                                                 |
-| Toast            | `Toaster`                                                                                                                                                                                                                                                                                                                                                                                                                                                    | sonner. Mount once; call `toast("Saved")` from `sonner`. Follows the theme mode. `toastUndo(message, { onUndo, undoLabel?, duration = 9000 })` shows an Undo toast for something already done.                                                                                                                                                                            |
+| Toast            | `Toaster`, `toast`, `toastUndo`                                                                                                                                                                                                                                                                                                                                                                                                                              | sonner. Mount once; call `toast("Saved")`, `toast.success(...)`, `toast.error(...)` (sonner's `toast`, re-exported by harebear-ui). Follows the theme mode. `toastUndo(message, { onUndo, undoLabel?, duration = 9000 })` shows an Undo toast for something already done.                                                                                                 |
 | Toggle           | `Toggle`, `toggleVariants`, `ToggleGroup`, `ToggleGroupItem`                                                                                                                                                                                                                                                                                                                                                                                                 | 44px hit area under `pointer: coarse`.                                                                                                                                                                                                                                                                                                                                    |
 | Tooltip          | `TooltipProvider`, `Tooltip`, `TooltipTrigger`, `TooltipContent`                                                                                                                                                                                                                                                                                                                                                                                             | Mount `TooltipProvider` once near the root.                                                                                                                                                                                                                                                                                                                               |
 | Trace            | `Trace`, `TraceLine`, `TraceIcon`, `TraceTitle`, `TraceDescription`, `TraceCollapsible`, `TraceCollapsibleTrigger`, `TraceCollapsibleContent`                                                                                                                                                                                                                                                                                                                | Agent step log (searched, read, ran). `TraceLine status`: `running` (shimmer), `error`, `pending`.                                                                                                                                                                                                                                                                        |
@@ -333,6 +333,23 @@ Profile photo: a 72px avatar, "Upload a photo" / "Change photo" and "Remove phot
 
 Controlled "are you sure" dialog. Props: `open`, `onOpenChange`, `title`, `description?`, `confirmLabel?`, `cancelLabel?`, `destructive?` (red confirm), `onConfirm`.
 
+### `PromptDialog`
+
+Controlled dialog that asks for one line of text (New list, Rename). Props: `open`, `onOpenChange`, `title`, `description?`, `label` (field label), `defaultValue?`, `submitLabel`, `maxLength?`, `onSubmit(value): Promise<void>` (trimmed; empty is blocked). It closes when `onSubmit` resolves; a thrown error's message shows under the field and the dialog stays open.
+
+```tsx
+;<PromptDialog
+  open={renaming}
+  onOpenChange={setRenaming}
+  title="Rename list"
+  label="Name"
+  defaultValue={list.name}
+  submitLabel="Rename"
+  maxLength={60}
+  onSubmit={(name) => api.renameList(list.id, name)}
+/>
+```
+
 ### `CopyField`
 
 Read-only value with a copy button (IDs, paths, URLs). Props: `value` (copied), `display?` (shown instead, full value as tooltip), `label?` (leading addon), `aria-label?`, `mono?` (default true), `copiedLabel?` (default "Copied"; after copying, the button's name and a label beside it read this for a moment).
@@ -340,6 +357,18 @@ Read-only value with a copy button (IDs, paths, URLs). Props: `value` (copied), 
 ### `DateTimePicker`
 
 Date field: a button that opens a `Calendar` in a `Popover`, with an optional time field and a Clear button. Value is a floating local date, no time zone: `DateTimeValue = { date: "YYYY-MM-DD", time?: "HH:MM" }`. Props: `value: DateTimeValue | null`, `onValueChange(value | null)`, `withTime?` (time field under the calendar; enabled once a date is set), `placeholder?` (default "Pick a date"). Other props (`id`, `aria-label`, `disabled`) go to the trigger button. Day cells are 44px on phones.
+
+### `TimeZonePicker`
+
+Searchable IANA time zone field built on `Combobox`, listing `Intl.supportedValuesOf("timeZone")` (underscores shown as spaces, so "new york" matches). Props: `value` (e.g. `"America/Vancouver"`), `onValueChange(zone)`, `id?` (for a `FieldLabel` or `SettingsRow` `htmlFor`), `className?`.
+
+```tsx
+;<SettingsRow
+  label="Time zone"
+  htmlFor="tz"
+  control={<TimeZonePicker id="tz" value={me.timeZone} onValueChange={(timeZone) => save({ timeZone })} />}
+/>
+```
 
 ### `DetailSheet`
 
@@ -401,7 +430,7 @@ A page outside the app frame (settings, onboarding, setup): slim sticky top bar,
 
 ### `SettingsSection`, `SettingsRow`
 
-`SettingsSection`: card with `title`, `description?` and rows divided by hairlines (a labelled `region`). `SettingsRow`: `label`, `description?`, `control?` (Switch, Select, ToggleGroup, Button), `htmlFor?` (makes the label a `<label>` for the control). Add `content` to expand inline (change password, add a connection): without a `control` the row gets a "Change"/"Cancel" button (`expandLabel?`); control it with `open`/`onOpenChange` or `defaultOpen`.
+`SettingsSection`: card with `title`, `description?` and rows divided by hairlines (a labelled `region`). `SettingsRow`: `label`, `description?`, `control?` (Switch, Select, ToggleGroup, Button), `htmlFor?` (makes the label a `<label>` for the control), `body?` (always shown under the label, full width, no toggle: a list, a hint, a short form). Add `content` to expand inline (change password, add a connection): without a `control` the row gets a "Change"/"Cancel" button (`expandLabel?`); control it with `open`/`onOpenChange` or `defaultOpen`.
 
 ```tsx
 ;<FocusLayout
@@ -738,17 +767,25 @@ Parameterized versions of shadcn's login-01..05 and signup-01..05 blocks.
 
 Full-page wrapper. Props: `variant` (`"centered"` card on the page, `"muted"` same on a muted background, `"split"` form left and cover image right, `"card-image"` one wide card with form and image), `brand?` (usually `AppBrand`), `image?: { src; alt }` (split and card-image), `footer?` (terms text), `children` (the form).
 
+### `AuthForm`
+
+The shell the auth forms share; use it for other signed-out steps (join with a code, verify an email). Props: `title`, `description?`, `children` (fields, each with a `name`), `error?`, `submitLabel`, `loading?` (spinner, disables every control), `onSubmit?(data: FormData)` (after browser validation; omit to submit natively), `footer?` (under the button: links, provider buttons).
+
 ### `LoginForm`
 
 Props: `onSubmit?({ email, password? })` (omit to submit natively to an `action`), `mode?` (`"password"` or `"email-only"` for magic links), `providers?: { id; label; icon? }[]` + `onProviderClick?(id)` (3+ providers with icons collapse to an icon row), `providersFirst?`, `forgotPasswordHref?`, `signupHref?`, `title?`, `description?`, `submitLabel?`, `loading?`, `error?`.
 
 ### `PasswordInput`
 
-Password `Input` with a Show/Hide button (`aria-label` "Show password" / "Hide password") that switches `type` between `password` and `text`. Input props go to the input; `wrapperClassName?` styles the wrapper. `LoginForm` and `SignupForm` use it for every password field.
+Password `Input` with a Show/Hide button (`aria-label` "Show password" / "Hide password") that switches `type` between `password` and `text`. Input props go to the input; `wrapperClassName?` styles the wrapper. `LoginForm`, `SignupForm` and `NewPasswordForm` use it for every password field.
 
 ### `SignupForm`
 
-Props: `onSubmit?({ name?, email, password })`, `nameField?` (default true), `confirmPassword?` (default true; mismatches are blocked with a browser validation message), `minPasswordLength?` (default 8), `passwordHint?`, `providers?`, `onProviderClick?`, `providersFirst?`, `loginHref?`, `title?`, `description?`, `submitLabel?`, `loading?`, `error?`.
+Props: `onSubmit?({ name?, email, password }, data: FormData)`, `children?` (extra fields before the name, e.g. a household name; read them from `data`), `nameField?` (default true), `confirmPassword?` (default true; mismatches are blocked with a browser validation message), `minPasswordLength?` (default 8), `passwordHint?`, `providers?`, `onProviderClick?`, `providersFirst?`, `loginHref?`, `title?`, `description?`, `submitLabel?`, `loading?`, `error?`.
+
+### `NewPasswordForm`
+
+Reset or first password: "New password" + "Confirm password" (a mismatch is blocked with a browser validation message). Props: `onSubmit?({ password })`, `minPasswordLength?` (default 8), `passwordHint?`, `title?` (default "Choose a new password"), `description?`, `submitLabel?` (default "Save password"), `loading?`, `error?`.
 
 `GitHubIcon`, `GoogleIcon`, `AppleIcon`: brand marks for provider buttons.
 

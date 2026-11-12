@@ -843,3 +843,11 @@ describe("Page, PageHeader and PageSection", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Upcoming" })).toBeInTheDocument()
   })
 })
+
+describe("SettingsRow body", () => {
+  it("shows the body under the label without a toggle", () => {
+    render(<SettingsRow label="Connected calendars" body={<p>Family calendar</p>} />)
+    expect(screen.getByText("Family calendar")).toBeVisible()
+    expect(screen.queryByRole("button")).toBeNull()
+  })
+})

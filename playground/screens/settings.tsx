@@ -11,6 +11,8 @@ import {
   SettingsRow,
   SettingsSection,
   Switch,
+  TimeZonePicker,
+  toast,
   ToggleGroup,
   ToggleGroupItem,
   useTheme,
@@ -27,6 +29,7 @@ export function SettingsScreen() {
   const { mode, setMode } = useTheme()
   const [password, setPassword] = useState(false)
   const [color, setColor] = useState<CategoryColor>(1)
+  const [zone, setZone] = useState("America/Vancouver")
   return (
     <FocusLayout
       title="Settings"
@@ -75,6 +78,23 @@ export function SettingsScreen() {
               <ToggleGroupItem value="dark">Dark</ToggleGroupItem>
               <ToggleGroupItem value="system">System</ToggleGroupItem>
             </ToggleGroup>
+          }
+        />
+      </SettingsSection>
+      <SettingsSection title="Time">
+        <SettingsRow
+          label="Time zone"
+          description="Due dates and the morning summary follow it."
+          htmlFor="settings-zone"
+          body={
+            <TimeZonePicker
+              id="settings-zone"
+              value={zone}
+              onValueChange={(z) => {
+                setZone(z)
+                toast.success("Time zone saved")
+              }}
+            />
           }
         />
       </SettingsSection>

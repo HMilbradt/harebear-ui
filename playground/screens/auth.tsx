@@ -5,8 +5,11 @@ import {
   AppleIcon,
   type AuthLayoutProps,
   AuthLayout,
+  Field,
+  FieldLabel,
   GitHubIcon,
   GoogleIcon,
+  Input,
   LoginForm,
   SignupForm,
   Tabs,
@@ -69,7 +72,12 @@ export function AuthScreen() {
               { id: "github", label: "GitHub", icon: <GitHubIcon /> },
               { id: "google", label: "Google", icon: <GoogleIcon /> },
             ]}
-          />
+          >
+            <Field>
+              <FieldLabel htmlFor="signup-workspace">Workspace name</FieldLabel>
+              <Input id="signup-workspace" name="workspace" required />
+            </Field>
+          </SignupForm>
         ) : (
           <LoginForm
             mode={form === "email-only" ? "email-only" : "password"}

@@ -214,7 +214,10 @@ describe("auth forms", () => {
     await user.clear(screen.getByLabelText("Confirm password"))
     await user.type(screen.getByLabelText("Confirm password"), "longpassword")
     await user.click(screen.getByRole("button", { name: "Create account" }))
-    expect(onSubmit).toHaveBeenCalledWith({ name: "Ada", email: "a@b.co", password: "longpassword" })
+    expect(onSubmit).toHaveBeenCalledWith(
+      { name: "Ada", email: "a@b.co", password: "longpassword" },
+      expect.any(FormData),
+    )
   })
 
   it("renders provider buttons and reports clicks", async () => {
@@ -294,7 +297,7 @@ describe("review fixes", () => {
     await user.clear(screen.getByLabelText("Password"))
     await user.type(screen.getByLabelText("Password"), "rightpassword")
     await user.click(screen.getByRole("button", { name: "Create account" }))
-    expect(onSubmit).toHaveBeenCalledWith({ email: "a@b.co", password: "rightpassword" })
+    expect(onSubmit).toHaveBeenCalledWith({ email: "a@b.co", password: "rightpassword" }, expect.any(FormData))
   })
 
   it("gives each LoginForm instance its own field ids", () => {
