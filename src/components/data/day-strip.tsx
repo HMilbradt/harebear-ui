@@ -1,12 +1,14 @@
 "use client"
 
 import type * as React from "react"
+import { parseLocalDate } from "@/lib/date"
 import { cn } from "@/lib/utils"
 
 export interface DayStripDay {
   /** DOM id of the element to jump to, e.g. a SectionedList section id. */
   id: string
-  date: Date
+  /** Floating local date, `YYYY-MM-DD`. */
+  date: string
   /** Shows a dot under the date. */
   hasPlans?: boolean
 }
@@ -27,7 +29,13 @@ function DayStrip({ days, value, onValueChange, className, "aria-label": ariaLab
   const jump = (e: React.MouseEvent, id: string) => {
     e.preventDefault()
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
-    document.getElementById(id)?.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" })
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" })
+      // Move keyboard and screen reader focus to the day too; the cancelled link click would not.
+      if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1")
+      el.focus({ preventScroll: true })
+    }
     onValueChange?.(id)
   }
   return (
@@ -40,7 +48,8 @@ function DayStrip({ days, value, onValueChange, className, "aria-label": ariaLab
       <ul className="flex gap-2 p-1">
         {days.map((day) => {
           const selected = day.id === value
-          const label = day.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
+          const date = parseLocalDate(day.date)
+          const label = date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
           return (
             <li key={day.id} className="flex shrink-0 grow basis-18">
               <a
@@ -58,10 +67,10 @@ function DayStrip({ days, value, onValueChange, className, "aria-label": ariaLab
                 <span
                   className={cn("text-xs font-medium", selected ? "text-primary-foreground" : "text-muted-foreground")}
                 >
-                  {day.date.toLocaleDateString(undefined, { weekday: "short" })}
+                  {date.toLocaleDateString(undefined, { weekday: "short" })}
                 </span>
                 <span className="text-[22px] leading-tight font-semibold tracking-tight tabular-nums">
-                  {day.date.getDate()}
+                  {date.getDate()}
                 </span>
                 <span
                   aria-hidden="true"

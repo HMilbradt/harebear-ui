@@ -40,7 +40,7 @@ function MemberAvatar({ name, avatarUrl, color, ...props }: MemberAvatarProps) {
 
 export interface AvatarStackProps extends React.ComponentProps<"div"> {
   members: Pick<MemberAvatarProps, "name" | "avatarUrl" | "color">[]
-  /** Faces shown before the rest collapse into "+N". Default 4. */
+  /** Total slots, default 4. Past it, `max - 1` faces and a "+N" chip. */
   max?: number
 }
 

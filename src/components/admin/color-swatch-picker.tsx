@@ -49,7 +49,7 @@ function ColorSwatchPicker({ value, onValueChange, taken, className, ...props }:
             aria-label={by ? `${c.name}, taken by ${by}` : c.name}
             title={by ? `${c.name}, taken by ${by}` : undefined}
             className={cn(
-              "relative grid size-8 shrink-0 place-items-center rounded-full text-category-foreground outline-none after:absolute after:-inset-1.5 focus-visible:ring-4 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-50 data-checked:ring-2 data-checked:ring-foreground data-checked:ring-offset-2 data-checked:ring-offset-card",
+              "relative grid size-8 shrink-0 place-items-center rounded-full text-category-foreground outline-none after:absolute after:-inset-1.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary focus-visible:outline-solid disabled:cursor-not-allowed disabled:opacity-50 data-checked:ring-2 data-checked:ring-foreground data-checked:ring-offset-2 data-checked:ring-offset-card",
               categoryBg[c.value],
             )}
           >

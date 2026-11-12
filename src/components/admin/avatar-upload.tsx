@@ -105,7 +105,7 @@ function AvatarUpload({
         color={color}
         size="lg"
         aria-label={shown ? `${name}'s photo` : name}
-        className="size-18 *:data-[slot=avatar-fallback]:text-2xl"
+        className="data-[size=lg]:size-18 *:data-[slot=avatar-fallback]:text-2xl"
       />
       <div className="flex min-w-0 flex-[1_1_14rem] flex-col gap-2">
         <div className="flex flex-wrap gap-2">
@@ -121,13 +121,20 @@ function AvatarUpload({
               if (file) void choose(file)
             }}
           />
-          <Button type="button" variant="outline" loading={busy} onClick={() => input.current?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            className="max-md:h-11"
+            loading={busy}
+            onClick={() => input.current?.click()}
+          >
             {shown ? "Change photo" : "Upload a photo"}
           </Button>
           {shown && (
             <Button
               type="button"
               variant="ghost"
+              className="max-md:h-11"
               disabled={busy}
               onClick={() => {
                 setPreview(null)

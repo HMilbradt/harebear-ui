@@ -36,7 +36,7 @@ function Editor() {
     <MarkdownEditor
       aria-label="Body"
       value={md}
-      onChange={setMd}
+      onValueChange={setMd}
       renderPreview={(text) => <h1>{text.replace(/^# /, "")}</h1>}
     />
   )
@@ -49,7 +49,7 @@ function Picker({ onChange }: { onChange: (v: DateTimeValue | null) => void }) {
       aria-label="When"
       withTime
       value={value}
-      onChange={(v) => {
+      onValueChange={(v) => {
         onChange(v)
         setValue(v)
       }}

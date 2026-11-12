@@ -56,7 +56,7 @@ export interface AssistantContextValue {
   setPage: (page: AssistantPage | null) => void
   /** Adds the user message, opens the dock (unless `{ open: false }`) and runs the app's onSend. */
   send: (text: string, options?: AssistantSendOptions) => Promise<void>
-  /** Stops the running send: aborts its `signal`, ends `pending` and drops its return value. */
+  /** Stops the running send: aborts its `signal`, ends `pending` and drops its return value and later `append`/`update` calls. */
   stop: () => void
   append: AssistantSendContext["append"]
   update: AssistantSendContext["update"]
@@ -117,8 +117,11 @@ function AssistantProvider({ onSend, initialMessages = [], defaultOpen = false, 
         const reply = await onSendRef.current(text, {
           page: pageRef.current,
           messages: before,
-          append,
-          update,
+          // Run-scoped: after Stop, late appends and streamed updates are dropped.
+          append: (m) => (run.signal.aborted ? "" : append(m)),
+          update: (id, content) => {
+            if (!run.signal.aborted) update(id, content)
+          },
           signal: run.signal,
         })
         if (run.signal.aborted) return

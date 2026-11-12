@@ -1,7 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useState } from "react"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   ActionReceipt,
   AgendaRow,
@@ -9,6 +9,7 @@ import {
   AskBox,
   AssistantDock,
   AssistantProvider,
+  type AssistantSendContext,
   CheckCircle,
   Collapse,
   DayStrip,
@@ -254,10 +255,17 @@ describe("AgendaRow", () => {
 })
 
 describe("DayStrip", () => {
+  // jsdom has no scrollIntoView: stub it once, spy per test, restore after each.
+  Element.prototype.scrollIntoView ??= () => {}
+  const realMatchMedia = window.matchMedia
+  afterEach(() => {
+    window.matchMedia = realMatchMedia
+    vi.restoreAllMocks()
+  })
+
   it("jumps to the day's element, marks the selected day and says which days have plans", async () => {
     const user = userEvent.setup()
-    const scroll = vi.fn()
-    Element.prototype.scrollIntoView = scroll
+    const scroll = vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(() => {})
     const onValueChange = vi.fn()
     render(
       <>
@@ -265,8 +273,8 @@ describe("DayStrip", () => {
           value="d11"
           onValueChange={onValueChange}
           days={[
-            { id: "d11", date: new Date(2026, 10, 11), hasPlans: true },
-            { id: "d12", date: new Date(2026, 10, 12) },
+            { id: "d11", date: "2026-11-11", hasPlans: true },
+            { id: "d12", date: "2026-11-12" },
           ]}
         />
         <section id="d12">Thursday</section>
@@ -277,9 +285,28 @@ describe("DayStrip", () => {
     expect(links[0]).toHaveAttribute("aria-current", "true")
     expect(links[0]).toHaveAccessibleName(/has plans$/)
     expect(links[1]).not.toHaveAccessibleName(/has plans/)
+    // A floating date is local: "2026-11-12" shows 12 in any time zone.
+    expect(links[1]).toHaveTextContent("12")
+    expect(links[1]).not.toHaveTextContent("11")
     await user.click(links[1] as HTMLElement)
     expect(scroll).toHaveBeenCalledWith({ behavior: "smooth", block: "start" })
     expect(onValueChange).toHaveBeenCalledWith("d12")
+    expect(document.activeElement).toBe(document.getElementById("d12"))
+  })
+
+  it("jumps without smooth scrolling under reduced motion", async () => {
+    const user = userEvent.setup()
+    const scroll = vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(() => {})
+    window.matchMedia = (query: string) =>
+      ({ ...realMatchMedia(query), matches: query.includes("prefers-reduced-motion"), media: query }) as MediaQueryList
+    render(
+      <>
+        <DayStrip days={[{ id: "d13", date: "2026-11-13" }]} />
+        <section id="d13">Friday</section>
+      </>,
+    )
+    await user.click(screen.getByRole("link"))
+    expect(scroll).toHaveBeenCalledWith({ behavior: "auto", block: "start" })
   })
 })
 
@@ -342,6 +369,21 @@ describe("AskBox", () => {
   })
 })
 
+function StoppableAskBox() {
+  const [v, setV] = useState("Plan my day")
+  const [pending, setPending] = useState(false)
+  return (
+    <AskBox
+      value={v}
+      onValueChange={setV}
+      onSubmit={() => setPending(true)}
+      dictation={false}
+      pending={pending}
+      onStop={() => setPending(false)}
+    />
+  )
+}
+
 describe("AskBox stop and reply", () => {
   it("swaps send for Stop while pending, blocks Enter and calls onStop", async () => {
     const user = userEvent.setup()
@@ -362,6 +404,16 @@ describe("AskBox stop and reply", () => {
     expect(onSubmit).not.toHaveBeenCalled()
     await user.click(screen.getByRole("button", { name: "Stop" }))
     expect(onStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps focus in the field after Send and after Stop", async () => {
+    const user = userEvent.setup()
+    render(<StoppableAskBox />)
+    const field = screen.getByLabelText("Ask anything")
+    await user.click(screen.getByRole("button", { name: "Send message" }))
+    expect(document.activeElement).toBe(field)
+    await user.click(screen.getByRole("button", { name: "Stop" }))
+    expect(document.activeElement).toBe(field)
   })
 
   it("shows the answer under the box with an Open chat link, and a typing indicator while waiting", () => {
@@ -441,6 +493,33 @@ describe("useAssistant inline reply and stop", () => {
     expect(screen.queryByRole("button", { name: "Stop" })).not.toBeInTheDocument()
     await act(async () => finish("too late"))
     expect(screen.queryByText("too late")).not.toBeInTheDocument()
+  })
+
+  it("Stop drops streamed appends and updates that arrive after it", async () => {
+    const user = userEvent.setup()
+    let ctx: AssistantSendContext | undefined
+    let streamId = ""
+    render(
+      <AssistantProvider
+        onSend={(_text, c) => {
+          ctx = c
+          streamId = c.append({ role: "assistant", content: "Thinking" })
+          return new Promise<undefined>(() => {})
+        }}
+      >
+        <InlineAsk />
+      </AssistantProvider>,
+    )
+    await user.type(screen.getByLabelText("Ask anything"), "stream it{Enter}")
+    expect(screen.getByText("Thinking")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Stop" }))
+    act(() => {
+      ctx?.update(streamId, "late delta")
+      ctx?.append({ role: "assistant", content: "late message" })
+    })
+    expect(screen.getByText("Thinking")).toBeInTheDocument()
+    expect(screen.queryByText("late delta")).not.toBeInTheDocument()
+    expect(screen.queryByText("late message")).not.toBeInTheDocument()
   })
 })
 

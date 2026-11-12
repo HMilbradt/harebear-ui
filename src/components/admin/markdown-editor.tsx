@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 export interface MarkdownEditorProps
   extends Omit<React.ComponentProps<"textarea">, "value" | "defaultValue" | "onChange"> {
   value: string
-  onChange: (value: string) => void
+  onValueChange: (value: string) => void
   /**
    * Turns the Markdown into elements for the Preview tab; the result is wrapped in Prose.
    * With react-markdown: `(md) => <Markdown components={{ blockquote: ProseBlockquote }}>{md}</Markdown>`.
@@ -22,7 +22,7 @@ export interface MarkdownEditorProps
 /** Markdown field with Write and Preview tabs. Other props go to the Textarea (id, placeholder, aria-*). */
 function MarkdownEditor({
   value,
-  onChange,
+  onValueChange,
   renderPreview,
   className,
   wrapperClassName,
@@ -37,7 +37,7 @@ function MarkdownEditor({
       <TabsContent value="write">
         <Textarea
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onValueChange(e.target.value)}
           className={cn("min-h-48", className)}
           {...props}
         />

@@ -26,7 +26,7 @@ src/
   components/ui/        shadcn primitives (radix-nova style), restyled. Keep upstream structure.
   components/theme/     ThemeProvider, ThemeToggle, ThemeScript.
   components/admin/     Layout and dashboard composites (AppShell, AppNav, FocusLayout, SettingsSection, StatCard...).
-  components/data/      DataTable, TrendChart, Sparkline, BarList, StatusBars, TaskRow, SectionedList.
+  components/data/      DataTable, TrendChart, Sparkline, BarList, StatusBars, TaskRow, SectionedList, AgendaRow, DayStrip.
   components/ai/        Chat composites (ChatThread, ChatMessage, PromptInput...) and the assistant layer (AssistantProvider, AssistantDock, AskBox, DictationButton, ActionReceipt).
   components/auth/      AuthLayout, LoginForm, SignupForm (parameterized shadcn login/signup blocks).
   components/layout/    Prop-driven layout and text (Stack, Text, Metric, ShowMore, Collapse).
@@ -50,7 +50,7 @@ test/                   Vitest: API snapshot, docs coverage, token integrity, be
 4. Floors: checks 24px, phone touch targets 44px, no text under 12px, icon-only buttons have `aria-label`.
 5. `pnpm gen`, then add the component to `docs/COMPONENTS.md` (the docs test fails otherwise) and to the index in `llms.txt`. Use a heading like ``### `Name` `` or a table row with the name in backticks, so `npx harebear-ui docs Name` finds it.
 6. Use it in a playground screen if it is visual, and look at it in light and dark mode and at 375px width.
-7. Add a behavior test in `test/` if it has logic (`components.test.tsx`, `building-blocks.test.tsx`, `household.test.tsx` for the household and assistant layer). `pnpm test -u` to accept the new export in the snapshot.
+7. Add a behavior test in `test/` if it has logic (`components.test.tsx`, `building-blocks.test.tsx`, `household.test.tsx` for the household and assistant layer, `people.test.tsx` (avatars, category colours), `forms.test.tsx` (form fields, DetailSheet, Prose tips)). `pnpm test -u` to accept the new export in the snapshot.
 8. `pnpm check`.
 
 ## Looking at your work

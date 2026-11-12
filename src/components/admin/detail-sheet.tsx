@@ -28,8 +28,11 @@ function DetailSheet({ open, onOpenChange, title, description, footer, className
   const desktop = useMediaQuery("(min-width: 768px)")
   // Radix warns about a dialog without a description unless aria-describedby is set to undefined.
   const noDescription = description ? {} : { "aria-describedby": undefined }
-  const body = <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">{children}</div>
-  const foot = footer && <div className="flex flex-wrap items-center gap-2 border-t px-6 py-4">{footer}</div>
+  const body = (padBottom?: string) => (
+    <div className={cn("min-h-0 flex-1 overflow-y-auto px-6 pb-6", !footer && padBottom)}>{children}</div>
+  )
+  const foot = (padBottom?: string) =>
+    footer && <div className={cn("flex flex-wrap items-center gap-2 border-t px-6 py-4", padBottom)}>{footer}</div>
 
   if (desktop) {
     return (
@@ -47,8 +50,8 @@ function DetailSheet({ open, onOpenChange, title, description, footer, className
             <SheetTitle className="text-lg font-semibold">{title}</SheetTitle>
             {description && <SheetDescription>{description}</SheetDescription>}
           </div>
-          {body}
-          {foot}
+          {body()}
+          {foot()}
         </SheetContent>
       </Sheet>
     )
@@ -65,7 +68,7 @@ function DetailSheet({ open, onOpenChange, title, description, footer, className
           className,
         )}
       >
-        <div className="flex items-start gap-2 px-6 pt-2 pb-4">
+        <div className="flex items-start gap-2 px-6 pt-[max(0.5rem,env(safe-area-inset-top))] pb-4">
           <div className="flex min-w-0 flex-1 flex-col gap-1 pt-2.5">
             <DrawerTitle className="text-lg font-semibold">{title}</DrawerTitle>
             {description && <DrawerDescription>{description}</DrawerDescription>}
@@ -76,8 +79,8 @@ function DetailSheet({ open, onOpenChange, title, description, footer, className
             </Button>
           </DrawerClose>
         </div>
-        {body}
-        {foot}
+        {body("pb-[max(1.5rem,env(safe-area-inset-bottom))]")}
+        {foot("pb-[max(1rem,env(safe-area-inset-bottom))]")}
       </DrawerContent>
     </Drawer>
   )

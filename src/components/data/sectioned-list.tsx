@@ -37,7 +37,7 @@ export interface SectionedListProps<T extends SectionedListItem = SectionedListI
    * folds away like a TaskRow. Items without `done` (events) always stay.
    */
   renderItem?: (item: T, toggle: (done: boolean) => void) => React.ReactNode
-  /** How long a ticked row stays struck through before it folds away, e.g. the length of an Undo toast. Default 600. */
+  /** How long a ticked row stays struck through before it folds away, e.g. about the length of an Undo toast. Default 600. */
   lingerMs?: number
   /** Makes item titles buttons, e.g. to open a DetailSheet. */
   onOpen?: (id: string) => void
@@ -130,7 +130,9 @@ function SectionedList<T extends SectionedListItem = SectionedListItem>({
                   {section.title && (
                     <h2 className="min-w-0 text-[13px] font-semibold text-muted-foreground">{section.title}</h2>
                   )}
-                  {section.action && <div className="ml-auto flex shrink-0 items-center">{section.action}</div>}
+                  {section.action && (
+                    <div className="ml-auto flex shrink-0 items-center max-md:[&>*]:min-h-11">{section.action}</div>
+                  )}
                 </div>
               )}
               {section.empty != null && (

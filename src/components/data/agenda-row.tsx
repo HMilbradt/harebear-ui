@@ -2,13 +2,14 @@
 
 import { CalendarIcon } from "lucide-react"
 import * as React from "react"
+import { type CategoryColor, CategoryDot } from "@/components/admin/category"
 import { CheckCircle } from "@/components/ui/check-circle"
 import { cn } from "@/lib/utils"
 
 export interface AgendaRowWho {
   name: string
   /** Category color of the member or calendar, 1 to 6. */
-  color: 1 | 2 | 3 | 4 | 5 | 6
+  color: CategoryColor
 }
 
 export interface AgendaRowProps extends Omit<React.ComponentProps<"div">, "title"> {
@@ -27,15 +28,6 @@ export interface AgendaRowProps extends Omit<React.ComponentProps<"div">, "title
   /** Makes the title a button, e.g. to open an event dialog or a DetailSheet. */
   onOpen?: () => void
 }
-
-const dotClass = {
-  1: "bg-category-1",
-  2: "bg-category-2",
-  3: "bg-category-3",
-  4: "bg-category-4",
-  5: "bg-category-5",
-  6: "bg-category-6",
-} as const
 
 /** One line of a day's agenda: time, event icon or to-do check, title, whose dot. */
 function AgendaRow({
@@ -97,7 +89,7 @@ function AgendaRow({
       </div>
       {who && (
         <span className="flex max-w-32 shrink-0 items-center gap-1.5 text-[13px] leading-6 text-muted-foreground">
-          <span aria-hidden="true" className={cn("size-2 shrink-0 rounded-full", dotClass[who.color])} />
+          <CategoryDot color={who.color} />
           <span className="truncate">{who.name}</span>
         </span>
       )}

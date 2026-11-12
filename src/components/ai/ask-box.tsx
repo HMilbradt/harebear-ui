@@ -67,7 +67,10 @@ function AskBox({
   const id = React.useId()
   const submit = () => {
     const text = value.trim()
-    if (text && !disabled && !pending) onSubmit(text)
+    if (!text || disabled || pending) return
+    onSubmit(text)
+    // The send button may unmount (Stop replaces it): keep focus in the field.
+    document.getElementById(id)?.focus()
   }
   const hasText = value.trim().length > 0
   const hasReply = reply != null && reply !== false
@@ -110,7 +113,10 @@ function AskBox({
               shape="pill"
               className="size-10 shrink-0"
               aria-label="Stop"
-              onClick={onStop}
+              onClick={() => {
+                onStop()
+                document.getElementById(id)?.focus()
+              }}
             >
               <SquareIcon className="size-3.5 fill-current" />
             </Button>

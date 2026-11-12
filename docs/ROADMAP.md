@@ -71,13 +71,13 @@ Calendar views and SmartInput follow when a second app needs them.
 
 ## 4. People
 
-| Component                 | What it does                                                                                |
-| :------------------------ | :------------------------------------------------------------------------------------------ |
-| MemberAvatar (built)      | Photo, falling back to initial on the member's colour; sizes; ring variant. Extends Avatar. |
-| AvatarStack (built)       | Overlapping faces with a "+N".                                                              |
-| AvatarUpload (built)      | Upload, change or remove a photo with live preview.                                         |
-| ColorSwatchPicker (built) | Radio group of category colours; colours used by someone else are marked and disabled.      |
-| CategoryDot (built)       | Dot in a category colour, optional lock for private items.                                  |
+| Component                 | What it does                                                                                        |
+| :------------------------ | :-------------------------------------------------------------------------------------------------- |
+| MemberAvatar (built)      | Photo, falling back to initial on the member's colour; sizes; ring via AvatarStack. Extends Avatar. |
+| AvatarStack (built)       | Overlapping faces with a "+N".                                                                      |
+| AvatarUpload (built)      | Upload, change or remove a photo with live preview.                                                 |
+| ColorSwatchPicker (built) | Radio group of category colours; colours used by someone else are marked and disabled.              |
+| CategoryDot (built)       | Dot in a category colour, optional lock for private items.                                          |
 
 ## 5. Feedback and motion
 

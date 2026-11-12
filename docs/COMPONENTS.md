@@ -40,10 +40,10 @@ A household or personal app where an assistant sits on every page and safe actio
 </ThemeProvider>
 ```
 
-- Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo` and set `lingerMs` to its window so a ticked row stays struck through until Undo is gone.
+- Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo` and set `lingerMs` to its window so a ticked row stays struck through for about as long as Undo shows.
 - A week agenda: `DayStrip` above one `SectionedList` with a section per day (`empty` keeps empty days) and `AgendaRow` rows from `renderItem`.
 - In the assistant thread, each action it took is an `ActionReceipt` with Undo (append it from `onSend`).
-- A page with its own ask box (Today) answers under it: `AskBox` with `reply`, `pending`, `onStop` from `useAssistant()` and `send(text, { open: false })`.
+- A page with its own ask box (Today) answers under it: `AskBox` with `reply` and `pending` from `useAssistant()`, `onStop={stop}`, and `send(text, { open: false })`.
 - Settings and setup flows leave the frame: `FocusLayout` around `SettingsSection`s of `SettingsRow`s.
 - Members, lists and calendars take a `category-1..6` color (`CategoryColor`); status colors never double as categories. People are `MemberAvatar` (`AvatarStack`, `VisibilityBadge`), list dots are `CategoryDot`, profile settings use `AvatarUpload` and `ColorSwatchPicker`.
 - Live example: `playground/screens/household.tsx` (`#household`) and `settings.tsx` (`#settings`).
@@ -269,7 +269,7 @@ A person's photo, or their initials on their category colour (`bg-category-N`, `
 
 ### `AvatarStack`, `VisibilityBadge`
 
-`AvatarStack`: overlapping small `MemberAvatar`s. Props: `members: { name; avatarUrl?; color? }[]`, `max?` (default 4; the rest show as "+N", read as "N more"). `VisibilityBadge`: who can see something. Props: `visibility: "shared" | "private"`, `members?` (faces when shared), `label?` (default "Shared with everyone" or "Only you"; the lock shows when private).
+`AvatarStack`: overlapping small `MemberAvatar`s. Props: `members: { name; avatarUrl?; color? }[]`, `max?` (default 4): total slots; past it, `max - 1` faces and a "+N" chip (read as "N more"). `VisibilityBadge`: who can see something. Props: `visibility: "shared" | "private"`, `members?` (faces when shared), `label?` (default "Shared with everyone" or "Only you"; the lock shows when private).
 
 ```tsx
 ;<VisibilityBadge visibility={list.private ? "private" : "shared"} members={household} />
@@ -289,7 +289,7 @@ The six category colours as a radio group (arrow keys skip taken ones). 32px swa
 
 ### `AvatarUpload`, `cropImageToSquare`
 
-Profile photo: a 72px avatar, "Upload a photo" / "Change photo" and "Remove photo". The chosen image is cropped to its centred square at 256x256 in the browser (canvas, JPEG) and previewed at once. Props: `name`, `color?`, `avatarUrl?` (current photo), `onChange(photo: Blob | null)` (`null` after Remove), `maxBytes?` (JPEG quality steps down to fit), `onError?(error)` ("Could not read that image." or "That photo is too big."), `description?`. `cropImageToSquare(file, { size?, maxBytes? })` is the crop on its own: a `Promise<Blob>`.
+Profile photo: a 72px avatar, "Upload a photo" / "Change photo" and "Remove photo". The chosen image is cropped to its centred square at 256x256 in the browser (canvas, JPEG) and previewed at once. Props: `name`, `color?`, `avatarUrl?` (current photo), `onChange(photo: Blob | null)` (an event, not a controlled value) (`null` after Remove), `maxBytes?` (JPEG quality steps down to fit), `onError?(error)` ("Could not read that image." or "That photo is too big."), `description?`. `cropImageToSquare(file, { size?, maxBytes? })` is the crop on its own: a `Promise<Blob>`.
 
 ```tsx
 ;<AvatarUpload
@@ -313,7 +313,7 @@ Read-only value with a copy button (IDs, paths, URLs). Props: `value` (copied), 
 
 ### `DateTimePicker`
 
-Date field: a button that opens a `Calendar` in a `Popover`, with an optional time field and a Clear button. Value is a floating local date, no time zone: `DateTimeValue = { date: "YYYY-MM-DD", time?: "HH:MM" }`. Props: `value: DateTimeValue | null`, `onChange(value | null)`, `withTime?` (time field under the calendar; enabled once a date is set), `placeholder?` (default "Pick a date"). Other props (`id`, `aria-label`, `disabled`) go to the trigger button. Day cells are 44px on phones.
+Date field: a button that opens a `Calendar` in a `Popover`, with an optional time field and a Clear button. Value is a floating local date, no time zone: `DateTimeValue = { date: "YYYY-MM-DD", time?: "HH:MM" }`. Props: `value: DateTimeValue | null`, `onValueChange(value | null)`, `withTime?` (time field under the calendar; enabled once a date is set), `placeholder?` (default "Pick a date"). Other props (`id`, `aria-label`, `disabled`) go to the trigger button. Day cells are 44px on phones.
 
 ### `DetailSheet`
 
@@ -332,7 +332,7 @@ A record's details, one API for both sizes: a floating side sheet from 768px up,
 >
   <Field>
     <FieldLabel htmlFor="when">When</FieldLabel>
-    <DateTimePicker id="when" withTime value={due} onChange={setDue} />
+    <DateTimePicker id="when" withTime value={due} onValueChange={setDue} />
   </Field>
 </DetailSheet>
 ```
@@ -351,13 +351,13 @@ Muted tile that lifts on hover, for service launchers. Props: `title`, `subtitle
 
 ### `MarkdownEditor`
 
-Markdown field with Write and Preview tabs; Preview renders inside `Prose`. Props: `value`, `onChange(value)`, `renderPreview(markdown)` (the library has no Markdown parser; pass yours), `wrapperClassName?`. Other props (`id`, `placeholder`, `aria-*`, `className`) go to the `Textarea`.
+Markdown field with Write and Preview tabs; Preview renders inside `Prose`. Props: `value`, `onValueChange(value)`, `renderPreview(markdown)` (the library has no Markdown parser; pass yours), `wrapperClassName?`. Other props (`id`, `placeholder`, `aria-*`, `className`) go to the `Textarea`.
 
 ```tsx
 ;<MarkdownEditor
   id="body"
   value={body}
-  onChange={setBody}
+  onValueChange={setBody}
   renderPreview={(md) => <Markdown components={{ blockquote: ProseBlockquote }}>{md}</Markdown>}
 />
 ```
@@ -481,7 +481,7 @@ One to-do: `CheckCircle` aligned with the first line, title, one meta line, opti
 A to-do list: one add box at the top, sections with headings, done items folded into a "Show N done" toggle, an empty state. A ticked row stays struck through for `lingerMs`, then folds away with `Collapse`. Props: `sections: { id; title?; action?; empty?; items: SectionedListItem[] }[]` (item: `id`, `title`, `meta?`, `done?`, `important?`, `assignee?`), `onToggle(id, done)`, `lingerMs?` (default 600; 9000 matches `toastUndo`), `renderItem?(item, toggle)`, `onAdd?(text)`, `addPlaceholder?` (default "Add a to-do"), `addChips?(text)`, `onOpen?(id)`, `empty?`, `defaultShowDone?`.
 
 - Section `id` is also the `<section>`'s DOM id, so `DayStrip` or an `#id` link can jump to it. Keep ids unique on the page.
-- `action` sits at the right of the heading (a small ghost `Button`, e.g. "Move to today"). `empty` keeps the section shown with that text when nothing in it is open ("Nothing planned").
+- `action` sits at the right of the heading (a small ghost `Button`, e.g. "Move to today"; stretched to 44px on phones). `empty` keeps the section shown with that text when nothing in it is open ("Nothing planned").
 - `renderItem` draws other rows, e.g. `AgendaRow`. Its `toggle(done)` lingers and folds the row like a `TaskRow`. Items without `done` (events) always stay. Type the items with `SectionedList<MyItem>`.
 - `addChips(text)` returns chips shown at the right of the add box while it has text, like `AskBox` `chips` (the date or person parsed from the text).
 
@@ -496,11 +496,11 @@ A to-do list: one add box at the top, sections with headings, done items folded 
 
 ### `AgendaRow`
 
-One line of a day's agenda: time column, event icon (or a `CheckCircle` for a to-do), title, one meta line, whose dot and name. Props: `title`, `time?` ("3:15", "All day"), `meta?`, `who?: { name; color: 1..6 }` (`category-N` dot), `checked?` + `onCheckedChange?(checked)` (draws the check instead of the icon), `important?`, `onOpen?` (title becomes a button, e.g. to open an event dialog).
+One line of a day's agenda: time column, event icon (or a `CheckCircle` for a to-do), title, one meta line, whose dot and name. Props: `title`, `time?` ("3:15", "All day"), `meta?`, `who?: { name; color: CategoryColor }` (`CategoryDot` before the name), `checked?` + `onCheckedChange?(checked)` (draws the check instead of the icon), `important?`, `onOpen?` (title becomes a button, e.g. to open an event dialog).
 
 ### `DayStrip`
 
-A row of day links (short weekday, date, a dot when `hasPlans`) that smooth-scroll to the element whose id is the day's `id` (instant under reduced motion); scrolls sideways when the days do not fit. Props: `days: { id; date: Date; hasPlans? }[]`, `value?` (selected id, `aria-current`), `onValueChange?(id)`, `aria-label?` (default "Jump to a day"). Make it sticky with `className="sticky top-0 bg-background"` and give the scroll container `scroll-padding-top` so headings land below it.
+A row of day links (short weekday, date, a dot when `hasPlans`) that smooth-scroll to the element whose id is the day's `id` (instant under reduced motion) and move focus to it; scrolls sideways when the days do not fit. Props: `days: { id; date: "YYYY-MM-DD"; hasPlans? }[]` (floating local date, like `DateTimePicker`), `value?` (selected id, `aria-current`), `onValueChange?(id)`, `aria-label?` (default "Jump to a day"). Make it sticky with `className="sticky top-0 bg-background"` and give the scroll container `scroll-padding-top` so headings land below it.
 
 ```tsx
 ;<>

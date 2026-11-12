@@ -79,7 +79,8 @@ interface WeekItem {
 const maya: AgendaRowWho = { name: "Maya", color: 1 }
 const sam: AgendaRowWho = { name: "Sam", color: 2 }
 const week = [0, 1, 2, 3, 4, 5, 6].map((n) => {
-  const date = new Date(2026, 10, 11 + n)
+  const local = new Date(2026, 10, 11 + n)
+  const date = `2026-11-${local.getDate()}`
   const items: WeekItem[] =
     n === 0
       ? [
@@ -92,8 +93,8 @@ const week = [0, 1, 2, 3, 4, 5, 6].map((n) => {
             { id: "w4", title: "Clean the gutters", time: "All day", who: maya, kind: "todo" },
           ]
         : []
-  const title = date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
-  return { id: `day-${date.getDate()}`, date, title, empty: "Nothing planned", items }
+  const title = local.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
+  return { id: `day-${local.getDate()}`, date, title, empty: "Nothing planned", items }
 })
 
 /** Upcoming in miniature: a DayStrip over one SectionedList with a section per day and AgendaRow rows. */

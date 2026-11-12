@@ -121,11 +121,11 @@ function NewFormControls() {
         </Field>
         <Field>
           <FieldLabel htmlFor="c-when">When</FieldLabel>
-          <DateTimePicker id="c-when" withTime value={when} onChange={setWhen} />
+          <DateTimePicker id="c-when" withTime value={when} onValueChange={setWhen} />
         </Field>
         <Field>
           <FieldLabel htmlFor="c-body">Body</FieldLabel>
-          <MarkdownEditor id="c-body" value={body} onChange={setBody} renderPreview={previewMarkdown} />
+          <MarkdownEditor id="c-body" value={body} onValueChange={setBody} renderPreview={previewMarkdown} />
         </Field>
       </Section>
       <Section title="Details and joy" description="DetailSheet, Prose tips and Celebration.">
@@ -152,7 +152,7 @@ function NewFormControls() {
         >
           <Field>
             <FieldLabel htmlFor="c-sheet-when">When</FieldLabel>
-            <DateTimePicker id="c-sheet-when" value={when} onChange={setWhen} />
+            <DateTimePicker id="c-sheet-when" value={when} onValueChange={setWhen} />
           </Field>
         </DetailSheet>
         <Celebration />

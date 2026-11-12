@@ -14,7 +14,7 @@
 - Use harebear-ui components before writing new UI. Primitives keep shadcn/ui names and props.
 - Style with theme tokens only: bg-background, bg-card, bg-muted, text-muted-foreground, bg-primary, bg-primary-soft, text-success, text-warning, text-destructive, border-border, shadow-card, rounded-md/lg/xl. No hex colors or Tailwind palette colors.
 - Status is a tone: success | warning | danger | info | neutral. Members, lists and calendars use category-1..6 (bg-category-3, or `color={3}` on MemberAvatar, CategoryDot, ColorSwatchPicker), never status colors.
-- Agent-first apps (assistant on every page, undoable actions): AppNav + AssistantProvider/AssistantDock + SectionedList + toastUndo + FocusLayout/SettingsSection. A page's own AskBox answers inline with `reply` from useAssistant and stops with `pending` + `onStop`. Recipe: `npx harebear-ui docs "Agent-first apps"`.
+- Agent-first apps (assistant on every page, undoable actions): AppNav + AssistantProvider/AssistantDock + SectionedList + toastUndo + FocusLayout/SettingsSection. A page's own AskBox answers inline with `reply` from useAssistant and stops with `pending` + `onStop={stop}`. Recipe: `npx harebear-ui docs "Agent-first apps"`.
 - Icons: lucide-react elements, e.g. `<SearchIcon />`. Icon-only buttons need aria-label.
 - Change the brand with `<ThemeProvider accent="#hex" radius={14}>` or `--brand` / `--radius` in CSS.
 
