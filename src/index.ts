@@ -474,6 +474,7 @@ export type {
   AssistantMessage,
   AssistantPage,
   AssistantSendContext,
+  AssistantSendOptions,
   AssistantContextValue,
   AssistantProviderProps,
   AssistantDockProps,
@@ -502,6 +503,7 @@ export type {
   Conversation,
   ConversationGroup,
   ConversationListProps,
+  GroupByDateOptions,
   NewConversationButtonProps,
 } from "./components/ai/conversation-list"
 export { DictationButton, browserSpeechSource, useDictation } from "./components/ai/dictation"

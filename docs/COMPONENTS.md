@@ -42,6 +42,7 @@ A household or personal app where an assistant sits on every page and safe actio
 
 - Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo`.
 - In the assistant thread, each action it took is an `ActionReceipt` with Undo (append it from `onSend`).
+- A page with its own ask box (Today) answers under it: `AskBox` with `reply`, `pending`, `onStop` from `useAssistant()` and `send(text, { open: false })`.
 - Settings and setup flows leave the frame: `FocusLayout` around `SettingsSection`s of `SettingsRow`s.
 - Members, lists and calendars take a `category-1..6` color; status colors never double as categories.
 - Live example: `playground/screens/household.tsx` (`#household`) and `settings.tsx` (`#settings`).
@@ -277,7 +278,7 @@ Muted tile that lifts on hover, for service launchers. Props: `title`, `subtitle
 
 One nav config, two renderings: on desktop a `SidebarLayout` sidebar (brand, action button, places, one collapsible group, footer; active place is a raised card; collapses to the icon rail), under 768px a bottom tab bar (first 5 places, 56px targets, `aria-current="page"`) plus a round floating action button. Use it instead of `AppShell` for consumer apps that need phone navigation.
 
-Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar), `group?: AppNavGroup` (`label`, `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect }`, `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `children`.
+Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar, `sidebar?: false` for a tab-bar-only place such as Lists when the sidebar has a Lists group), `group?: AppNavGroup` (`label`, `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect; sidebar?: false }` (`sidebar: false` keeps only the round phone button), `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `children`.
 On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger` in the page header if users need them there. Render `AssistantDock` inside `children` so it clears the tab bar. Toasts stack above the tab bar, the action button and the dock launcher on their own; no `Toaster` offset needed.
 
 ### `FocusLayout`
@@ -495,7 +496,7 @@ Pill showing the active model with a status dot, opening a menu. Props: `models:
 Grouped thread list. Props: `groups: { label; items: Conversation[] }[]`, `activeId?`, `onSelect?(id)`, `onDelete?(conversation)` (adds a delete button per row that confirms first; `deleteDescription?` is the confirmation body), `renderAction?(conversation)` (any other trailing control; wins over `onDelete`; on desktop it shows on hover/focus), `empty?`.
 `Conversation = { id; title; description?; tone?; pulse?; deleteDisabled? }`: `description` is the second line (time, or a live state with a `tone` dot); `deleteDisabled` blocks delete for that row (a string is the reason, shown as the tooltip).
 Inside a `Sidebar` it closes the mobile sheet on select and hides in the icon rail.
-`groupByDate(items, getDate, toConversation, now?)` buckets items into Today / Yesterday / Previous 7 days / Earlier, newest first.
+`groupByDate(items, getDate, toConversation, options?)` buckets items into Today / Yesterday / Previous 7 days / Earlier, newest first. `options` is `{ now?, buckets? }` (or just `now`); `buckets: "week"` gives Today / This week (the 6 days before today) / Earlier.
 `formatWhen(date, now?, locale?)`: short timestamp for rows and headers: the time today ("9:41 AM"), the date this year ("Nov 3"), else with the year.
 
 ### `NewConversationButton`
@@ -530,15 +531,32 @@ Agent tool calls as a bordered, collapsible card. `ToolStatus = "queued" | "wait
 
 ### `AssistantProvider`, `useAssistant`, `useAssistantPage`
 
-One assistant conversation across pages. `AssistantProvider` props: `onSend(text, { page, messages, append, update })` (return the reply, or `append`/`update` messages yourself for streaming and receipts; a thrown error becomes the reply), `initialMessages?`, `defaultOpen?`. `useAssistant()` returns `{ open, setOpen, toggle, messages, pending, page, setPage, send, append, update, clear }`. A page calls `useAssistantPage({ id, title?, data?, suggestions? })` to become the context while mounted.
+One assistant conversation across pages. `AssistantProvider` props: `onSend(text, { page, messages, append, update, signal })` (return the reply, or `append`/`update` messages yourself for streaming and receipts; a thrown error becomes the reply; `signal` aborts when the user presses Stop, so pass it to `fetch` or listen for `abort` to tell your server), `initialMessages?`, `defaultOpen?`. `useAssistant()` returns `{ open, setOpen, toggle, messages, pending, reply, page, setPage, send, stop, append, update, clear }`: `send(text, { open: false }?)` skips opening the dock, `stop()` aborts the running send, ends `pending` and drops its late reply, `reply` is the assistant messages after the latest user message (null until there is one), for `AskBox`. A page calls `useAssistantPage({ id, title?, data?, suggestions? })` to become the context while mounted.
 
 ### `AssistantDock`
 
-The assistant as a floating panel over the page (never reflows it): header (icon, title, full-screen link, close), empty state with suggestions, thread, `AskBox`. Closed, it is a soft launcher button. Escape closes and returns focus to the launcher. Props: `title?` (default "Assistant"), `icon?`, `fullScreenHref?`, `emptyTitle?`, `emptyDescription?`, `suggestions?` (default: the page's), `placeholder?`, `dictation?`, `launcher?` (false when another control opens it), `launcherLabel?`.
+The assistant as a floating panel over the page (never reflows it): header (icon, title, full-screen link, close), empty state with suggestions, thread, `AskBox` (Stop while the assistant works, wired to `useAssistant().stop`). Closed, it is a soft launcher button. Escape closes and returns focus to the launcher. Props: `title?` (default "Assistant"), `icon?`, `fullScreenHref?`, `emptyTitle?`, `emptyDescription?`, `suggestions?` (default: the page's), `placeholder?`, `dictation?`, `launcher?` (false when another control opens it), `launcherLabel?`.
 
 ### `AskBox`
 
-Large rounded composer: auto-growing text, `chips` shown while there is text, suggestion pills, `DictationButton`. The focus ring is on the box (`focus-box`). Props: `value`, `onValueChange`, `onSubmit(text)`, `placeholder?` (also the label, default "Ask anything"), `chips?`, `suggestions?`, `onSuggestion?` (default submits), `dictation?` (`SpeechSource`, or `false` to hide the mic), `lang?`, `disabled?`.
+Large rounded composer: auto-growing text, `chips` shown while there is text, suggestion pills, `DictationButton`. The focus ring is on the box (`focus-box`). Props: `value`, `onValueChange`, `onSubmit(text)`, `placeholder?` (also the label, default "Ask anything"), `chips?`, `suggestions?`, `onSuggestion?` (default submits), `dictation?` (`SpeechSource`, or `false` to hide the mic), `lang?`, `disabled?`, `pending?` (blocks sending; with `onStop?` the send button becomes Stop), `reply?` (the answer under the box; passing it, even `null`, shows "Working" while `pending`), `chatHref?` (an "Open chat" link under the reply).
+
+```tsx
+// Inline answer under the box (no dock), e.g. a Today page
+const { send, pending, stop, reply } = useAssistant()
+;<AskBox
+  value={text}
+  onValueChange={setText}
+  onSubmit={(t) => {
+    setText("")
+    send(t, { open: false })
+  }}
+  pending={pending}
+  onStop={stop}
+  reply={reply}
+  chatHref={`/chat/${conversationId}`}
+/>
+```
 
 ### `DictationButton`, `useDictation`, `browserSpeechSource`
 

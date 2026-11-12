@@ -157,31 +157,52 @@ function ConversationList({
   )
 }
 
+export interface GroupByDateOptions {
+  /** Reference time. Default now; pass it for deterministic tests. */
+  now?: number | Date
+  /**
+   * `"day"` (default): Today / Yesterday / Previous 7 days / Earlier. `"week"`: Today / This week (the 6 days before
+   * today) / Earlier.
+   */
+  buckets?: "day" | "week"
+}
+
 /**
- * Buckets items into Today / Yesterday / Previous 7 days / Earlier by a timestamp (ms or Date),
- * newest first, and drops empty groups. Pass `now` for deterministic tests.
+ * Buckets items into Today / Yesterday / Previous 7 days / Earlier (or Today / This week / Earlier with
+ * `buckets: "week"`) by a timestamp (ms or Date), newest first, and drops empty groups. The last argument is the
+ * options, or just `now`.
  */
 function groupByDate<T>(
   items: T[],
   getDate: (item: T) => number | Date,
   toConversation: (item: T) => Conversation,
-  now: number | Date = Date.now(),
+  options: number | Date | GroupByDateOptions = {},
 ): ConversationGroup[] {
+  const { now = Date.now(), buckets = "day" } =
+    typeof options === "number" || options instanceof Date ? { now: options } : options
   // Local calendar midnights, so daylight-saving days (23 or 25 hours) bucket correctly.
   const d = new Date(now)
   const midnight = (daysAgo: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - daysAgo).getTime()
-  const [today, yesterday, weekAgo] = [midnight(0), midnight(1), midnight(7)]
-  const groups: ConversationGroup[] = [
-    { label: "Today", items: [] },
-    { label: "Yesterday", items: [] },
-    { label: "Previous 7 days", items: [] },
-    { label: "Earlier", items: [] },
-  ]
+  const bounds: [string, number][] =
+    buckets === "week"
+      ? [
+          ["Today", midnight(0)],
+          ["This week", midnight(6)],
+        ]
+      : [
+          ["Today", midnight(0)],
+          ["Yesterday", midnight(1)],
+          ["Previous 7 days", midnight(7)],
+        ]
+  const groups: ConversationGroup[] = [...bounds.map(([label]) => label), "Earlier"].map((label) => ({
+    label,
+    items: [],
+  }))
   const sorted = [...items].sort((a, b) => +getDate(b) - +getDate(a))
   for (const item of sorted) {
     const t = +getDate(item)
-    const i = t >= today ? 0 : t >= yesterday ? 1 : t >= weekAgo ? 2 : 3
-    groups[i]?.items.push(toConversation(item))
+    const i = bounds.findIndex(([, from]) => t >= from)
+    groups[i === -1 ? bounds.length : i]?.items.push(toConversation(item))
   }
   return groups.filter((g) => g.items.length)
 }

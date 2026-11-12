@@ -16,6 +16,8 @@ export interface AppNavPlace extends Omit<AppNavItem, "badge"> {
   count?: number
   /** Show in the phone tab bar. Default true; the first 5 that are not false are shown. */
   tab?: boolean
+  /** Show in the desktop sidebar. Default true; false makes a tab-bar-only place, e.g. Lists when the sidebar has a Lists group. */
+  sidebar?: boolean
 }
 
 export interface AppNavGroup {
@@ -34,6 +36,8 @@ export interface AppNavAction {
   label: string
   icon: React.ReactNode
   onSelect: () => void
+  /** Show the button in the desktop sidebar. Default true; false keeps only the round phone button. */
+  sidebar?: boolean
 }
 
 export interface AppNavProps {
@@ -97,7 +101,8 @@ function AppNav({
       width={width}
       sidebarFooter={footer}
       sidebarActions={
-        action && (
+        action &&
+        action.sidebar !== false && (
           <Button
             type="button"
             aria-label={action.label}
@@ -112,9 +117,11 @@ function AppNav({
       sidebar={
         <nav aria-label={label} data-slot="app-nav" className="flex flex-col gap-5">
           <SidebarMenu className="gap-1 group-data-[collapsible=icon]:items-center">
-            {places.map((place) => (
-              <PlaceItem key={place.label} place={place} Link={linkComponent} />
-            ))}
+            {places
+              .filter((p) => p.sidebar !== false)
+              .map((place) => (
+                <PlaceItem key={place.label} place={place} Link={linkComponent} />
+              ))}
           </SidebarMenu>
           {group && <NavGroup group={group} Link={linkComponent} />}
         </nav>
