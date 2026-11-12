@@ -22,10 +22,16 @@ import {
   type AssistantSendContext,
   Badge,
   Button,
+  ChatMessage,
+  ChatPanel,
   DayStrip,
   type CategoryColor,
   CategoryDot,
   DropdownMenuItem,
+  Page,
+  PageHeader,
+  PageSection,
+  PromptInput,
   SectionedList,
   type SectionedListSection,
   SidebarTrigger,
@@ -104,13 +110,12 @@ function WeekAgenda() {
   const setDone = (id: string, done: boolean) =>
     setDays((d) => d.map((sec) => ({ ...sec, items: sec.items.map((i) => (i.id === id ? { ...i, done } : i)) })))
   return (
-    <section aria-label="This week" className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">This week</h2>
+    <PageSection title="This week">
       <DayStrip
+        sticky
         days={days.map((d) => ({ id: d.id, date: d.date, hasPlans: d.items.length > 0 }))}
         value={day}
         onValueChange={setDay}
-        className="sticky top-0 z-10 bg-background"
       />
       <SectionedList<WeekItem>
         sections={days}
@@ -134,7 +139,7 @@ function WeekAgenda() {
           )
         }
       />
-    </section>
+    </PageSection>
   )
 }
 
@@ -186,15 +191,19 @@ function TodayPage() {
   const assistant = useAssistant()
   const [ask, setAsk] = useState("")
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 pt-6 pb-24 md:pt-10">
-      <header className="flex items-center gap-2">
-        <SidebarTrigger className="md:hidden" />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <h1 className="text-2xl font-semibold">Good morning, Maya</h1>
-          <p className="text-sm text-muted-foreground">Tuesday, November 11 · {open} to do</p>
-        </div>
-        <VisibilityBadge visibility="shared" members={household} className="max-sm:hidden" />
-      </header>
+    <Page>
+      <PageHeader
+        icon={<SunIcon className="text-warning" />}
+        title="Good morning, Maya"
+        description={`Tuesday, November 11 · ${open} to do`}
+        actions={
+          <>
+            <SidebarTrigger className="md:hidden" />
+            <VisibilityBadge visibility="shared" members={household} className="max-sm:hidden" />
+            <UserMenu compact name="Maya Chen" color={1} subtitle="The Chen household" className="md:hidden" />
+          </>
+        }
+      />
       <AskBox
         value={ask}
         onValueChange={setAsk}
@@ -237,26 +246,58 @@ function TodayPage() {
         empty={<p className="px-2 text-sm text-muted-foreground">Nothing left for today.</p>}
       />
       <WeekAgenda />
-    </div>
+    </Page>
+  )
+}
+
+/** A full-height chat page: AppNav `fill` gives ChatPanel the screen minus the tab bar. */
+function ChatPage() {
+  const [draft, setDraft] = useState("")
+  return (
+    <ChatPanel
+      title="HomeBot"
+      className="m-2 md:m-4"
+      composer={
+        <PromptInput
+          value={draft}
+          onValueChange={setDraft}
+          onSubmit={() => setDraft("")}
+          placeholder="Ask HomeBot anything"
+        />
+      }
+    >
+      <ChatMessage role="user">What's on this week?</ChatMessage>
+      <ChatMessage role="assistant">
+        School pickup today at 3:15 and hockey on Saturday at 10. Nothing else planned.
+      </ChatMessage>
+    </ChatPanel>
   )
 }
 
 export function HouseholdScreen() {
+  const [view, setView] = useState<"today" | "chat">("today")
   return (
     <AssistantProvider onSend={reply}>
       <AppNav
+        fill={view === "chat"}
         storageKey="household-sidebar"
         brand={<AppBrand name="Homeclub" icon={<HouseIcon />} />}
         places={[
-          { label: "Today", icon: <SunIcon />, href: "#household", active: true, count: 4 },
+          { label: "Today", icon: <SunIcon />, onSelect: () => setView("today"), active: view === "today", count: 4 },
           { label: "Upcoming", icon: <ListTodoIcon />, href: "#household" },
           { label: "Calendar", icon: <CalendarIcon />, href: "#household" },
           { label: "Docs", icon: <FileTextIcon />, href: "#household" },
           { label: "Lists", icon: <ListIcon />, href: "#household", sidebar: false },
-          { label: "Chats", icon: <MessageCircleIcon />, href: "#household", tab: false },
+          {
+            label: "Chats",
+            icon: <MessageCircleIcon />,
+            onSelect: () => setView("chat"),
+            active: view === "chat",
+            tab: false,
+          },
           { label: "Settings", icon: <SettingsIcon />, href: "#settings", tab: false },
         ]}
-        group={{ label: "Lists", items: lists, onAdd: () => {}, addLabel: "New list" }}
+        group={{ label: "Lists", href: "#household", items: lists, onAdd: () => {}, addLabel: "New list" }}
         action={{
           label: "New to-do",
           icon: <PlusIcon />,
@@ -273,12 +314,18 @@ export function HouseholdScreen() {
           </UserMenu>
         }
       >
-        <TodayPage />
-        <AssistantDock
-          title="HomeBot"
-          fullScreenHref="#household"
-          emptyDescription="I can add to-dos, plan the week and find things in your docs."
-        />
+        {view === "chat" ? (
+          <ChatPage />
+        ) : (
+          <>
+            <TodayPage />
+            <AssistantDock
+              title="HomeBot"
+              fullScreenHref="#household"
+              emptyDescription="I can add to-dos, plan the week and find things in your docs."
+            />
+          </>
+        )}
       </AppNav>
     </AssistantProvider>
   )

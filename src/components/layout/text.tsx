@@ -71,12 +71,15 @@ function Text({
 }
 
 export interface HeadingProps extends React.ComponentProps<"h3"> {
-  /** 3: a section title in a card. 4: a small uppercase label over a group. */
-  level?: 3 | 4
+  /** 2: a page section title under the page's h1. 3: a section title in a card. 4: a small uppercase label over a group. */
+  level?: 2 | 3 | 4
 }
 
-/** Section heading inside a card or panel. */
+/** Section heading on a page (2) or inside a card or panel (3, 4). */
 function Heading({ level = 3, className, ...props }: HeadingProps) {
+  if (level === 2) {
+    return <h2 data-slot="heading" className={cn("text-lg leading-snug font-semibold", className)} {...props} />
+  }
   if (level === 4) {
     return (
       <h4
