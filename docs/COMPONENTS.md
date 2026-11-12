@@ -40,7 +40,8 @@ A household or personal app where an assistant sits on every page and safe actio
 </ThemeProvider>
 ```
 
-- Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo`.
+- Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo` and set `lingerMs` to its window so a ticked row stays struck through until Undo is gone.
+- A week agenda: `DayStrip` above one `SectionedList` with a section per day (`empty` keeps empty days) and `AgendaRow` rows from `renderItem`.
 - In the assistant thread, each action it took is an `ActionReceipt` with Undo (append it from `onSend`).
 - Settings and setup flows leave the frame: `FocusLayout` around `SettingsSection`s of `SettingsRow`s.
 - Members, lists and calendars take a `category-1..6` color; status colors never double as categories.
@@ -389,7 +390,12 @@ One to-do: `CheckCircle` aligned with the first line, title, one meta line, opti
 
 ### `SectionedList`
 
-A to-do list: one add box at the top, sections with headings, done items folded into a "Show N done" toggle, an empty state. A ticked row stays visible for a moment, then folds away with `Collapse`. Props: `sections: { id; title?; items: SectionedListItem[] }[]` (item: `id`, `title`, `meta?`, `done?`, `important?`, `assignee?`), `onToggle(id, done)`, `onAdd?(text)`, `addPlaceholder?` (default "Add a to-do"), `onOpen?(id)`, `empty?`, `defaultShowDone?`.
+A to-do list: one add box at the top, sections with headings, done items folded into a "Show N done" toggle, an empty state. A ticked row stays struck through for `lingerMs`, then folds away with `Collapse`. Props: `sections: { id; title?; action?; empty?; items: SectionedListItem[] }[]` (item: `id`, `title`, `meta?`, `done?`, `important?`, `assignee?`), `onToggle(id, done)`, `lingerMs?` (default 600; 9000 matches `toastUndo`), `renderItem?(item, toggle)`, `onAdd?(text)`, `addPlaceholder?` (default "Add a to-do"), `addChips?(text)`, `onOpen?(id)`, `empty?`, `defaultShowDone?`.
+
+- Section `id` is also the `<section>`'s DOM id, so `DayStrip` or an `#id` link can jump to it. Keep ids unique on the page.
+- `action` sits at the right of the heading (a small ghost `Button`, e.g. "Move to today"). `empty` keeps the section shown with that text when nothing in it is open ("Nothing planned").
+- `renderItem` draws other rows, e.g. `AgendaRow`. Its `toggle(done)` lingers and folds the row like a `TaskRow`. Items without `done` (events) always stay. Type the items with `SectionedList<MyItem>`.
+- `addChips(text)` returns chips shown at the right of the add box while it has text, like `AskBox` `chips` (the date or person parsed from the text).
 
 ```tsx
 ;<SectionedList
@@ -398,6 +404,38 @@ A to-do list: one add box at the top, sections with headings, done items folded 
   onAdd={addTodo}
   empty={<Empty title="All clear" />}
 />
+```
+
+### `AgendaRow`
+
+One line of a day's agenda: time column, event icon (or a `CheckCircle` for a to-do), title, one meta line, whose dot and name. Props: `title`, `time?` ("3:15", "All day"), `meta?`, `who?: { name; color: 1..6 }` (`category-N` dot), `checked?` + `onCheckedChange?(checked)` (draws the check instead of the icon), `important?`, `onOpen?` (title becomes a button, e.g. to open an event dialog).
+
+### `DayStrip`
+
+A row of day links (short weekday, date, a dot when `hasPlans`) that smooth-scroll to the element whose id is the day's `id` (instant under reduced motion); scrolls sideways when the days do not fit. Props: `days: { id; date: Date; hasPlans? }[]`, `value?` (selected id, `aria-current`), `onValueChange?(id)`, `aria-label?` (default "Jump to a day"). Make it sticky with `className="sticky top-0 bg-background"` and give the scroll container `scroll-padding-top` so headings land below it.
+
+```tsx
+;<>
+  <DayStrip
+    days={week.map((d) => ({ id: d.key, date: d.date, hasPlans: d.items.length > 0 }))}
+    value={day}
+    onValueChange={setDay}
+  />
+  <SectionedList<WeekItem>
+    lingerMs={9000}
+    sections={week.map((d) => ({ id: d.key, title: d.label, empty: "Nothing planned", items: d.items }))}
+    onToggle={setDone}
+    renderItem={(i, toggle) => (
+      <AgendaRow
+        time={i.time}
+        title={i.title}
+        who={i.who}
+        {...(i.kind === "todo" && { checked: !!i.done, onCheckedChange: toggle })}
+        onOpen={() => open(i)}
+      />
+    )}
+  />
+</>
 ```
 
 ## AI and chat

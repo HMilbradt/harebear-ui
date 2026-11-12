@@ -4,12 +4,14 @@ import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 import {
   ActionReceipt,
+  AgendaRow,
   AppNav,
   AskBox,
   AssistantDock,
   AssistantProvider,
   CheckCircle,
   Collapse,
+  DayStrip,
   DictationButton,
   FocusLayout,
   SectionedList,
@@ -130,6 +132,153 @@ describe("SectionedList", () => {
     await user.click(screen.getByRole("button", { name: "Show 2 done" }))
     expect(screen.getByRole("button", { name: "Hide done" })).toHaveAttribute("aria-expanded", "true")
     vi.useRealTimers()
+  })
+})
+
+function LingerHarness() {
+  const [done, setDone] = useState(false)
+  return (
+    <SectionedList
+      lingerMs={9000}
+      sections={[{ id: "today", items: [{ id: "a", title: "Milk", done }] }]}
+      onToggle={(_, v) => setDone(v)}
+    />
+  )
+}
+
+describe("SectionedList options", () => {
+  it("keeps a ticked row for lingerMs, then folds it away", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<LingerHarness />)
+    // The first match is the row in its section; once it folds away it also appears under "Show 1 done".
+    const row = () => screen.getAllByText("Milk")[0]?.closest("[data-slot=collapse]")
+    await user.click(screen.getByRole("checkbox", { name: "Milk" }))
+    act(() => vi.advanceTimersByTime(8000))
+    expect(row()).toHaveAttribute("data-state", "open")
+    act(() => vi.advanceTimersByTime(1100))
+    expect(row()).toHaveAttribute("data-state", "closed")
+    vi.useRealTimers()
+  })
+
+  it("puts the section id on the section, an action in its heading and keeps empty sections", async () => {
+    const user = userEvent.setup()
+    const onMove = vi.fn()
+    const { container } = render(
+      <SectionedList
+        sections={[
+          {
+            id: "overdue",
+            title: "Overdue",
+            action: (
+              <button type="button" onClick={onMove}>
+                Move to today
+              </button>
+            ),
+            items: [{ id: "a", title: "Bins" }],
+          },
+          {
+            id: "day-sat",
+            title: "Saturday",
+            empty: "Nothing planned",
+            items: [{ id: "b", title: "Mow", done: true }],
+          },
+        ]}
+        onToggle={() => {}}
+      />,
+    )
+    const overdue = screen.getByRole("region", { name: "Overdue" })
+    expect(overdue).toHaveAttribute("id", "overdue")
+    await user.click(within(overdue).getByRole("button", { name: "Move to today" }))
+    expect(onMove).toHaveBeenCalled()
+    const sat = container.querySelector("#day-sat")
+    expect(sat?.closest("[data-slot=collapse]")).toHaveAttribute("data-state", "open")
+    expect(within(sat as HTMLElement).getByText("Nothing planned")).toBeVisible()
+  })
+
+  it("shows add box chips from the typed text", async () => {
+    const user = userEvent.setup()
+    const addChips = vi.fn((text: string) => (/tomorrow/.test(text) ? <span>Tomorrow</span> : null))
+    render(<SectionedList sections={[]} onToggle={() => {}} onAdd={() => {}} addChips={addChips} />)
+    expect(addChips).not.toHaveBeenCalled()
+    await user.type(screen.getByLabelText("Add a to-do"), "Bins tomorrow")
+    expect(addChips).toHaveBeenLastCalledWith("Bins tomorrow")
+    expect(screen.getByText("Tomorrow")).toBeInTheDocument()
+  })
+
+  it("draws rows with renderItem; events stay, to-dos tick through toggle", async () => {
+    const user = userEvent.setup()
+    const onToggle = vi.fn()
+    type Row = { id: string; title: string; done?: boolean; kind: "todo" | "event"; time: string }
+    const items: Row[] = [
+      { id: "e", title: "Hockey", kind: "event", time: "10:00" },
+      { id: "t", title: "Clean the gutters", kind: "todo", time: "All day", done: false },
+    ]
+    render(
+      <SectionedList<Row>
+        sections={[{ id: "sat", title: "Saturday", items }]}
+        onToggle={onToggle}
+        renderItem={(item, toggle) =>
+          item.kind === "event" ? (
+            <AgendaRow title={item.title} time={item.time} />
+          ) : (
+            <AgendaRow title={item.title} time={item.time} checked={!!item.done} onCheckedChange={toggle} />
+          )
+        }
+      />,
+    )
+    expect(screen.getByText("Hockey").closest("[data-slot=agenda-row]")).toBeInTheDocument()
+    await user.click(screen.getByRole("checkbox", { name: "Clean the gutters" }))
+    expect(onToggle).toHaveBeenCalledWith("t", true)
+  })
+})
+
+describe("AgendaRow", () => {
+  it("shows an event icon without a check, a check for to-dos, whose name and opens from the title", async () => {
+    const user = userEvent.setup()
+    const onOpen = vi.fn()
+    const { rerender } = render(
+      <AgendaRow time="3:15" title="School pickup" who={{ name: "Harrison", color: 2 }} onOpen={onOpen} />,
+    )
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument()
+    expect(screen.getByText("3:15")).toBeInTheDocument()
+    expect(screen.getByText("Harrison")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "School pickup" }))
+    expect(onOpen).toHaveBeenCalled()
+    const onCheckedChange = vi.fn()
+    rerender(<AgendaRow title="Gutters" checked={false} onCheckedChange={onCheckedChange} />)
+    await user.click(screen.getByRole("checkbox", { name: "Gutters" }))
+    expect(onCheckedChange).toHaveBeenCalledWith(true)
+  })
+})
+
+describe("DayStrip", () => {
+  it("jumps to the day's element, marks the selected day and says which days have plans", async () => {
+    const user = userEvent.setup()
+    const scroll = vi.fn()
+    Element.prototype.scrollIntoView = scroll
+    const onValueChange = vi.fn()
+    render(
+      <>
+        <DayStrip
+          value="d11"
+          onValueChange={onValueChange}
+          days={[
+            { id: "d11", date: new Date(2026, 10, 11), hasPlans: true },
+            { id: "d12", date: new Date(2026, 10, 12) },
+          ]}
+        />
+        <section id="d12">Thursday</section>
+      </>,
+    )
+    const nav = screen.getByRole("navigation", { name: "Jump to a day" })
+    const links = within(nav).getAllByRole("link")
+    expect(links[0]).toHaveAttribute("aria-current", "true")
+    expect(links[0]).toHaveAccessibleName(/has plans$/)
+    expect(links[1]).not.toHaveAccessibleName(/has plans/)
+    await user.click(links[1] as HTMLElement)
+    expect(scroll).toHaveBeenCalledWith({ behavior: "smooth", block: "start" })
+    expect(onValueChange).toHaveBeenCalledWith("d12")
   })
 })
 

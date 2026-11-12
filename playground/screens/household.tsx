@@ -11,12 +11,16 @@ import {
 import { useState } from "react"
 import {
   ActionReceipt,
+  AgendaRow,
+  type AgendaRowWho,
   AppBrand,
   AppNav,
   AssistantDock,
   AssistantProvider,
   type AssistantSendContext,
   Badge,
+  Button,
+  DayStrip,
   DropdownMenuItem,
   SectionedList,
   type SectionedListSection,
@@ -27,6 +31,11 @@ import {
 } from "@/index"
 
 const initial: SectionedListSection[] = [
+  {
+    id: "overdue",
+    title: "Overdue",
+    items: [{ id: "o1", title: "Take out the bins", meta: "Overdue · yesterday", assignee: { name: "Sam Rivera" } }],
+  },
   {
     id: "today",
     title: "Today",
@@ -51,6 +60,76 @@ const initial: SectionedListSection[] = [
     ],
   },
 ]
+
+interface WeekItem {
+  id: string
+  title: string
+  time: string
+  who: AgendaRowWho
+  kind: "todo" | "event"
+  done?: boolean
+}
+
+const maya: AgendaRowWho = { name: "Maya", color: 1 }
+const sam: AgendaRowWho = { name: "Sam", color: 2 }
+const week = [0, 1, 2, 3, 4, 5, 6].map((n) => {
+  const date = new Date(2026, 10, 11 + n)
+  const items: WeekItem[] =
+    n === 0
+      ? [
+          { id: "w1", title: "School pickup", time: "3:15", who: maya, kind: "event" },
+          { id: "w2", title: "Call the plumber", time: "5:00", who: sam, kind: "todo" },
+        ]
+      : n === 3
+        ? [
+            { id: "w3", title: "Hockey", time: "10:00", who: sam, kind: "event" },
+            { id: "w4", title: "Clean the gutters", time: "All day", who: maya, kind: "todo" },
+          ]
+        : []
+  const title = date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
+  return { id: `day-${date.getDate()}`, date, title, empty: "Nothing planned", items }
+})
+
+/** Upcoming in miniature: a DayStrip over one SectionedList with a section per day and AgendaRow rows. */
+function WeekAgenda() {
+  const [days, setDays] = useState(week)
+  const [day, setDay] = useState(week[0]?.id)
+  const setDone = (id: string, done: boolean) =>
+    setDays((d) => d.map((sec) => ({ ...sec, items: sec.items.map((i) => (i.id === id ? { ...i, done } : i)) })))
+  return (
+    <section aria-label="This week" className="flex flex-col gap-3">
+      <h2 className="text-lg font-semibold">This week</h2>
+      <DayStrip
+        days={days.map((d) => ({ id: d.id, date: d.date, hasPlans: d.items.length > 0 }))}
+        value={day}
+        onValueChange={setDay}
+        className="sticky top-0 z-10 bg-background"
+      />
+      <SectionedList<WeekItem>
+        sections={days}
+        lingerMs={9000}
+        onToggle={(id, done) => {
+          setDone(id, done)
+          if (done) toastUndo("Marked done", { onUndo: () => setDone(id, false) })
+        }}
+        renderItem={(i, toggle) =>
+          i.kind === "event" ? (
+            <AgendaRow time={i.time} title={i.title} who={i.who} onOpen={() => {}} />
+          ) : (
+            <AgendaRow
+              time={i.time}
+              title={i.title}
+              who={i.who}
+              checked={!!i.done}
+              onCheckedChange={toggle}
+              onOpen={() => {}}
+            />
+          )
+        }
+      />
+    </section>
+  )
+}
 
 const lists = ["Groceries", "Errands", "House projects"].map((label, i) => ({
   label,
@@ -85,6 +164,17 @@ function TodayPage() {
   const setDone = (id: string, done: boolean) =>
     setSections((s) => s.map((sec) => ({ ...sec, items: sec.items.map((i) => (i.id === id ? { ...i, done } : i)) })))
   const open = sections.flatMap((s) => s.items).filter((i) => !i.done).length
+  const moveToToday = () =>
+    setSections((s) => {
+      const overdue = s.find((sec) => sec.id === "overdue")?.items ?? []
+      return s.map((sec) =>
+        sec.id === "overdue"
+          ? { ...sec, items: [] }
+          : sec.id === "today"
+            ? { ...sec, items: [...overdue, ...sec.items] }
+            : sec,
+      )
+    })
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 pt-6 pb-24 md:pt-10">
       <header className="flex items-center gap-2">
@@ -96,10 +186,25 @@ function TodayPage() {
         <Badge variant="soft">Everyone</Badge>
       </header>
       <SectionedList
-        sections={sections}
+        sections={sections.map((sec) =>
+          sec.id === "overdue"
+            ? {
+                ...sec,
+                action: (
+                  <Button variant="ghost" size="sm" onClick={moveToToday}>
+                    Move to today
+                  </Button>
+                ),
+              }
+            : sec,
+        )}
+        lingerMs={9000}
+        addChips={(text) => (/\btomorrow\b/i.test(text) ? <Badge tone="info">Tomorrow</Badge> : null)}
         onAdd={(title) =>
           setSections((s) =>
-            s.map((sec, i) => (i === 0 ? { ...sec, items: [{ id: crypto.randomUUID(), title }, ...sec.items] } : sec)),
+            s.map((sec) =>
+              sec.id === "today" ? { ...sec, items: [{ id: crypto.randomUUID(), title }, ...sec.items] } : sec,
+            ),
           )
         }
         onToggle={(id, done) => {
@@ -108,6 +213,7 @@ function TodayPage() {
         }}
         empty={<p className="px-2 text-sm text-muted-foreground">Nothing left for today.</p>}
       />
+      <WeekAgenda />
     </div>
   )
 }

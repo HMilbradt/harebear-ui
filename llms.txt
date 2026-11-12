@@ -34,7 +34,7 @@
 Theme: ThemeProvider, useTheme, ThemeToggle, ThemeScript
 Layout/admin: SidebarLayout, SidebarCollapseButton, AppShell, AppNav, FocusLayout, SettingsSection, SettingsRow, AppBrand, PageHeader, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, UserMenu, Callout, LinkTile, ConfirmDialog, CopyField
 Layout and text: Stack, Row, Grid, Text, Heading, Metric, MetricGroup, MediaItem, ShowMore, Collapse
-Data: TaskRow, SectionedList, DataTable, createDataTableColumnHelper, TrendChart, TrendLegend, BarList, Sparkline, StatusBars
+Data: TaskRow, SectionedList, AgendaRow, DayStrip, DataTable, createDataTableColumnHelper, TrendChart, TrendLegend, BarList, Sparkline, StatusBars
 Assistant layer: AssistantProvider, useAssistant, useAssistantPage, AssistantDock, AskBox, DictationButton, useDictation, browserSpeechSource, ActionReceipt
 AI/chat composites: ChatShell, ChatPanel, ChatThread, ChatMessage, AssistantAvatar, MessageActions, PromptInput, PromptInputChip, PromptInputSelect, ModelPicker, ConversationList, NewConversationButton, groupByDate, formatWhen, ToolCall, ToolGroup, ToolStep, ToolStatusIcon, ApprovalCard, ApprovalResult, TypingIndicator, CodeSnippet, InlineCode, Prose
 AI/chat primitives (shadcn): Message, Bubble, MessageScroller, Attachment, Trace, Marker, Questionnaire, CodeBlock

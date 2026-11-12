@@ -15,47 +15,63 @@ export interface SectionedListItem {
   assignee?: TaskRowAssignee
 }
 
-export interface SectionedListSection {
+export interface SectionedListSection<T extends SectionedListItem = SectionedListItem> {
+  /** Also the section's DOM id, so a DayStrip or `#id` link can jump to it. */
   id: string
   /** Section heading, e.g. "Today" or "Groceries". Omit for a section without one. */
   title?: React.ReactNode
-  items: SectionedListItem[]
+  /** At the right of the heading, e.g. a small ghost Button "Move to today". */
+  action?: React.ReactNode
+  /** Keeps the section shown with this text when it has no open item, e.g. "Nothing planned". */
+  empty?: React.ReactNode
+  items: T[]
 }
 
-export interface SectionedListProps extends Omit<React.ComponentProps<"div">, "onToggle"> {
-  sections: SectionedListSection[]
+export interface SectionedListProps<T extends SectionedListItem = SectionedListItem>
+  extends Omit<React.ComponentProps<"div">, "onToggle"> {
+  sections: SectionedListSection<T>[]
   /** Called when an item's check changes. Update `done` in your data; the row folds away by itself. */
   onToggle: (id: string, done: boolean) => void
+  /**
+   * Draws a row instead of TaskRow, e.g. an AgendaRow. Call `toggle(done)` from its check so the row lingers and
+   * folds away like a TaskRow. Items without `done` (events) always stay.
+   */
+  renderItem?: (item: T, toggle: (done: boolean) => void) => React.ReactNode
+  /** How long a ticked row stays struck through before it folds away, e.g. the length of an Undo toast. Default 600. */
+  lingerMs?: number
   /** Makes item titles buttons, e.g. to open a DetailSheet. */
   onOpen?: (id: string) => void
   /** Shows one add box at the top. Called with the trimmed text on Enter. */
   onAdd?: (text: string) => void
   /** Add box placeholder and label. Default "Add a to-do". */
   addPlaceholder?: string
+  /** Chips at the right of the add box while it has text, e.g. the date or person parsed from it. Like AskBox `chips`. */
+  addChips?: (text: string) => React.ReactNode
   /** Shown when no item is open, e.g. <Empty /> or a line of text. */
   empty?: React.ReactNode
   /** Start with the done items shown. Default false. */
   defaultShowDone?: boolean
 }
 
-/** How long a ticked row stays in place (so the check is seen) before it folds away. */
-const LINGER_MS = 600
-
 /**
  * A to-do list: one add box, sections with headings, done items folded into a "Show N done" toggle, an empty
- * state. Rows fold in and out with Collapse, so nothing jumps.
+ * state. Rows fold in and out with Collapse, so nothing jumps. `renderItem` draws other rows (AgendaRow), so a week
+ * agenda is one SectionedList with a section per day.
  */
-function SectionedList({
+function SectionedList<T extends SectionedListItem = SectionedListItem>({
   sections,
   onToggle,
+  renderItem,
+  lingerMs = 600,
   onOpen,
   onAdd,
   addPlaceholder = "Add a to-do",
+  addChips,
   empty,
   defaultShowDone = false,
   className,
   ...props
-}: SectionedListProps) {
+}: SectionedListProps<T>) {
   const [showDone, setShowDone] = React.useState(defaultShowDone)
   const [lingering, setLingering] = React.useState<ReadonlySet<string>>(new Set())
   const timers = React.useRef(new Map<string, ReturnType<typeof setTimeout>>())
@@ -77,7 +93,7 @@ function SectionedList({
             next.delete(id)
             return next
           })
-        }, LINGER_MS),
+        }, lingerMs),
       )
     }
     onToggle(id, done)
@@ -86,28 +102,43 @@ function SectionedList({
   const shown = (item: SectionedListItem) => !item.done || lingering.has(item.id)
   const done = sections.flatMap((s) => s.items.filter((i) => i.done && !lingering.has(i.id)))
   const anyOpen = sections.some((s) => s.items.some(shown))
-  const row = (item: SectionedListItem) => (
-    <TaskRow
-      title={item.title}
-      meta={item.meta}
-      checked={!!item.done}
-      important={item.important}
-      assignee={item.assignee}
-      onCheckedChange={(v) => toggle(item.id, v)}
-      onOpen={onOpen ? () => onOpen(item.id) : undefined}
-    />
-  )
+  const row = (item: T) =>
+    renderItem ? (
+      renderItem(item, (v) => toggle(item.id, v))
+    ) : (
+      <TaskRow
+        title={item.title}
+        meta={item.meta}
+        checked={!!item.done}
+        important={item.important}
+        assignee={item.assignee}
+        onCheckedChange={(v) => toggle(item.id, v)}
+        onOpen={onOpen ? () => onOpen(item.id) : undefined}
+      />
+    )
 
   return (
     <div data-slot="sectioned-list" className={cn("flex min-w-0 flex-col gap-6", className)} {...props}>
-      {onAdd && <AddBox placeholder={addPlaceholder} onAdd={onAdd} />}
+      {onAdd && <AddBox placeholder={addPlaceholder} onAdd={onAdd} chips={addChips} />}
       {sections.map((section) => {
-        const visible = section.items.some(shown)
+        const hasOpen = section.items.some(shown)
         return (
-          <Collapse key={section.id} open={visible}>
-            <section aria-label={typeof section.title === "string" ? section.title : undefined}>
-              {section.title && (
-                <h2 className="px-2 pb-1 text-[13px] font-semibold text-muted-foreground">{section.title}</h2>
+          <Collapse key={section.id} open={hasOpen || section.empty != null}>
+            <section id={section.id} aria-label={typeof section.title === "string" ? section.title : undefined}>
+              {(section.title || section.action) && (
+                <div className="flex min-w-0 items-center gap-2 px-2 pb-1">
+                  {section.title && (
+                    <h2 className="min-w-0 text-[13px] font-semibold text-muted-foreground">{section.title}</h2>
+                  )}
+                  {section.action && <div className="ml-auto flex shrink-0 items-center">{section.action}</div>}
+                </div>
+              )}
+              {section.empty != null && (
+                <Collapse open={!hasOpen}>
+                  <p data-slot="sectioned-list-section-empty" className="px-2 py-2.5 text-sm text-muted-foreground">
+                    {section.empty}
+                  </p>
+                </Collapse>
               )}
               <ul className="flex flex-col">
                 {section.items.map((item) => (
@@ -148,7 +179,15 @@ function SectionedList({
   )
 }
 
-function AddBox({ placeholder, onAdd }: { placeholder: string; onAdd: (text: string) => void }) {
+function AddBox({
+  placeholder,
+  onAdd,
+  chips,
+}: {
+  placeholder: string
+  onAdd: (text: string) => void
+  chips?: (text: string) => React.ReactNode
+}) {
   const [value, setValue] = React.useState("")
   const id = React.useId()
   return (
@@ -175,6 +214,11 @@ function AddBox({ placeholder, onAdd }: { placeholder: string; onAdd: (text: str
         autoComplete="off"
         className="h-full min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-muted-foreground"
       />
+      {chips && value.trim() && (
+        <div data-slot="sectioned-list-add-chips" className="flex shrink-0 items-center gap-1.5">
+          {chips(value)}
+        </div>
+      )}
     </form>
   )
 }
