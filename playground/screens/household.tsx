@@ -2,6 +2,7 @@ import {
   CalendarIcon,
   FileTextIcon,
   HouseIcon,
+  ListIcon,
   ListTodoIcon,
   MessageCircleIcon,
   PlusIcon,
@@ -15,6 +16,7 @@ import {
   type AgendaRowWho,
   AppBrand,
   AppNav,
+  AskBox,
   AssistantDock,
   AssistantProvider,
   type AssistantSendContext,
@@ -26,6 +28,7 @@ import {
   type SectionedListSection,
   SidebarTrigger,
   toastUndo,
+  useAssistant,
   useAssistantPage,
   UserMenu,
 } from "@/index"
@@ -148,8 +151,10 @@ const lists = ["Groceries", "Errands", "House projects"].map((label, i) => ({
   ),
 }))
 
-/** The demo agent: adds whatever you ask for to Groceries and answers with a receipt. */
-function reply(text: string, { append }: AssistantSendContext) {
+/** The demo agent: thinks for a moment (Stop aborts it), then adds what you asked for to Groceries with a receipt. */
+async function reply(text: string, { append, signal }: AssistantSendContext) {
+  await new Promise((resolve) => setTimeout(resolve, 1200))
+  if (signal.aborted) return
   const item = text.replace(/^add\s+/i, "").replace(/\s+to groceries$/i, "")
   append({
     role: "assistant",
@@ -175,6 +180,8 @@ function TodayPage() {
             : sec,
       )
     })
+  const assistant = useAssistant()
+  const [ask, setAsk] = useState("")
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 pt-6 pb-24 md:pt-10">
       <header className="flex items-center gap-2">
@@ -185,6 +192,19 @@ function TodayPage() {
         </div>
         <Badge variant="soft">Everyone</Badge>
       </header>
+      <AskBox
+        value={ask}
+        onValueChange={setAsk}
+        onSubmit={(text) => {
+          setAsk("")
+          void assistant.send(text, { open: false })
+        }}
+        placeholder="Ask HomeBot anything"
+        pending={assistant.pending}
+        onStop={assistant.stop}
+        reply={assistant.reply}
+        chatHref="#household"
+      />
       <SectionedList
         sections={sections.map((sec) =>
           sec.id === "overdue"
@@ -229,7 +249,8 @@ export function HouseholdScreen() {
           { label: "Upcoming", icon: <ListTodoIcon />, href: "#household" },
           { label: "Calendar", icon: <CalendarIcon />, href: "#household" },
           { label: "Docs", icon: <FileTextIcon />, href: "#household" },
-          { label: "Chats", icon: <MessageCircleIcon />, href: "#household" },
+          { label: "Lists", icon: <ListIcon />, href: "#household", sidebar: false },
+          { label: "Chats", icon: <MessageCircleIcon />, href: "#household", tab: false },
           { label: "Settings", icon: <SettingsIcon />, href: "#settings", tab: false },
         ]}
         group={{ label: "Lists", items: lists, onAdd: () => {}, addLabel: "New list" }}

@@ -60,6 +60,28 @@ describe("groupByDate", () => {
     ).toEqual([])
   })
 
+  it("buckets Today / This week / Earlier with buckets: week", () => {
+    const now = new Date(2026, 10, 10, 12).getTime()
+    const day = 24 * 3600 * 1000
+    const items = [
+      { id: "today", t: now - 1000 },
+      { id: "yday", t: now - day },
+      { id: "six", t: now - 6 * day },
+      { id: "seven", t: now - 7 * day },
+    ]
+    const groups = groupByDate(
+      items,
+      (i) => i.t,
+      (i) => ({ id: i.id, title: i.id }),
+      { now, buckets: "week" },
+    )
+    expect(groups.map((g) => [g.label, g.items.map((c) => c.id)])).toEqual([
+      ["Today", ["today"]],
+      ["This week", ["yday", "six"]],
+      ["Earlier", ["seven"]],
+    ])
+  })
+
   it("uses calendar days across a daylight-saving change", () => {
     const tz = process.env.TZ
     process.env.TZ = "America/New_York"

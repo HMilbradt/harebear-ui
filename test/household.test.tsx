@@ -22,6 +22,7 @@ import {
   type SpeechSourceHandlers,
   TaskRow,
   ThemeProvider,
+  useAssistant,
   useAssistantPage,
 } from "@/index"
 
@@ -341,6 +342,108 @@ describe("AskBox", () => {
   })
 })
 
+describe("AskBox stop and reply", () => {
+  it("swaps send for Stop while pending, blocks Enter and calls onStop", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    const onStop = vi.fn()
+    render(
+      <AskBox
+        value="Plan my day"
+        onValueChange={() => {}}
+        onSubmit={onSubmit}
+        dictation={false}
+        pending
+        onStop={onStop}
+      />,
+    )
+    expect(screen.queryByRole("button", { name: "Send message" })).not.toBeInTheDocument()
+    await user.type(screen.getByLabelText("Ask anything"), "{Enter}")
+    expect(onSubmit).not.toHaveBeenCalled()
+    await user.click(screen.getByRole("button", { name: "Stop" }))
+    expect(onStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("shows the answer under the box with an Open chat link, and a typing indicator while waiting", () => {
+    const props = { value: "", onValueChange: () => {}, onSubmit: () => {}, dictation: false as const }
+    const { container, rerender } = render(<AskBox {...props} />)
+    expect(container.querySelector("[data-slot=ask-box-reply]")).toBeNull()
+    rerender(<AskBox {...props} pending reply={null} />)
+    expect(screen.getByText("Working")).toBeInTheDocument()
+    rerender(<AskBox {...props} reply={<p>Riley has soccer at 4:30.</p>} chatHref="/chat/7" />)
+    const region = container.querySelector<HTMLElement>("[data-slot=ask-box-reply]")!
+    expect(within(region).getByText("Riley has soccer at 4:30.")).toBeInTheDocument()
+    expect(within(region).getByRole("link", { name: "Open chat" })).toHaveAttribute("href", "/chat/7")
+  })
+})
+
+function InlineAsk() {
+  const { send, pending, stop, reply, open } = useAssistant()
+  const [v, setV] = useState("")
+  return (
+    <>
+      <AskBox
+        value={v}
+        onValueChange={setV}
+        onSubmit={(text) => {
+          setV("")
+          void send(text, { open: false })
+        }}
+        dictation={false}
+        pending={pending}
+        onStop={stop}
+        reply={reply}
+      />
+      <p>{open ? "dock open" : "dock closed"}</p>
+    </>
+  )
+}
+
+describe("useAssistant inline reply and stop", () => {
+  it("answers inline without opening the dock", async () => {
+    const user = userEvent.setup()
+    render(
+      <AssistantProvider
+        onSend={(text, { append }) => {
+          append({ role: "assistant", content: <span>Added {text}</span> })
+          return "Anything else?"
+        }}
+      >
+        <InlineAsk />
+      </AssistantProvider>,
+    )
+    await user.type(screen.getByLabelText("Ask anything"), "milk{Enter}")
+    expect(await screen.findByText("Anything else?")).toBeInTheDocument()
+    expect(screen.getByText("Added milk")).toBeInTheDocument()
+    expect(screen.getByText("dock closed")).toBeInTheDocument()
+  })
+
+  it("Stop aborts the send signal, ends pending and drops the late reply", async () => {
+    const user = userEvent.setup()
+    let signal: AbortSignal | undefined
+    let finish: (v: string) => void = () => {}
+    render(
+      <AssistantProvider
+        onSend={(_text, ctx) => {
+          signal = ctx.signal
+          return new Promise<string>((resolve) => {
+            finish = resolve
+          })
+        }}
+      >
+        <InlineAsk />
+      </AssistantProvider>,
+    )
+    await user.type(screen.getByLabelText("Ask anything"), "slow question{Enter}")
+    expect(screen.getByText("Working")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Stop" }))
+    expect(signal?.aborted).toBe(true)
+    expect(screen.queryByRole("button", { name: "Stop" })).not.toBeInTheDocument()
+    await act(async () => finish("too late"))
+    expect(screen.queryByText("too late")).not.toBeInTheDocument()
+  })
+})
+
 describe("ActionReceipt", () => {
   it("offers undo, then shows it was undone", async () => {
     const user = userEvent.setup()
@@ -381,6 +484,26 @@ describe("AssistantDock", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Ask HomeBot" })).toHaveFocus()
   })
+
+  it("shows Stop while the assistant works and stops it", async () => {
+    const user = userEvent.setup()
+    let signal: AbortSignal | undefined
+    render(
+      <AssistantProvider
+        defaultOpen
+        onSend={(_t, ctx) => {
+          signal = ctx.signal
+          return new Promise<string>(() => {})
+        }}
+      >
+        <AssistantDock title="HomeBot" dictation={false} />
+      </AssistantProvider>,
+    )
+    await user.type(screen.getByLabelText("Ask HomeBot"), "Is my show ready?{Enter}")
+    await user.click(screen.getByRole("button", { name: "Stop" }))
+    expect(signal?.aborted).toBe(true)
+    expect(screen.queryByText("Working")).not.toBeInTheDocument()
+  })
 })
 
 describe("AppNav", () => {
@@ -413,6 +536,27 @@ describe("AppNav", () => {
     expect(within(tabs).getByRole("link", { name: /Today/ })).toHaveAttribute("aria-current", "page")
     expect(screen.getAllByRole("button", { name: "New to-do" }).length).toBeGreaterThan(0)
     expect(screen.getByText("Page")).toBeInTheDocument()
+  })
+
+  it("keeps sidebar: false places and actions out of the desktop sidebar", () => {
+    const { container } = render(
+      <ThemeProvider>
+        <AppNav
+          places={[
+            { label: "Today", href: "/" },
+            { label: "Lists", href: "/lists", sidebar: false },
+          ]}
+          action={{ label: "New chat", icon: <span />, onSelect: () => {}, sidebar: false }}
+        />
+      </ThemeProvider>,
+    )
+    const sidebar = container.querySelector<HTMLElement>("[data-slot=app-nav]")!
+    const tabs = container.querySelector<HTMLElement>("[data-slot=app-nav-tabs]")!
+    expect(within(sidebar).queryByRole("link", { name: "Lists" })).not.toBeInTheDocument()
+    expect(within(tabs).getByRole("link", { name: "Lists" })).toHaveAttribute("href", "/lists")
+    const buttons = screen.getAllByRole("button", { name: "New chat" })
+    expect(buttons).toHaveLength(1)
+    expect(buttons[0]).toHaveAttribute("data-slot", "app-nav-fab")
   })
 })
 
