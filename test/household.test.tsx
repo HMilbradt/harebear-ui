@@ -14,7 +14,12 @@ import {
   Collapse,
   DayStrip,
   DictationButton,
+  DropdownMenuItem,
   FocusLayout,
+  Heading,
+  Page,
+  PageHeader,
+  PageSection,
   SectionedList,
   type SectionedListSection,
   SettingsRow,
@@ -25,6 +30,7 @@ import {
   ThemeProvider,
   useAssistant,
   useAssistantPage,
+  UserMenu,
 } from "@/index"
 
 function fakeSpeech() {
@@ -333,6 +339,27 @@ describe("DayStrip", () => {
     )
     await user.click(screen.getByRole("link"))
     expect(scroll).toHaveBeenCalledWith({ behavior: "auto", block: "start" })
+  })
+
+  it("sticks and lands jumped-to days below itself when sticky", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(() => {})
+    render(
+      <>
+        <DayStrip sticky days={[{ id: "d14", date: "2026-11-14" }]} />
+        <section id="d14">Saturday</section>
+        <DayStrip aria-label="Plain" days={[{ id: "d15", date: "2026-11-15" }]} />
+        <section id="d15">Sunday</section>
+      </>,
+    )
+    expect(screen.getByRole("navigation", { name: "Jump to a day" })).toHaveClass("sticky", "top-0")
+    expect(screen.getByRole("navigation", { name: "Plain" })).not.toHaveClass("sticky")
+    const [sticky, plain] = screen.getAllByRole("link")
+    await user.click(sticky as HTMLElement)
+    // jsdom has no layout: the strip measures 0px tall, so only the 8px gap remains.
+    expect(document.getElementById("d14")?.style.scrollMarginTop).toBe("8px")
+    await user.click(plain as HTMLElement)
+    expect(document.getElementById("d15")?.style.scrollMarginTop).toBe("")
   })
 })
 
@@ -643,6 +670,42 @@ describe("AppNav", () => {
     expect(screen.getByText("Page")).toBeInTheDocument()
   })
 
+  it("makes the group heading a link with a separate collapse button", async () => {
+    const user = userEvent.setup()
+    const { container } = render(
+      <ThemeProvider>
+        <AppNav
+          places={[{ label: "Today", href: "/" }]}
+          group={{ label: "Lists", href: "/lists", items: [{ label: "Groceries", href: "/l/1" }] }}
+        />
+      </ThemeProvider>,
+    )
+    const sidebar = container.querySelector<HTMLElement>("[data-slot=app-nav]")!
+    expect(within(sidebar).getByRole("link", { name: "Lists" })).toHaveAttribute("href", "/lists")
+    const toggle = within(sidebar).getByRole("button", { name: "Collapse Lists" })
+    expect(toggle).toHaveAttribute("aria-expanded", "true")
+    expect(toggle).not.toContainElement(within(sidebar).getByRole("link", { name: "Lists" }))
+    await user.click(toggle)
+    expect(within(sidebar).getByRole("button", { name: "Expand Lists" })).toHaveAttribute("aria-expanded", "false")
+    expect(within(sidebar).queryByRole("link", { name: "Groceries" })).not.toBeInTheDocument()
+  })
+
+  it("fills the screen without scrolling when fill is set", () => {
+    const { container, rerender } = render(
+      <ThemeProvider>
+        <AppNav places={[{ label: "Chat", href: "/chat" }]} fill />
+      </ThemeProvider>,
+    )
+    const main = container.querySelector("[data-slot=sidebar-layout]")
+    expect(main).toHaveClass("h-dvh", "overflow-hidden")
+    rerender(
+      <ThemeProvider>
+        <AppNav places={[{ label: "Chat", href: "/chat" }]} />
+      </ThemeProvider>,
+    )
+    expect(main).not.toHaveClass("h-dvh")
+  })
+
   it("keeps sidebar: false places and actions out of the desktop sidebar", () => {
     const { container } = render(
       <ThemeProvider>
@@ -730,5 +793,53 @@ describe("Settings and FocusLayout", () => {
     expect(button).toHaveAttribute("aria-expanded", "false")
     await user.click(button)
     expect(screen.getByRole("button", { name: "Cancel" })).toHaveAttribute("aria-expanded", "true")
+  })
+})
+
+describe("UserMenu compact", () => {
+  it("shows only the avatar and still opens the full menu", async () => {
+    const user = userEvent.setup()
+    const onSettings = vi.fn()
+    render(
+      <ThemeProvider defaultMode="light" storageKey={null}>
+        <UserMenu compact name="Maya Chen" subtitle="The Chen household" color={1}>
+          <DropdownMenuItem onSelect={onSettings}>Settings</DropdownMenuItem>
+        </UserMenu>
+      </ThemeProvider>,
+    )
+    const trigger = screen.getByRole("button", { name: "Account menu for Maya Chen" })
+    expect(trigger).not.toHaveTextContent("Maya Chen")
+    // Initials are CSS content, so axe label-content-name-mismatch sees no visible text that the name leaves out.
+    expect(trigger).not.toHaveTextContent("MC")
+    expect(trigger.querySelector("[data-slot=avatar]")).toBeInTheDocument()
+    await user.click(trigger)
+    expect(await screen.findByText("The Chen household")).toBeInTheDocument()
+    await user.click(screen.getByRole("menuitem", { name: "Settings" }))
+    expect(onSettings).toHaveBeenCalledOnce()
+  })
+})
+
+describe("Page, PageHeader and PageSection", () => {
+  it("lays out a page with an h1, an icon, and h2 regions", () => {
+    render(
+      <Page width="sm">
+        <PageHeader title="Groceries" icon={<span data-testid="dot" />} />
+        <PageSection title="This week" action={<button type="button">See all</button>}>
+          <p>Body</p>
+        </PageSection>
+      </Page>,
+    )
+    expect(screen.getByText("Body").closest("[data-slot=page]")).toHaveClass("max-w-xl", "px-4")
+    expect(screen.getByTestId("dot").closest("[data-slot=page-header-icon]")).toBeInTheDocument()
+    expect(screen.getByRole("heading", { level: 1, name: "Groceries" })).toBeInTheDocument()
+    const region = screen.getByRole("region", { name: "This week" })
+    expect(within(region).getByRole("heading", { level: 2, name: "This week" })).toBeInTheDocument()
+    expect(within(region).getByRole("button", { name: "See all" })).toBeInTheDocument()
+    expect(within(region).getByText("Body")).toBeInTheDocument()
+  })
+
+  it("renders Heading level 2 as an h2", () => {
+    render(<Heading level={2}>Upcoming</Heading>)
+    expect(screen.getByRole("heading", { level: 2, name: "Upcoming" })).toBeInTheDocument()
   })
 })

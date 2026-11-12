@@ -28,7 +28,7 @@ A household or personal app where an assistant sits on every page and safe actio
       <AppNav
         brand={<AppBrand name="Homeclub" icon={<HouseIcon />} />}
         places={[{ label: "Today", icon: <SunIcon />, href: "/", active: true, count: 3 }, ...]}
-        group={{ label: "Lists", items: lists, onAdd: newList, addLabel: "New list" }}
+        group={{ label: "Lists", href: "/lists", items: lists, onAdd: newList, addLabel: "New list" }}
         action={{ label: "New to-do", icon: <PlusIcon />, onSelect: openQuickAdd }}
         footer={<UserMenu name={user.name} onSignOut={signOut} />}
       >
@@ -41,8 +41,9 @@ A household or personal app where an assistant sits on every page and safe actio
 </ThemeProvider>
 ```
 
+- Pages: `Page` (the column) with a `PageHeader` (h1; `UserMenu compact` in `actions` on phones, where the sidebar footer is hidden) and `PageSection`s (h2 regions). A chat page sets `fill` on `AppNav`.
 - Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo` and set `lingerMs` to its window so a ticked row stays struck through for about as long as Undo shows.
-- A week agenda: `DayStrip` above one `SectionedList` with a section per day (`empty` keeps empty days) and `AgendaRow` rows from `renderItem`.
+- A week agenda: `DayStrip sticky` above one `SectionedList` with a section per day (`empty` keeps empty days) and `AgendaRow` rows from `renderItem`.
 - In the assistant thread, each action it took is an `ActionReceipt` with Undo (append it from `onSend`).
 - A page with its own ask box (Today) answers under it: `AskBox` with `reply` and `pending` from `useAssistant()`, `onStop={stop}`, and `send(text, { open: false })`.
 - Settings and setup flows leave the frame: `FocusLayout` around `SettingsSection`s of `SettingsRow`s.
@@ -199,7 +200,31 @@ Logo tile + name. Props: `name`, `subtitle?`, `icon?`, `action?` (trailing contr
 
 ### `PageHeader`
 
-Title row. Props: `title`, `description?`, `count?` (badge after title), `eyebrow?` (small text above), `actions?` (right side, wraps on mobile).
+Title row with the page's `h1`. Props: `title`, `description?`, `count?` (badge after title), `eyebrow?` (small text above), `icon?` (leading mark before the title: `CategoryDot`, `MemberAvatar`, a lucide icon at 24px), `actions?` (right side, wraps on mobile).
+
+### `Page`, `PageSection`
+
+`Page`: the page column inside `AppNav` or `SidebarLayout`: centred, 16px gutters on phones (32px from 768px), children spaced `gap-7`. Props: `width?` (`sm | md | lg`, default `md` = 42rem, like `FocusLayout`), div props. `PageSection`: a region named by its `h2` (so headings go h1, h2 without skipping), with `title`, `action?` (right of the heading, 44px tall on touch screens) and `children`. Inside a card, use `Heading level={3}`.
+
+```tsx
+;<Page>
+  <PageHeader
+    title="Groceries"
+    icon={<CategoryDot color={1} />}
+    actions={isMobile && <UserMenu compact name={user.name} />}
+  />
+  <PageSection
+    title="This week"
+    action={
+      <Button variant="ghost" size="sm">
+        See all
+      </Button>
+    }
+  >
+    <SectionedList sections={sections} onToggle={setDone} />
+  </PageSection>
+</Page>
+```
 
 ### `StatCard`
 
@@ -249,7 +274,7 @@ Avatar + name + subtitle. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`C
 
 ### `UserMenu`
 
-The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. The trigger is named by its visible name and subtitle (in a sidebar icon rail, where it is just the avatar, by `name`) and the menu opens to the side there. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`CategoryColor` behind the initials), `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`.
+The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. The trigger is named by its visible name and subtitle (in a sidebar icon rail, where it is just the avatar, by `name`) and the menu opens to the side there. `compact` makes the trigger just the avatar anywhere (40px, 44px on touch screens, named "Account menu for {name}") with the menu below it, for a phone page header. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`CategoryColor` behind the initials), `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`, `compact?`.
 
 ```tsx
 ;<UserMenu name={email} subtitle="Signed in" onSignOut={signOut}>
@@ -367,7 +392,7 @@ Markdown field with Write and Preview tabs; Preview renders inside `Prose`. Prop
 
 One nav config, two renderings: on desktop a `SidebarLayout` sidebar (brand, action button, places, one collapsible group, footer; active place is a raised card; collapses to the icon rail), under 768px a bottom tab bar (first 5 places, 56px targets, `aria-current="page"`) plus a round floating action button. Use it instead of `AppShell` for consumer apps that need phone navigation.
 
-Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar, `sidebar?: false` for a tab-bar-only place such as Lists when the sidebar has a Lists group), `group?: AppNavGroup` (`label`, `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect; sidebar?: false }` (`sidebar: false` keeps only the round phone button), `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `children`.
+Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar, `sidebar?: false` for a tab-bar-only place such as Lists when the sidebar has a Lists group), `group?: AppNavGroup` (`label`, `href?` (heading becomes a link, e.g. to all lists; the chevron is a separate "Collapse Lists" button), `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect; sidebar?: false }` (`sidebar: false` keeps only the round phone button), `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `fill?` (main column is exactly the screen height minus the tab bar and does not scroll, for a chat: the child takes it with `flex-1 min-h-0`, which `ChatPanel` already has), `children`.
 On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger` in the page header if users need them there. With `action`, the main column's bottom padding also clears the round button, so a trailing control on the last row is not under it. Render `AssistantDock` inside `children` so it clears the tab bar. Toasts stack above the tab bar, the action button and the dock launcher on their own; no `Toaster` offset needed.
 
 ### `FocusLayout`
@@ -411,7 +436,7 @@ Props instead of class names, for blocks that should look right without styling 
 
 ### `Text`, `Heading`
 
-`Text` takes `size` (`xs | sm | base | lg | xl | 2xl`), `tone` (`default | muted | success | warning | danger | info`), `weight`, `mono`, `truncate`, `lines` (1 to 3) and `tabular`, and renders `as` a span, p or div. `Heading` is a card section title (`level={3}`) or a small uppercase group label (`level={4}`).
+`Text` takes `size` (`xs | sm | base | lg | xl | 2xl`), `tone` (`default | muted | success | warning | danger | info`), `weight`, `mono`, `truncate`, `lines` (1 to 3) and `tabular`, and renders `as` a span, p or div. `Heading` is a page section title (`level={2}`, under the page `h1`; `PageSection` uses it), a card section title (`level={3}`, default) or a small uppercase group label (`level={4}`). Do not skip levels: a page with an h1 needs h2s before h3s.
 
 ### `Metric`, `MetricGroup`
 
@@ -501,11 +526,12 @@ One line of a day's agenda: time column, event icon (or a `CheckCircle` for a to
 
 ### `DayStrip`
 
-A row of day links (short weekday, date, a dot when `hasPlans`) that smooth-scroll to the element whose id is the day's `id` (instant under reduced motion) and move focus to it; scrolls sideways when the days do not fit. Props: `days: { id; date: "YYYY-MM-DD"; hasPlans? }[]` (floating local date, like `DateTimePicker`), `value?` (selected id, `aria-current`), `onValueChange?(id)`, `aria-label?` (default "Jump to a day"). Each link's name is the full date ("Thursday, November 12, has plans") as visually hidden text, so it contains what is shown. Make it sticky with `className="sticky top-0 bg-background"` and give the scroll container `scroll-padding-top` so headings land below it.
+A row of day links (short weekday, date, a dot when `hasPlans`) that smooth-scroll to the element whose id is the day's `id` (instant under reduced motion) and move focus to it; scrolls sideways when the days do not fit. Props: `days: { id; date: "YYYY-MM-DD"; hasPlans? }[]` (floating local date, like `DateTimePicker`), `value?` (selected id, `aria-current`), `onValueChange?(id)`, `aria-label?` (default "Jump to a day"), `sticky?` (sticks at `top-0` with the page background while the page or any container scrolls, and gives the jumped-to element a `scroll-margin-top` as tall as the strip so its heading lands below it; add `className="top-14"` under a sticky header). Each link's name is the full date ("Thursday, November 12, has plans") as visually hidden text, so it contains what is shown.
 
 ```tsx
 ;<>
   <DayStrip
+    sticky
     days={week.map((d) => ({ id: d.key, date: d.date, hasPlans: d.items.length > 0 }))}
     value={day}
     onValueChange={setDay}

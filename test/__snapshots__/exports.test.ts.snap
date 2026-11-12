@@ -299,7 +299,9 @@ exports[`public API > matches the export snapshot (update with \`pnpm test -u\` 
   "NavigationMenuTrigger",
   "NavigationMenuViewport",
   "NewConversationButton",
+  "Page",
   "PageHeader",
+  "PageSection",
   "Pagination",
   "PaginationContent",
   "PaginationEllipsis",
@@ -467,6 +469,7 @@ exports[`public API > matches the export snapshot (update with \`pnpm test -u\` 
   "loadHighlighter",
   "markerVariants",
   "navigationMenuTriggerStyle",
+  "parseLocalDate",
   "smoothPath",
   "tabsListVariants",
   "toastUndo",
@@ -487,5 +490,6 @@ exports[`public API > matches the export snapshot (update with \`pnpm test -u\` 
   "useSidebar",
   "useSidebarOptional",
   "useTheme",
+  "useToastClearance",
 ]
 `;

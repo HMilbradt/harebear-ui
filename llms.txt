@@ -14,7 +14,7 @@
 - Use harebear-ui components before writing new UI. Primitives keep shadcn/ui names and props.
 - Style with theme tokens only: bg-background, bg-card, bg-muted, text-muted-foreground, bg-primary, bg-primary-soft, text-success, text-warning, text-destructive, border-border, shadow-card, rounded-md/lg/xl. No hex colors or Tailwind palette colors.
 - Status is a tone: success | warning | danger | info | neutral. Members, lists and calendars use category-1..6 (bg-category-3, or `color={3}` on MemberAvatar, CategoryDot, ColorSwatchPicker), never status colors.
-- Agent-first apps (assistant on every page, undoable actions): AppNav + AssistantProvider/AssistantDock + SectionedList + toastUndo + FocusLayout/SettingsSection. A page's own AskBox answers inline with `reply` from useAssistant and stops with `pending` + `onStop={stop}`. Recipe: `npx harebear-ui docs "Agent-first apps"`.
+- Agent-first apps (assistant on every page, undoable actions): AppNav + Page/PageHeader/PageSection + AssistantProvider/AssistantDock + SectionedList + toastUndo + FocusLayout/SettingsSection. A page's own AskBox answers inline with `reply` from useAssistant and stops with `pending` + `onStop={stop}`. Recipe: `npx harebear-ui docs "Agent-first apps"`.
 - Icons: lucide-react elements, e.g. `<SearchIcon />`. Icon-only buttons need aria-label.
 - Touch: Button, Toggle and Input already meet 44px under `pointer: coarse` (buttons via an invisible ::after); don't clip them with overflow-hidden at their edge.
 - Change the brand with `<ThemeProvider accent="#hex" radius={14}>` or `--brand` / `--radius` in CSS.
@@ -33,7 +33,7 @@
 ## Component index
 
 Theme: ThemeProvider, useTheme, ThemeToggle, ThemeScript
-Layout/admin: SidebarLayout, SidebarCollapseButton, AppShell, AppNav, FocusLayout, SettingsSection, SettingsRow, AppBrand, PageHeader, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, UserMenu, MemberAvatar, AvatarStack, VisibilityBadge, CategoryDot, ColorSwatchPicker, AvatarUpload, Callout, LinkTile, ConfirmDialog, CopyField, DetailSheet
+Layout/admin: SidebarLayout, SidebarCollapseButton, AppShell, AppNav, FocusLayout, SettingsSection, SettingsRow, AppBrand, PageHeader, Page, PageSection, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, UserMenu, MemberAvatar, AvatarStack, VisibilityBadge, CategoryDot, ColorSwatchPicker, AvatarUpload, Callout, LinkTile, ConfirmDialog, CopyField, DetailSheet
 Layout and text: Stack, Row, Grid, Text, Heading, Metric, MetricGroup, MediaItem, ShowMore, Collapse
 Data: TaskRow, SectionedList, AgendaRow, DayStrip, DataTable, createDataTableColumnHelper, TrendChart, TrendLegend, BarList, Sparkline, StatusBars
 Assistant layer: AssistantProvider, useAssistant, useAssistantPage, AssistantDock, AskBox, DictationButton, useDictation, browserSpeechSource, ActionReceipt

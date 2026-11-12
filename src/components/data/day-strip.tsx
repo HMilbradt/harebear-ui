@@ -19,18 +19,37 @@ export interface DayStripProps extends React.ComponentProps<"nav"> {
   value?: string
   /** Called with the day's id after it scrolls that element into view. */
   onValueChange?: (id: string) => void
+  /**
+   * Sticks to the top of the page (or `top-*` you pass) while it scrolls, and lands jumped-to days below the strip
+   * instead of under it. Works in any scroll container, the document included.
+   */
+  sticky?: boolean
 }
 
 /**
  * A row of day buttons (weekday, date, a dot when there are plans) that jump to the element with the day's id.
  * Scrolls inside itself when the days do not fit. Smooth scrolling is off under prefers-reduced-motion.
  */
-function DayStrip({ days, value, onValueChange, className, "aria-label": ariaLabel, ...props }: DayStripProps) {
+function DayStrip({
+  days,
+  value,
+  onValueChange,
+  sticky = false,
+  className,
+  "aria-label": ariaLabel,
+  ...props
+}: DayStripProps) {
   const jump = (e: React.MouseEvent, id: string) => {
     e.preventDefault()
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
     const el = document.getElementById(id)
     if (el) {
+      // The strip covers the top of the scroll area: a scroll margin as tall as it (plus its `top` and a gap) clears it.
+      const strip = sticky ? (e.currentTarget as HTMLElement).closest<HTMLElement>("[data-slot=day-strip]") : null
+      if (strip) {
+        const top = Number.parseFloat(getComputedStyle(strip).top) || 0
+        el.style.scrollMarginTop = `${strip.offsetHeight + top + 8}px`
+      }
       el.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" })
       // Move keyboard and screen reader focus to the day too; the cancelled link click would not.
       if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1")
@@ -42,7 +61,7 @@ function DayStrip({ days, value, onValueChange, className, "aria-label": ariaLab
     <nav
       data-slot="day-strip"
       aria-label={ariaLabel ?? "Jump to a day"}
-      className={cn("min-w-0 overflow-x-auto", className)}
+      className={cn("min-w-0 overflow-x-auto", sticky && "sticky top-0 z-10 bg-background", className)}
       {...props}
     >
       <ul className="flex gap-2 p-1">
