@@ -1,6 +1,7 @@
 "use client"
 
 import type * as React from "react"
+import { keepOpenOnToast } from "@/lib/internal/toast-clearance"
 import { cn } from "@/lib/utils"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
@@ -41,6 +42,7 @@ function SheetContent({
   children,
   side = "right",
   showCloseButton = true,
+  onInteractOutside,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
@@ -57,6 +59,7 @@ function SheetContent({
           className,
         )}
         {...props}
+        onInteractOutside={keepOpenOnToast(onInteractOutside)}
       >
         {children}
         {showCloseButton && (

@@ -23,6 +23,7 @@ import {
   TimeZonePicker,
   Toaster,
   toast,
+  toastUndo,
 } from "@/index"
 
 // jsdom has no pointer capture; vaul's Drawer calls it on pointer down.
@@ -218,6 +219,35 @@ describe("DetailSheet", () => {
     expect(root.style.getPropertyValue("--hb-toast-drawer")).toBe("env(safe-area-inset-bottom, 0px)")
     rerender(sheet(false))
     expect(root.style.getPropertyValue("--hb-toast-drawer")).toBe("")
+    unmount()
+  })
+
+  it.each([
+    ["side sheet", true],
+    ["phone drawer", false],
+  ])("keeps a toast's Undo clickable while the %s is open, and stays open", async (_, desktop) => {
+    matchMediaWhere((q) => desktop && q === "(min-width: 768px)")
+    const user = userEvent.setup()
+    const onOpenChange = vi.fn()
+    const onUndo = vi.fn()
+    const { unmount } = render(
+      <>
+        <Toaster />
+        <DetailSheet open onOpenChange={onOpenChange} title="To-do">
+          <p>Fields</p>
+        </DetailSheet>
+      </>,
+    )
+    await screen.findByRole("dialog", { name: "To-do" })
+    act(() => {
+      toastUndo("Moved to Done", { onUndo })
+    })
+    // The modal hides the rest of the page from assistive tech, so the toast is found with hidden: true.
+    await user.click(await screen.findByRole("button", { name: "Undo", hidden: true }))
+    expect(onUndo).toHaveBeenCalledTimes(1)
+    expect(onOpenChange).not.toHaveBeenCalled()
+    expect(screen.getByRole("dialog", { name: "To-do" })).toBeInTheDocument()
+    act(() => toast.dismiss())
     unmount()
   })
 })

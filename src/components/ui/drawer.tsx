@@ -1,6 +1,7 @@
 "use client"
 
 import type * as React from "react"
+import { keepOpenOnToast } from "@/lib/internal/toast-clearance"
 import { cn } from "@/lib/utils"
 import { Drawer as DrawerPrimitive } from "vaul"
 
@@ -33,7 +34,12 @@ function DrawerOverlay({ className, ...props }: React.ComponentProps<typeof Draw
   )
 }
 
-function DrawerContent({ className, children, ...props }: React.ComponentProps<typeof DrawerPrimitive.Content>) {
+function DrawerContent({
+  className,
+  children,
+  onInteractOutside,
+  ...props
+}: React.ComponentProps<typeof DrawerPrimitive.Content>) {
   return (
     <DrawerPortal data-slot="drawer-portal">
       <DrawerOverlay />
@@ -44,6 +50,7 @@ function DrawerContent({ className, children, ...props }: React.ComponentProps<t
           className,
         )}
         {...props}
+        onInteractOutside={keepOpenOnToast(onInteractOutside)}
       >
         <div className="mx-auto mt-4 hidden h-1 w-[100px] shrink-0 rounded-full bg-muted group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
         {children}
