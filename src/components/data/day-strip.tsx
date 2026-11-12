@@ -55,7 +55,6 @@ function DayStrip({ days, value, onValueChange, className, "aria-label": ariaLab
               <a
                 href={`#${day.id}`}
                 aria-current={selected ? "true" : undefined}
-                aria-label={day.hasPlans ? `${label}, has plans` : label}
                 onClick={(e) => jump(e, day.id)}
                 className={cn(
                   "flex min-h-21 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-2 outline-none transition-colors focus-visible:ring-4 focus-visible:ring-ring/20 motion-reduce:transition-none",
@@ -64,12 +63,17 @@ function DayStrip({ days, value, onValueChange, className, "aria-label": ariaLab
                     : "bg-card text-foreground shadow-card hover:bg-muted",
                 )}
               >
+                <span className="sr-only">{day.hasPlans ? `${label}, has plans` : label}</span>
                 <span
+                  aria-hidden="true"
                   className={cn("text-xs font-medium", selected ? "text-primary-foreground" : "text-muted-foreground")}
                 >
                   {date.toLocaleDateString(undefined, { weekday: "short" })}
                 </span>
-                <span className="text-[22px] leading-tight font-semibold tracking-tight tabular-nums">
+                <span
+                  aria-hidden="true"
+                  className="text-[22px] leading-tight font-semibold tracking-tight tabular-nums"
+                >
                   {date.getDate()}
                 </span>
                 <span

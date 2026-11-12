@@ -34,7 +34,7 @@ function CheckCircle({ tone = "default", className, onCheckedChange, onAnimation
         onAnimationEnd?.(e)
       }}
       className={cn(
-        "peer relative grid size-6 shrink-0 place-items-center rounded-full border-2 border-muted-foreground/45 bg-card text-primary-foreground transition-[background-color,border-color,box-shadow] outline-none after:absolute after:-inset-2.5 hover:border-primary focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 data-[tone=important]:border-warning data-[tone=important]:bg-warning/10 data-checked:border-primary data-checked:bg-primary data-[pop]:animate-check-pop",
+        "peer relative grid size-6 shrink-0 place-items-center rounded-full border-2 border-muted-foreground/45 bg-card text-primary-foreground transition-[background-color,border-color] outline-none after:absolute after:-inset-3 hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary focus-visible:outline-solid motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-50 data-[tone=important]:border-warning data-[tone=important]:bg-warning/10 data-checked:border-primary data-checked:bg-primary motion-safe:data-[pop]:animate-check-pop",
         className,
       )}
       {...props}

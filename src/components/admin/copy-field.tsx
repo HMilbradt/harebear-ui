@@ -23,6 +23,8 @@ export interface CopyFieldProps extends Omit<React.ComponentProps<typeof InputGr
   "aria-label"?: string
   /** Monospace text. Default true. */
   mono?: boolean
+  /** Shown next to the button, and its accessible name, for a moment after copying. Default "Copied". */
+  copiedLabel?: string
 }
 
 /** Read-only value with a copy button: IDs, paths, tokens' public parts, URLs. */
@@ -31,6 +33,7 @@ function CopyField({
   display,
   label,
   mono = true,
+  copiedLabel = "Copied",
   "aria-label": name = "Value",
   className,
   ...props
@@ -52,7 +55,14 @@ function CopyField({
         onFocus={(e) => e.currentTarget.select()}
       />
       <InputGroupAddon align="inline-end">
-        <InputGroupButton size="icon-xs" aria-label={`Copy ${name.toLowerCase()}`} onClick={() => copy(value)}>
+        <InputGroupText data-slot="copy-field-status" aria-hidden="true" className="text-xs empty:hidden">
+          {copied ? copiedLabel : null}
+        </InputGroupText>
+        <InputGroupButton
+          size="icon-xs"
+          aria-label={copied ? copiedLabel : `Copy ${name.toLowerCase()}`}
+          onClick={() => copy(value)}
+        >
           {copied ? <CheckIcon /> : <CopyIcon />}
         </InputGroupButton>
       </InputGroupAddon>

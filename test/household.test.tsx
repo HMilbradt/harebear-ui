@@ -52,6 +52,22 @@ describe("CheckCircle", () => {
     expect(onCheckedChange).toHaveBeenCalledWith(true)
     expect(box).toHaveAttribute("data-pop")
   })
+
+  it("pops and fades only when motion is allowed", () => {
+    render(<CheckCircle aria-label="Buy milk" />)
+    const box = screen.getByRole("checkbox")
+    expect(box).toHaveClass("motion-safe:data-[pop]:animate-check-pop", "motion-reduce:transition-none")
+    expect(box.className).not.toMatch(/(^|\s)data-\[pop\]:animate-check-pop/)
+  })
+
+  it("has a 44px hit area and a solid focus outline that tone does not override", () => {
+    render(<CheckCircle aria-label="Buy milk" tone="important" />)
+    const box = screen.getByRole("checkbox")
+    // ::after is placed against the padding box (inside the 2px border): 20px + 2 * 12px = 44px.
+    expect(box).toHaveClass("size-6", "border-2", "after:-inset-3")
+    expect(box).toHaveClass("focus-visible:outline-2", "focus-visible:outline-solid", "focus-visible:outline-primary")
+    expect(box.className).not.toMatch(/focus-visible:(border|ring)-/)
+  })
 })
 
 describe("TaskRow", () => {
@@ -87,6 +103,13 @@ describe("Collapse", () => {
     expect(el).toHaveAttribute("data-state", "closed")
     expect(el).toHaveAttribute("aria-hidden", "true")
     expect(el).toHaveAttribute("inert")
+  })
+
+  it("clips only vertically, so hit areas and focus rings at the sides are not cut off", () => {
+    render(<Collapse open>Body</Collapse>)
+    const inner = screen.getByText("Body")
+    expect(inner).toHaveClass("overflow-y-clip", "overflow-x-visible", "min-w-0")
+    expect(inner).not.toHaveClass("overflow-hidden")
   })
 })
 
@@ -285,6 +308,9 @@ describe("DayStrip", () => {
     expect(links[0]).toHaveAttribute("aria-current", "true")
     expect(links[0]).toHaveAccessibleName(/has plans$/)
     expect(links[1]).not.toHaveAccessibleName(/has plans/)
+    // The full date is visually hidden text, not an aria-label that drops the visible "Thu 12".
+    for (const link of links) expect(link).not.toHaveAttribute("aria-label")
+    expect(links[1]!.querySelector(".sr-only")).toHaveTextContent(/12/)
     // A floating date is local: "2026-11-12" shows 12 in any time zone.
     expect(links[1]).toHaveTextContent("12")
     expect(links[1]).not.toHaveTextContent("11")
@@ -636,6 +662,27 @@ describe("AppNav", () => {
     const buttons = screen.getAllByRole("button", { name: "New chat" })
     expect(buttons).toHaveLength(1)
     expect(buttons[0]).toHaveAttribute("data-slot", "app-nav-fab")
+  })
+
+  it("pads the main column past the round action button only when there is one", () => {
+    const main = (action?: boolean) => {
+      const { container, unmount } = render(
+        <ThemeProvider>
+          <AppNav
+            places={[{ label: "Today", href: "/" }]}
+            action={action ? { label: "New", icon: <span />, onSelect: () => {} } : undefined}
+          >
+            <p>Page</p>
+          </AppNav>
+        </ThemeProvider>,
+      )
+      const cls = container.querySelector("[data-slot=sidebar-layout]")!.className
+      unmount()
+      return cls
+    }
+    expect(main(true)).toContain("max-md:pb-[calc(9rem+env(safe-area-inset-bottom))]")
+    expect(main(true)).not.toContain("max-md:pb-[calc(4.5rem+env(safe-area-inset-bottom))]")
+    expect(main(false)).toContain("max-md:pb-[calc(4.5rem+env(safe-area-inset-bottom))]")
   })
 })
 

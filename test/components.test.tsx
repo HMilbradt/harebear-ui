@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 import {
+  Button,
   ChatMessage,
   CodeBlockCopyButton,
   CodeSnippet,
@@ -12,10 +13,15 @@ import {
   SignupForm,
   createDataTableColumnHelper,
   DataTable,
+  Input,
+  InputGroup,
+  InputGroupInput,
   PromptInput,
   StatCard,
   ThemeProvider,
   ThemeToggle,
+  ToggleGroup,
+  ToggleGroupItem,
   UsageMeter,
 } from "@/index"
 
@@ -225,6 +231,53 @@ describe("CodeSnippet", () => {
     render(<CodeSnippet language="bash" code={"echo hi\nls"} />)
     expect(screen.getByText("echo hi")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument()
+  })
+})
+
+describe("coarse pointer targets", () => {
+  const hitArea = "pointer-coarse:after:inset-[min(0px,calc(50%-1.375rem))]"
+  it("gives every Button size and ToggleGroupItem a 44px hit area under pointer: coarse", () => {
+    const sizes = ["default", "xs", "sm", "lg", "icon", "icon-xs", "icon-sm", "icon-lg"] as const
+    render(
+      <>
+        {sizes.map((size) => (
+          <Button key={size} size={size} aria-label={size}>
+            x
+          </Button>
+        ))}
+        <ToggleGroup type="single">
+          <ToggleGroupItem value="a">A</ToggleGroupItem>
+        </ToggleGroup>
+      </>,
+    )
+    for (const size of sizes) {
+      expect(screen.getByRole("button", { name: size })).toHaveClass(
+        "relative",
+        "pointer-coarse:after:absolute",
+        hitArea,
+      )
+    }
+    expect(screen.getByRole("radio", { name: "A" })).toHaveClass("relative", "pointer-coarse:after:absolute", hitArea)
+  })
+
+  it("keeps a positioned Button's own position", () => {
+    render(<Button className="fixed">Go</Button>)
+    const button = screen.getByRole("button", { name: "Go" })
+    expect(button).toHaveClass("fixed")
+    expect(button).not.toHaveClass("relative")
+  })
+
+  it("makes Input and InputGroup 44px tall under pointer: coarse", () => {
+    render(
+      <>
+        <Input aria-label="Name" />
+        <InputGroup data-testid="group">
+          <InputGroupInput aria-label="Search" />
+        </InputGroup>
+      </>,
+    )
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveClass("h-10", "pointer-coarse:h-11")
+    expect(screen.getByTestId("group")).toHaveClass("h-10", "pointer-coarse:h-11")
   })
 })
 

@@ -65,7 +65,7 @@ function UserMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         data-slot="user-menu-trigger"
-        aria-label={`Account menu for ${name}`}
+        aria-label={rail ? name : undefined}
         className={cn(
           "flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/40 data-[state=open]:bg-muted group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:p-0",
           className,

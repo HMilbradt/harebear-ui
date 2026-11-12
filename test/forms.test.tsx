@@ -4,6 +4,9 @@ import { useState } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   Celebration,
+  Combobox,
+  ComboboxInput,
+  CopyField,
   celebrate,
   DateTimePicker,
   type DateTimeValue,
@@ -184,5 +187,35 @@ describe("Celebration", () => {
     render(<Celebration />)
     act(() => celebrate())
     expect(document.querySelector("[data-slot=celebration]")).toBeNull()
+  })
+})
+
+describe("CopyField", () => {
+  it("says copiedLabel on the button and next to it for a moment after copying", async () => {
+    const user = userEvent.setup()
+    const { container } = render(<CopyField value="abc-123" aria-label="ID" copiedLabel="Copied!" />)
+    await user.click(screen.getByRole("button", { name: "Copy id" }))
+    expect(await navigator.clipboard.readText()).toBe("abc-123")
+    expect(screen.getByRole("button", { name: "Copied!" })).toBeInTheDocument()
+    expect(container.querySelector("[data-slot=copy-field-status]")).toHaveTextContent("Copied!")
+  })
+
+  it("defaults copiedLabel to Copied and shows nothing before copying", async () => {
+    const user = userEvent.setup()
+    const { container } = render(<CopyField value="x" />)
+    expect(container.querySelector("[data-slot=copy-field-status]")).toBeEmptyDOMElement()
+    await user.click(screen.getByRole("button", { name: "Copy value" }))
+    expect(screen.getByRole("button", { name: "Copied" })).toBeInTheDocument()
+  })
+})
+
+describe("ComboboxInput", () => {
+  it("names its built-in trigger button", () => {
+    render(
+      <Combobox items={["Apple"]}>
+        <ComboboxInput aria-label="Fruit" />
+      </Combobox>,
+    )
+    expect(screen.getByRole("button", { name: "Show options" })).toBeInTheDocument()
   })
 })

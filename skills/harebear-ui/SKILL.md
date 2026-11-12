@@ -21,6 +21,7 @@ This project uses `harebear-ui` for all UI. Its theme, tokens, and components ar
 - Style only with theme tokens: `bg-background`, `bg-card`, `bg-muted`, `text-foreground`, `text-muted-foreground`, `bg-primary`, `bg-primary-soft text-primary`, `text-success`, `text-warning`, `text-destructive`, `border-border`, `shadow-card`, `rounded-md` (controls), `rounded-xl` (cards). No hex colors, no Tailwind palette colors like `bg-blue-500`, no inline color styles.
 - Status uses a tone prop: `success | warning | danger | info | neutral` (StatusBadge, StatusDot, Timeline, StatusBars, LinkTile).
 - Icons are lucide-react elements passed as nodes: `icon={<UsersIcon />}`. Icon-only buttons need `aria-label`.
+- Touch: `Button`, `Toggle` and `Input` already meet 44px under `pointer: coarse` (buttons via an invisible `::after`); don't clip them with `overflow-hidden` at their edge or override their size.
 - Compose `className` with `cn()` from harebear-ui.
 - Lay out pages as columns of `Card`s with `gap-5`, page sections with `gap-7`. Use `PageHeader` for page titles and `AppShell` for sidebar apps. Every shell (`AppShell`, `ChatShell`) is built on `SidebarLayout`, which gives the collapsible icon rail; use it directly for other sidebar layouts instead of the raw Sidebar primitives.
 - DataTable columns: define with `createDataTableColumnHelper<Row>()` at module scope, pass `getRowId`.

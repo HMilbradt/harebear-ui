@@ -128,7 +128,7 @@ function AppNav({
       }
       className={cn(
         "max-md:pb-[calc(4.5rem+env(safe-area-inset-bottom))] max-md:[--hb-bottom-inset:calc(4.5rem+env(safe-area-inset-bottom))]",
-        action && "max-md:[--hb-fab-inset:4.5rem]",
+        action && "max-md:pb-[calc(9rem+env(safe-area-inset-bottom))] max-md:[--hb-fab-inset:4.5rem]",
         className,
       )}
     >

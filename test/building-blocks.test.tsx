@@ -242,7 +242,9 @@ describe("UserMenu", () => {
         </UserMenu>
       </ThemeProvider>,
     )
-    const trigger = screen.getByRole("button", { name: "Account menu for pat@example.com" })
+    // Named by its visible text (axe label-content-name-mismatch), not an aria-label that hides it.
+    const trigger = screen.getByRole("button", { name: /^pat@example\.com\s*Signed in$/ })
+    expect(trigger).not.toHaveAttribute("aria-label")
     await user.click(trigger)
     await user.click(await screen.findByRole("menuitemradio", { name: "Dark" }))
     expect(document.documentElement).toHaveClass("dark")
