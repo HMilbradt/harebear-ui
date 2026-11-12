@@ -35,13 +35,7 @@ function TimeZonePicker({ value, onValueChange, id, className }: TimeZonePickerP
       onValueChange={(next) => next && onValueChange(next)}
       itemToStringLabel={label}
     >
-      <ComboboxInput
-        id={id}
-        data-slot="time-zone-picker"
-        placeholder="Search time zones"
-        showTrigger={false}
-        className={cn("w-full pointer-coarse:h-11", className)}
-      />
+      <ComboboxInput id={id} placeholder="Search time zones" showTrigger={false} className={cn("w-full", className)} />
       <ComboboxContent>
         <ComboboxEmpty>No matching time zone.</ComboboxEmpty>
         <ComboboxList>

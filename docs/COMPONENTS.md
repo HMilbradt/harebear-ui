@@ -15,7 +15,7 @@ Full working screens that combine these live in the repo under `playground/scree
 - **Compose, don't fork.** Every component accepts `className` (merged with `cn`, later classes win). Reach for a primitive before writing a new component.
 - **Icons are lucide-react elements.** Pass `<SearchIcon />`, not the component. Buttons size icons automatically.
 - **Status uses tones**, not colors: `"success" | "warning" | "danger" | "info" | "neutral"`.
-- **Touch targets are built in.** Under `pointer: coarse`, `Button` (every size) and `Toggle`/`ToggleGroupItem` get a 44px hit area (an invisible `::after`, so do not clip them with `overflow-hidden` right at their edge) and `Input`/`InputGroup` grow to 44px.
+- **Touch targets are built in.** Under `pointer: coarse`, `Button` (every size) and `Toggle`/`ToggleGroupItem` get a 44px hit area (an invisible `::after`, which an `overflow-hidden` ancestor or a later sibling clips: in such a spot, size the button itself, e.g. `pointer-coarse:size-11`, as the `CodeBlock` and `CodeSnippet` copy buttons do) and `Input`/`InputGroup` grow to 44px.
 
 ## Agent-first apps
 
@@ -41,7 +41,7 @@ A household or personal app where an assistant sits on every page and safe actio
 </ThemeProvider>
 ```
 
-- Pages: `Page` (the column) with a `PageHeader` (h1; `UserMenu compact` in `actions` on phones, where the sidebar footer is hidden) and `PageSection`s (h2 regions). A chat page sets `fill` on `AppNav`.
+- Pages: `Page` (the column) with a `PageHeader` (h1; `UserMenu compact className="md:hidden"` in `actions`, hidden from md up, since the sidebar footer is hidden on phones) and `PageSection`s (h2 regions). A chat page sets `fill` on `AppNav`.
 - Lists: `SectionedList` (`TaskRow` rows); when the agent or a bulk action changes data, confirm with `toastUndo` and set `lingerMs` to its window so a ticked row stays struck through for about as long as Undo shows.
 - A week agenda: `DayStrip sticky` above one `SectionedList` with a section per day (`empty` keeps empty days) and `AgendaRow` rows from `renderItem`.
 - A record's details (`DetailSheet`): `ChecklistEditor` for steps, `CommentThread` for comments, `MarkdownEditor` for notes.
@@ -212,7 +212,7 @@ Title row with the page's `h1`. Props: `title`, `description?`, `count?` (badge 
   <PageHeader
     title="Groceries"
     icon={<CategoryDot color={1} />}
-    actions={isMobile && <UserMenu compact name={user.name} />}
+    actions={<UserMenu compact name={user.name} className="md:hidden" />}
   />
   <PageSection
     title="This week"
@@ -275,7 +275,7 @@ Avatar + name + subtitle. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`C
 
 ### `UserMenu`
 
-The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. The trigger is named by its visible name and subtitle (in a sidebar icon rail, where it is just the avatar, by `name`) and the menu opens to the side there. `compact` makes the trigger just the avatar anywhere (40px, 44px on touch screens, named "Account menu for {name}") with the menu below it, for a phone page header. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`CategoryColor` behind the initials), `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`, `compact?`.
+The signed-in user as a menu button (sidebar footer or top bar). The menu has a header, your items (`children`, e.g. a Settings `DropdownMenuItem`), a Light / Dark / System theme choice, and Sign out. The trigger is named by its visible name and subtitle (in a sidebar icon rail, where it is just the avatar, by `name`) and the menu opens to the side there. `compact` makes the trigger just the avatar anywhere (40px, 44px on touch screens, named "Account menu for {name}") with the menu below it, for a phone page header. Upgrading from 0.9: the non-compact trigger is no longer named "Account menu for {name}"; find it by `name` instead. Props: `name`, `subtitle?`, `avatarUrl?`, `color?` (`CategoryColor` behind the initials), `children?`, `themeSwitch?` (default true, needs `ThemeProvider`), `onSignOut?`, `signOutLabel?`, `compact?`.
 
 ```tsx
 ;<UserMenu name={email} subtitle="Signed in" onSignOut={signOut}>
@@ -336,7 +336,7 @@ Controlled "are you sure" dialog. Props: `open`, `onOpenChange`, `title`, `descr
 
 ### `PromptDialog`
 
-Controlled dialog that asks for one line of text (New list, Rename). Props: `open`, `onOpenChange`, `title`, `description?`, `label` (field label), `defaultValue?`, `submitLabel`, `maxLength?`, `onSubmit(value): Promise<void>` (trimmed; empty is blocked). It closes when `onSubmit` resolves; a thrown error's message shows under the field and the dialog stays open.
+Controlled dialog that asks for one line of text (New list, Rename). Props: `open`, `onOpenChange`, `title`, `description?`, `label` (field label), `defaultValue?`, `submitLabel?` (default "Save"), `cancelLabel?` (default "Cancel"), `maxLength?`, `onSubmit(value): void | Promise<void>` (trimmed; empty is blocked). It closes when `onSubmit` returns or resolves and starts fresh on every open; a thrown error's message shows under the field and the dialog stays open.
 
 ```tsx
 ;<PromptDialog
@@ -361,7 +361,7 @@ Date field: a button that opens a `Calendar` in a `Popover`, with an optional ti
 
 ### `TimeZonePicker`
 
-Searchable IANA time zone field built on `Combobox`, listing `Intl.supportedValuesOf("timeZone")` (underscores shown as spaces, so "new york" matches). Props: `value` (e.g. `"America/Vancouver"`), `onValueChange(zone)`, `id?` (for a `FieldLabel` or `SettingsRow` `htmlFor`), `className?`.
+Searchable IANA time zone field built on `Combobox`, listing `Intl.supportedValuesOf("timeZone")` (underscores shown as spaces, so "new york" matches). A `value` not in that list (an alias such as "US/Pacific") is kept at the top so it still shows. Props: `value` (e.g. `"America/Vancouver"`), `onValueChange(zone)`, `id?` (for a `FieldLabel` or `SettingsRow` `htmlFor`), `className?`.
 
 ```tsx
 ;<SettingsRow
@@ -432,12 +432,24 @@ Steps inside a record, e.g. a to-do's checklist: `CheckCircle` per item (the tex
 
 Comments on a record, oldest first, then a box and a submit button (disabled while empty; submits the trimmed text and clears). Bodies render with `Markdown`. Props: `comments: { id; author: { name; color?; avatarUrl? }; meta?; body }[]` (`meta` is muted text after the name, e.g. "via HomeBot · 2 h ago"), `onSubmit(text)`, `placeholder?` (also the box's name, default "Add a comment"), `submitLabel?` (default "Comment"). Show your own empty state if you want one.
 
+```tsx
+;<CommentThread comments={task.comments} onSubmit={(text) => api.comment(task.id, text)} />
+```
+
 ### `AppNav`
 
 One nav config, two renderings: on desktop a `SidebarLayout` sidebar (brand, action button, places, one collapsible group, footer; active place is a raised card; collapses to the icon rail), under 768px a bottom tab bar (first 5 places, 56px targets, `aria-current="page"`) plus a round floating action button. Use it instead of `AppShell` for consumer apps that need phone navigation.
 
-Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar, `sidebar?: false` for a tab-bar-only place such as Lists when the sidebar has a Lists group), `group?: AppNavGroup` (`label`, `href?` (heading becomes a link, e.g. to all lists; the chevron is a separate "Collapse Lists" button), `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect; sidebar?: false }` (`sidebar: false` keeps only the round phone button), `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `fill?` (main column is exactly the screen height minus the tab bar and does not scroll, for a chat: the child takes it with `flex-1 min-h-0`, which `ChatPanel` already has), `children`.
+Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar, `sidebar?: false` for a tab-bar-only place such as Lists when the sidebar has a Lists group), `group?: AppNavGroup` (`label`, `href?` (heading becomes a link, e.g. to all lists; the chevron is a separate "Collapse Lists" button), `active?` (the heading link is the current page), `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect; sidebar?: false }` (`sidebar: false` keeps only the round phone button), `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `fill?` (main column is exactly the screen height minus the tab bar (and the round action button's space when `action` is set) and does not scroll, for a chat: the child takes it with `flex-1 min-h-0`, which `ChatPanel` already has), `children`.
 On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger` in the page header if users need them there. With `action`, the main column's bottom padding also clears the round button, so a trailing control on the last row is not under it. Render `AssistantDock` inside `children` so it clears the tab bar. Toasts stack above the tab bar, the action button and the dock launcher on their own; no `Toaster` offset needed.
+
+```tsx
+;<AppNav fill places={places} footer={<UserMenu name={user.name} />}>
+  <ChatPanel title="Assistant" composer={<PromptInput … />}>
+    {thread}
+  </ChatPanel>
+</AppNav>
+```
 
 ### `FocusLayout`
 
@@ -466,6 +478,7 @@ A page outside the app frame (settings, onboarding, setup): slim sticky top bar,
       control={<Switch id="daily" />}
     />
     <SettingsRow label="Password" content={<ChangePasswordForm />} />
+    <SettingsRow label="Connections" body={<ConnectionList />} />
   </SettingsSection>
 </FocusLayout>
 ```
@@ -792,7 +805,16 @@ Full-page wrapper. Props: `variant` (`"centered"` card on the page, `"muted"` sa
 
 ### `AuthForm`
 
-The shell the auth forms share; use it for other signed-out steps (join with a code, verify an email). Props: `title`, `description?`, `children` (fields, each with a `name`), `error?`, `submitLabel`, `loading?` (spinner, disables every control), `onSubmit?(data: FormData)` (after browser validation; omit to submit natively), `footer?` (under the button: links, provider buttons).
+The shell the auth forms share; use it for other signed-out steps (join with a code, verify an email). Props: `title`, `description?`, `children` (fields, each with a `name`), `error?`, `submitLabel`, `loading?` (spinner, disables every control), `onSubmit?(data: FormData)` (after browser validation, which `noValidate` skips; omit to submit natively), `footer?` (under the button: links, provider buttons).
+
+```tsx
+;<AuthForm title="Join your household" submitLabel="Join" onSubmit={(d) => join(String(d.get("code")))}>
+  <Field>
+    <FieldLabel htmlFor="code">Invite code</FieldLabel>
+    <Input id="code" name="code" required />
+  </Field>
+</AuthForm>
+```
 
 ### `LoginForm`
 
@@ -806,9 +828,24 @@ Password `Input` with a Show/Hide button (`aria-label` "Show password" / "Hide p
 
 Props: `onSubmit?({ name?, email, password }, data: FormData)`, `children?` (extra fields before the name, e.g. a household name; read them from `data`), `nameField?` (default true), `confirmPassword?` (default true; mismatches are blocked with a browser validation message), `minPasswordLength?` (default 8), `passwordHint?`, `providers?`, `onProviderClick?`, `providersFirst?`, `loginHref?`, `title?`, `description?`, `submitLabel?`, `loading?`, `error?`.
 
+```tsx
+;<SignupForm onSubmit={(v, data) => create({ ...v, household: String(data.get("household")) })}>
+  <Field>
+    <FieldLabel htmlFor="household">Household name</FieldLabel>
+    <Input id="household" name="household" required />
+  </Field>
+</SignupForm>
+```
+
 ### `NewPasswordForm`
 
 Reset or first password: "New password" + "Confirm password" (a mismatch is blocked with a browser validation message). Props: `onSubmit?({ password })`, `minPasswordLength?` (default 8), `passwordHint?`, `title?` (default "Choose a new password"), `description?`, `submitLabel?` (default "Save password"), `loading?`, `error?`.
+
+```tsx
+;<AuthLayout variant="centered">
+  <NewPasswordForm onSubmit={({ password }) => reset(token, password)} loading={pending} error={error} />
+</AuthLayout>
+```
 
 `GitHubIcon`, `GoogleIcon`, `AppleIcon`: brand marks for provider buttons.
 

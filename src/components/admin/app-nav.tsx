@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
-import { useToastClearance } from "@/lib/toast-clearance"
+import { useToastClearance } from "@/lib/internal/toast-clearance"
 import { cn } from "@/lib/utils"
 
 export interface AppNavPlace extends Omit<AppNavItem, "badge"> {
@@ -25,6 +25,8 @@ export interface AppNavGroup {
   label: string
   /** Makes the heading a link, e.g. "/lists"; the chevron next to it still collapses the group. */
   href?: string
+  /** The heading link is the current page: aria-current and the active text style. */
+  active?: boolean
   items: AppNavPlace[]
   /** Expanded at first. Default true. */
   defaultOpen?: boolean
@@ -63,7 +65,8 @@ export interface AppNavProps {
   /** Sidebar width. Default "15.75rem". */
   width?: string
   /**
-   * Main column exactly fills the screen (minus the tab bar on phones) and does not scroll, for a chat or map. The
+   * Main column exactly fills the screen (minus the tab bar on phones, and the round action button's space when
+   * `action` is set) and does not scroll, for a chat or map. The
    * child takes the height with `flex-1 min-h-0` (ChatPanel does) and scrolls inside itself.
    */
   fill?: boolean
@@ -207,7 +210,11 @@ function NavGroup({ group, Link }: { group: AppNavGroup; Link: React.ElementType
           <>
             <Link
               href={group.href}
-              className="flex h-8 min-w-0 items-center rounded-md px-3 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:h-11"
+              aria-current={group.active ? "page" : undefined}
+              className={cn(
+                "flex h-8 min-w-0 items-center rounded-md px-3 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:h-11",
+                group.active && "text-foreground",
+              )}
             >
               <span className="truncate">{group.label}</span>
             </Link>
@@ -220,7 +227,7 @@ function NavGroup({ group, Link }: { group: AppNavGroup; Link: React.ElementType
             <span className="flex-1" />
           </>
         ) : (
-          <CollapsibleTrigger className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40">
+          <CollapsibleTrigger className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
             <span className="truncate">{group.label}</span>
             {chevron}
           </CollapsibleTrigger>

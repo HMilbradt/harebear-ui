@@ -23,10 +23,11 @@ export interface PromptDialogProps {
   label: React.ReactNode
   /** Starting text, e.g. the current name when renaming. */
   defaultValue?: string
-  submitLabel: React.ReactNode
+  submitLabel?: React.ReactNode
+  cancelLabel?: React.ReactNode
   maxLength?: number
-  /** Gets the trimmed text. The dialog closes when it resolves; a thrown error's message shows under the field. */
-  onSubmit: (value: string) => Promise<void>
+  /** Gets the trimmed text. The dialog closes when it returns or resolves; a thrown error's message shows under the field. */
+  onSubmit: (value: string) => void | Promise<void>
 }
 
 /** Controlled dialog that asks for one line of text: New list, Rename, Add section. Sibling of ConfirmDialog. */
@@ -46,7 +47,8 @@ function PromptForm({
   description,
   label,
   defaultValue = "",
-  submitLabel,
+  submitLabel = "Save",
+  cancelLabel = "Cancel",
   maxLength,
   onSubmit,
   onDone,
@@ -92,7 +94,7 @@ function PromptForm({
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="outline">
-            Cancel
+            {cancelLabel}
           </Button>
         </DialogClose>
         <Button type="submit" loading={busy} disabled={!value.trim()}>

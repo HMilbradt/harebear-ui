@@ -476,7 +476,6 @@ exports[`public API > matches the export snapshot (update with \`pnpm test -u\` 
   "loadHighlighter",
   "markerVariants",
   "navigationMenuTriggerStyle",
-  "parseLocalDate",
   "smoothPath",
   "tabsListVariants",
   "toast",
@@ -498,6 +497,5 @@ exports[`public API > matches the export snapshot (update with \`pnpm test -u\` 
   "useSidebar",
   "useSidebarOptional",
   "useTheme",
-  "useToastClearance",
 ]
 `;

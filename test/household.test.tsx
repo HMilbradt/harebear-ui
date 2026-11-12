@@ -30,6 +30,7 @@ import {
   ThemeProvider,
   useAssistant,
   useAssistantPage,
+  SidebarProvider,
   UserMenu,
 } from "@/index"
 
@@ -676,12 +677,14 @@ describe("AppNav", () => {
       <ThemeProvider>
         <AppNav
           places={[{ label: "Today", href: "/" }]}
-          group={{ label: "Lists", href: "/lists", items: [{ label: "Groceries", href: "/l/1" }] }}
+          group={{ label: "Lists", href: "/lists", active: true, items: [{ label: "Groceries", href: "/l/1" }] }}
         />
       </ThemeProvider>,
     )
     const sidebar = container.querySelector<HTMLElement>("[data-slot=app-nav]")!
     expect(within(sidebar).getByRole("link", { name: "Lists" })).toHaveAttribute("href", "/lists")
+    expect(within(sidebar).getByRole("link", { name: "Lists" })).toHaveAttribute("aria-current", "page")
+    expect(within(sidebar).getByRole("link", { name: "Lists" })).toHaveClass("text-foreground")
     const toggle = within(sidebar).getByRole("button", { name: "Collapse Lists" })
     expect(toggle).toHaveAttribute("aria-expanded", "true")
     expect(toggle).not.toContainElement(within(sidebar).getByRole("link", { name: "Lists" }))
@@ -816,6 +819,23 @@ describe("UserMenu compact", () => {
     expect(await screen.findByText("The Chen household")).toBeInTheDocument()
     await user.click(screen.getByRole("menuitem", { name: "Settings" }))
     expect(onSettings).toHaveBeenCalledOnce()
+  })
+})
+
+describe("UserMenu in a sidebar icon rail", () => {
+  it("is named by name alone and shows only the avatar", () => {
+    render(
+      <ThemeProvider defaultMode="light" storageKey={null}>
+        <SidebarProvider defaultOpen={false}>
+          <UserMenu name="Maya Chen" subtitle="The Chen household" />
+        </SidebarProvider>
+      </ThemeProvider>,
+    )
+    const trigger = screen.getByRole("button", { name: "Maya Chen" })
+    expect(trigger).toHaveAccessibleName("Maya Chen")
+    // The initials are CSS content, so the name has no visible text to mismatch.
+    expect(trigger).not.toHaveTextContent("MC")
+    expect(trigger).not.toHaveTextContent("The Chen household")
   })
 })
 

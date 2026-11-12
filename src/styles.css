@@ -282,6 +282,11 @@
   .animate-listening {
     animation: none;
   }
+  /* tw-animate enter/exit on dialogs, menus, popovers and sheets (any variant prefix). Unlayered, so it wins. */
+  [class*="animate-in"],
+  [class*="animate-out"] {
+    animation: none;
+  }
   .focus-box {
     transition: none;
   }
@@ -312,7 +317,7 @@
 }
 
 /* Toasts clear floating controls. AppNav (tab bar, action button) and AssistantDock (launcher) set --hb-toast-* on
-   <html> while mounted (src/lib/toast-clearance.ts); this adds them to Sonner's bottom offset. Unlayered and
+   <html> while mounted (src/lib/internal/toast-clearance.ts); this adds them to Sonner's bottom offset. Unlayered and
    !important because Sonner injects its own unlayered rule at runtime. Breakpoints: AppNav's tab bar shows under
    768px; Sonner switches to full-width mobile toasts under 600px. */
 [data-sonner-toaster][data-y-position="bottom"] {

@@ -28,7 +28,8 @@ function MarkdownEditor({
 }: MarkdownEditorProps) {
   return (
     <Tabs data-slot="markdown-editor" defaultValue="write" className={cn("gap-3", wrapperClassName)}>
-      <TabsList>
+      {/* 52px list, so the triggers inside reach 44px on touch screens. */}
+      <TabsList className="pointer-coarse:group-data-horizontal/tabs:h-13">
         <TabsTrigger value="write">Write</TabsTrigger>
         <TabsTrigger value="preview">Preview</TabsTrigger>
       </TabsList>

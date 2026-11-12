@@ -201,14 +201,9 @@ function AuthForm({
       data-slot="auth-form"
       className={cn("flex flex-col gap-6", className)}
       onSubmit={(e) => {
-        const form = e.currentTarget
-        if (!form.reportValidity()) {
-          e.preventDefault()
-          return
-        }
         if (!onSubmit) return
         e.preventDefault()
-        onSubmit(new FormData(form))
+        onSubmit(new FormData(e.currentTarget))
       }}
       aria-busy={loading || undefined}
       {...props}
@@ -318,7 +313,7 @@ export interface LoginValues {
   password?: string
 }
 
-export interface LoginFormProps extends AuthFormBase {
+export interface LoginFormProps extends Omit<AuthFormBase, "children"> {
   /** Called with the entered values. Omit to let the form submit natively (e.g. to an `action`). */
   onSubmit?: (values: LoginValues) => void | Promise<void>
   /** "email-only" drops the password field for magic-link or OTP flows (shadcn login-05). */
@@ -387,7 +382,7 @@ function LoginForm({
             {forgotPasswordHref && (
               <a
                 href={forgotPasswordHref}
-                className="ms-auto text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                className="ms-auto rounded-sm text-sm text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 Forgot password?
               </a>
@@ -501,7 +496,7 @@ function SignupForm({
 // New password --------------------------------------------------------------
 
 export interface NewPasswordFormProps
-  extends Omit<React.ComponentProps<"form">, "onSubmit" | "title">,
+  extends Omit<React.ComponentProps<"form">, "onSubmit" | "title" | "children">,
     Pick<AuthFormProps, "description" | "error" | "loading"> {
   /** Default "Choose a new password". */
   title?: React.ReactNode

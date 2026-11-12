@@ -591,7 +591,5 @@ export { useMediaQuery } from "./hooks/use-media-query"
 export { useIsMobile } from "./hooks/use-mobile"
 
 // Utilities
-export { parseLocalDate } from "./lib/date"
 export { loadHighlighter, highlightCode } from "./lib/highlighter"
-export { useToastClearance } from "./lib/toast-clearance"
 export { cn } from "./lib/utils"

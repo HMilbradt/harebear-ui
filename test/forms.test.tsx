@@ -296,19 +296,24 @@ describe("NewPasswordForm", () => {
   })
 })
 
-function PromptHarness({ onSubmit }: { onSubmit: (value: string) => Promise<void> }) {
+function PromptHarness({ onSubmit }: { onSubmit: (value: string) => void | Promise<void> }) {
   const [open, setOpen] = useState(true)
   return (
-    <PromptDialog
-      open={open}
-      onOpenChange={setOpen}
-      title="Rename list"
-      label="Name"
-      defaultValue="Groceries"
-      submitLabel="Rename"
-      maxLength={20}
-      onSubmit={onSubmit}
-    />
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open
+      </button>
+      <PromptDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Rename list"
+        label="Name"
+        defaultValue="Groceries"
+        submitLabel="Rename"
+        maxLength={20}
+        onSubmit={onSubmit}
+      />
+    </>
   )
 }
 
@@ -330,6 +335,26 @@ describe("PromptDialog", () => {
     await user.click(screen.getByRole("button", { name: "Rename" }))
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   })
+
+  it("starts fresh on reopen and accepts a synchronous handler", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn<(value: string) => void>(() => {
+      throw new Error("That name is taken")
+    })
+    render(<PromptHarness onSubmit={onSubmit} />)
+    const field = await screen.findByLabelText("Name")
+    await user.clear(field)
+    await user.type(field, "Food")
+    await user.click(screen.getByRole("button", { name: "Rename" }))
+    expect(await screen.findByText("That name is taken")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Cancel" }))
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Open" }))
+    const reopened = await screen.findByLabelText("Name")
+    expect(reopened).toHaveValue("Groceries")
+    expect(reopened).not.toHaveAttribute("aria-invalid")
+    expect(screen.queryByText("That name is taken")).not.toBeInTheDocument()
+  })
 })
 
 describe("TimeZonePicker", () => {
@@ -343,6 +368,16 @@ describe("TimeZonePicker", () => {
     await user.type(input, "vancouver")
     await user.click(await screen.findByRole("option", { name: "America/Vancouver" }))
     expect(onValueChange).toHaveBeenCalledWith("America/Vancouver")
+  })
+
+  it("keeps a value that is not in the supported list, such as an alias", async () => {
+    const user = userEvent.setup()
+    render(<TimeZonePicker value="US/Pacific" onValueChange={() => {}} />)
+    const input = screen.getByRole("combobox")
+    expect(input).toHaveValue("US/Pacific")
+    await user.clear(input)
+    await user.type(input, "US/Pac")
+    expect(await screen.findByRole("option", { name: "US/Pacific" })).toBeInTheDocument()
   })
 })
 
