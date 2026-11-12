@@ -736,7 +736,7 @@ Agent tool calls as a bordered, collapsible card. Titles, labels and details wra
 ### `ApprovalCard`, `ApprovalResult`
 
 `ApprovalCard`: warning-ringed card for anything the agent waits on the user for. Props: `title`, `description?`, `icon?` (default shield, `null` for none), `reason?` (shown first after a bold "Why:"), `code?` + `codeLabel?` (wrapped code block with copy), `actions?` (buttons), `footer?`, `children` (more body).
-`ApprovalResult`: one-line record in the thread. Props: `decision: "approved" | "denied"`, `time?`, `children`.
+`ApprovalResult`: short record of a decision in the thread; wraps when long. Props: `decision: "approved" | "denied"`, `time?`, `children`.
 
 ### `AssistantProvider`, `useAssistant`, `useAssistantPage`
 

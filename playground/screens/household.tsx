@@ -251,7 +251,6 @@ function TodayPage() {
   )
 }
 
-/** A full-height chat page: AppNav `fill` gives ChatPanel the screen minus the tab bar. */
 /** The dock's "New chat" header action: clears the conversation. */
 function DockNewChat() {
   const { clear, messages } = useAssistant()
@@ -263,6 +262,7 @@ function DockNewChat() {
   )
 }
 
+/** A full-height chat page: AppNav `fill` gives ChatPanel the screen minus the tab bar. */
 function ChatPage() {
   const [draft, setDraft] = useState("")
   return (
