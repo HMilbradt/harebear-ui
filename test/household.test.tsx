@@ -267,6 +267,34 @@ describe("AppNav", () => {
   })
 })
 
+describe("Toast clearance", () => {
+  it("registers space for the tab bar, action button and launcher while they show, and clears it", async () => {
+    const user = userEvent.setup()
+    const root = document.documentElement
+    const { unmount } = render(
+      <ThemeProvider>
+        <AssistantProvider onSend={() => "ok"}>
+          <AppNav
+            places={[{ label: "Today", href: "/" }]}
+            action={{ label: "New", icon: <span />, onSelect: () => {} }}
+          >
+            <AssistantDock title="HomeBot" dictation={false} />
+          </AppNav>
+        </AssistantProvider>
+      </ThemeProvider>,
+    )
+    expect(root.style.getPropertyValue("--hb-toast-nav")).toContain("4.5rem")
+    expect(root.style.getPropertyValue("--hb-toast-fab")).toBe("4.5rem")
+    expect(root.style.getPropertyValue("--hb-toast-launcher")).toBe("3.5rem")
+    // The open panel replaces the launcher, so its clearance goes away.
+    await user.click(screen.getByRole("button", { name: "Ask HomeBot" }))
+    expect(root.style.getPropertyValue("--hb-toast-launcher")).toBe("")
+    unmount()
+    expect(root.style.getPropertyValue("--hb-toast-nav")).toBe("")
+    expect(root.style.getPropertyValue("--hb-toast-fab")).toBe("")
+  })
+})
+
 describe("Settings and FocusLayout", () => {
   it("expands a row's content from its default button", async () => {
     const user = userEvent.setup()

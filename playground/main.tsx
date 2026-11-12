@@ -74,7 +74,7 @@ if (root)
       <ThemeProvider defaultMode={pinnedMode ?? "light"} storageKey={pinnedMode ? null : undefined}>
         <TooltipProvider>
           <App />
-          <Toaster mobileOffset={{ bottom: "5.5rem" }} />
+          <Toaster />
         </TooltipProvider>
       </ThemeProvider>
     </StrictMode>,

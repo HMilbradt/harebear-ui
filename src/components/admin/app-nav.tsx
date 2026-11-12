@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
+import { useToastClearance } from "@/lib/toast-clearance"
 import { cn } from "@/lib/utils"
 
 export interface AppNavPlace extends Omit<AppNavItem, "badge"> {
@@ -84,6 +85,9 @@ function AppNav({
   children,
 }: AppNavProps) {
   const tabs = places.filter((p) => p.tab !== false).slice(0, TAB_LIMIT)
+  // Toasts stack above the tab bar and the action button on phones (styles.css applies these under 768px only).
+  useToastClearance("--hb-toast-nav", "calc(4.5rem + env(safe-area-inset-bottom))", tabs.length > 0)
+  useToastClearance("--hb-toast-fab", "4.5rem", Boolean(action))
   return (
     <SidebarLayout
       brand={brand}
