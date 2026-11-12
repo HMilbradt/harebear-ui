@@ -278,7 +278,7 @@ Muted tile that lifts on hover, for service launchers. Props: `title`, `subtitle
 One nav config, two renderings: on desktop a `SidebarLayout` sidebar (brand, action button, places, one collapsible group, footer; active place is a raised card; collapses to the icon rail), under 768px a bottom tab bar (first 5 places, 56px targets, `aria-current="page"`) plus a round floating action button. Use it instead of `AppShell` for consumer apps that need phone navigation.
 
 Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar), `group?: AppNavGroup` (`label`, `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect }`, `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `children`.
-On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger` in the page header if users need them there. Render `AssistantDock` inside `children` so it clears the tab bar, and mount `<Toaster mobileOffset={{ bottom: "5.5rem" }} />` so toasts do too.
+On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger` in the page header if users need them there. Render `AssistantDock` inside `children` so it clears the tab bar. Toasts stack above the tab bar, the action button and the dock launcher on their own; no `Toaster` offset needed.
 
 ### `FocusLayout`
 

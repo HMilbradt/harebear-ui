@@ -285,3 +285,26 @@
     background-color: color-mix(in oklab, var(--muted-foreground) 60%, transparent);
   }
 }
+
+/* Toasts clear floating controls. AppNav (tab bar, action button) and AssistantDock (launcher) set --hb-toast-* on
+   <html> while mounted (src/lib/toast-clearance.ts); this adds them to Sonner's bottom offset. Unlayered and
+   !important because Sonner injects its own unlayered rule at runtime. Breakpoints: AppNav's tab bar shows under
+   768px; Sonner switches to full-width mobile toasts under 600px. */
+[data-sonner-toaster][data-y-position="bottom"] {
+  bottom: calc(var(--offset-bottom) + var(--hb-toast-launcher, 0px)) !important;
+}
+@media (max-width: 767px) {
+  [data-sonner-toaster][data-y-position="bottom"] {
+    bottom: calc(
+      var(--offset-bottom) + var(--hb-toast-nav, 0px) + var(--hb-toast-fab, 0px) + var(--hb-toast-launcher, 0px)
+    ) !important;
+  }
+}
+@media (max-width: 600px) {
+  [data-sonner-toaster][data-y-position="bottom"] {
+    bottom: calc(
+      var(--mobile-offset-bottom) + var(--hb-toast-nav, 0px) + var(--hb-toast-fab, 0px) +
+        var(--hb-toast-launcher, 0px)
+    ) !important;
+  }
+}

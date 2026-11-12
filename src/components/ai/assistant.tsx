@@ -6,6 +6,7 @@ import { AskBox } from "@/components/ai/ask-box"
 import { AssistantAvatar, ChatMessage, ChatThread, TypingIndicator } from "@/components/ai/chat"
 import type { SpeechSource } from "@/components/ai/dictation"
 import { Button } from "@/components/ui/button"
+import { useToastClearance } from "@/lib/toast-clearance"
 import { cn } from "@/lib/utils"
 
 export interface AssistantMessage {
@@ -213,6 +214,9 @@ function AssistantDock({
     panelRef.current?.querySelector("textarea")?.focus()
     void send(text)
   }
+
+  // Toasts stack above the launcher (48px plus an 8px gap) while it is showing.
+  useToastClearance("--hb-toast-launcher", "3.5rem", !open && launcher)
 
   if (!open) {
     if (!launcher) return null
