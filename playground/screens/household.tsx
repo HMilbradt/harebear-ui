@@ -7,6 +7,7 @@ import {
   MessageCircleIcon,
   PlusIcon,
   SettingsIcon,
+  SquarePenIcon,
   SunIcon,
 } from "lucide-react"
 import { useState } from "react"
@@ -251,6 +252,17 @@ function TodayPage() {
 }
 
 /** A full-height chat page: AppNav `fill` gives ChatPanel the screen minus the tab bar. */
+/** The dock's "New chat" header action: clears the conversation. */
+function DockNewChat() {
+  const { clear, messages } = useAssistant()
+  if (messages.length === 0) return null
+  return (
+    <Button variant="ghost" size="icon" shape="pill" aria-label="New chat" onClick={clear}>
+      <SquarePenIcon />
+    </Button>
+  )
+}
+
 function ChatPage() {
   const [draft, setDraft] = useState("")
   return (
@@ -322,6 +334,7 @@ export function HouseholdScreen() {
             <AssistantDock
               title="HomeBot"
               fullScreenHref="#household"
+              actions={<DockNewChat />}
               emptyDescription="I can add to-dos, plan the week and find things in your docs."
             />
           </>

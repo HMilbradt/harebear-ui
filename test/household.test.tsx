@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   ActionReceipt,
   AgendaRow,
+  ApprovalResult,
   AppNav,
   AskBox,
   AssistantDock,
@@ -28,6 +29,8 @@ import {
   type SpeechSourceHandlers,
   TaskRow,
   ThemeProvider,
+  ToolGroup,
+  ToolStep,
   useAssistant,
   useAssistantPage,
   SidebarProvider,
@@ -636,6 +639,114 @@ describe("AssistantDock", () => {
     await user.click(screen.getByRole("button", { name: "Stop" }))
     expect(signal?.aborted).toBe(true)
     expect(screen.queryByText("Working")).not.toBeInTheDocument()
+  })
+})
+
+/** A 120 character label whose tail is one unbroken run, so it only fits by breaking inside the word. */
+const longLabel = (label: string) => `${label} ${"x".repeat(119 - label.length)}`
+
+/**
+ * Fails when text could show cut off: an ellipsis, a line clamp or no-wrap on the text or an ancestor up to `root`,
+ * or nothing that lets a long word break.
+ */
+function expectWrapsInFull(text: string, root: HTMLElement) {
+  const el = within(root).getByText(text)
+  let breaksWords = false
+  for (let n: HTMLElement | null = el; n && n !== root.parentElement; n = n.parentElement) {
+    const cut = [...n.classList].find((c) => /^(truncate|text-ellipsis|whitespace-nowrap|line-clamp-\d+)$/.test(c))
+    expect(cut, `${n.dataset.slot ?? n.tagName} has ${cut} around "${text.slice(0, 12)}"`).toBeUndefined()
+    if (n.classList.contains("wrap-anywhere")) breaksWords = true
+  }
+  expect(breaksWords, `nothing breaks long words in "${text.slice(0, 12)}"`).toBe(true)
+}
+
+describe("Agent text wraps instead of cutting off (L-36)", () => {
+  const url = `https://example.com/${"a".repeat(180)}`
+  const receiptTitle = longLabel("Added")
+  const receiptMeta = longLabel("Groceries")
+  const groupTitle = longLabel("Ran")
+  const stepKind = longLabel("Run")
+  const stepDetail = longLabel("docker")
+  const decision = longLabel("You approved")
+
+  it("shows reply text, receipts, tool steps and decisions in full in the dock", () => {
+    render(
+      <AssistantProvider
+        defaultOpen
+        onSend={() => null}
+        initialMessages={[
+          { id: "u", role: "user", content: "Do it" },
+          { id: "a", role: "assistant", content: `See ${url}` },
+          { id: "r", role: "assistant", content: <ActionReceipt title={receiptTitle} meta={receiptMeta} /> },
+          {
+            id: "t",
+            role: "assistant",
+            content: (
+              <ToolGroup title={groupTitle} status="done" autoOpen>
+                <ToolStep kind={stepKind} detail={stepDetail} status="done" />
+              </ToolGroup>
+            ),
+          },
+          { id: "d", role: "assistant", content: <ApprovalResult decision="approved">{decision}</ApprovalResult> },
+        ]}
+      >
+        <AssistantDock title="HomeBot" dictation={false} />
+      </AssistantProvider>,
+    )
+    const dock = screen.getByRole("dialog", { name: "HomeBot" })
+    for (const text of [`See ${url}`, receiptTitle, receiptMeta, groupTitle, stepKind, stepDetail, decision]) {
+      expectWrapsInFull(text, dock)
+    }
+  })
+
+  it("gives a step with no detail the whole row for its label", () => {
+    const label = "Added milk, eggs and bread to Groceries"
+    render(
+      <ToolGroup title="What I did" status="done" autoOpen>
+        <ToolStep kind={label} detail="" status="done" />
+      </ToolGroup>,
+    )
+    const kind = screen.getByText(label)
+    expect(kind).toHaveClass("flex-1")
+    expect(kind).not.toHaveClass("w-18")
+    expect(kind.parentElement?.children).toHaveLength(3)
+  })
+
+  it("shows a plain text reply in full under an AskBox", () => {
+    const { container } = render(
+      <AskBox value="" onValueChange={() => {}} onSubmit={() => {}} dictation={false} reply={`See ${url}`} />,
+    )
+    expectWrapsInFull(`See ${url}`, container.firstElementChild as HTMLElement)
+  })
+})
+
+describe("AssistantDock actions (L-37)", () => {
+  it("puts header actions next to the full screen link", async () => {
+    const user = userEvent.setup()
+    const onNew = vi.fn()
+    render(
+      <AssistantProvider defaultOpen onSend={() => null}>
+        <AssistantDock
+          title="HomeBot"
+          dictation={false}
+          fullScreenHref="/chat"
+          actions={
+            <button type="button" onClick={onNew}>
+              New chat
+            </button>
+          }
+        />
+      </AssistantProvider>,
+    )
+    const header = screen.getByRole("dialog", { name: "HomeBot" }).querySelector("header")!
+    const controls = [...header.querySelectorAll("button, a")]
+    expect(controls.map((c) => c.textContent || c.getAttribute("aria-label"))).toEqual([
+      "New chat",
+      "Open full screen",
+      "Close HomeBot",
+    ])
+    await user.click(within(header).getByRole("button", { name: "New chat" }))
+    expect(onNew).toHaveBeenCalledTimes(1)
   })
 })
 

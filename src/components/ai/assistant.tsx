@@ -199,6 +199,8 @@ export interface AssistantDockProps extends Omit<React.ComponentProps<"section">
   icon?: React.ReactNode
   /** Link to the full-screen chat. Shows an expand button in the header. */
   fullScreenHref?: string
+  /** Header controls before the full-screen link and close button, e.g. a "New chat" icon button. */
+  actions?: React.ReactNode
   /** Empty state heading. Default "How can I help?". */
   emptyTitle?: React.ReactNode
   /** Empty state line under the heading. */
@@ -224,6 +226,7 @@ function AssistantDock({
   title = "Assistant",
   icon = <SparklesIcon />,
   fullScreenHref,
+  actions,
   emptyTitle = "How can I help?",
   emptyDescription,
   suggestions,
@@ -300,6 +303,7 @@ function AssistantDock({
         <h2 id={titleId} className="min-w-0 flex-1 truncate text-[15px] font-semibold">
           {title}
         </h2>
+        {actions}
         {fullScreenHref && (
           <Button asChild variant="ghost" size="icon" shape="pill">
             <a href={fullScreenHref} aria-label="Open full screen">

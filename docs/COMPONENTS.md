@@ -651,7 +651,7 @@ Scrollable log that sticks to the bottom as content streams in (unless the user 
 
 ### `ChatMessage`
 
-One turn. Props: `role: "user" | "assistant"` (matches AI SDK message roles), `avatar?` (assistant only, defaults to `AssistantAvatar`; `false` for none and full-width content, for agent threads where one turn is many blocks), `actions?` (assistant only, under the content), `variant?` (user bubble: `"muted"` default or `"soft"` accent tint), `children`. Long words wrap.
+One turn. Props: `role: "user" | "assistant"` (matches AI SDK message roles), `avatar?` (assistant only, defaults to `AssistantAvatar`; `false` for none and full-width content, for agent threads where one turn is many blocks), `actions?` (assistant only, under the content), `variant?` (user bubble: `"muted"` default or `"soft"` accent tint), `children`. Long words wrap, in assistant content too.
 User turns render as a right-aligned bubble with preserved newlines. Assistant turns render free-flowing: put `Prose`, `CodeBlock`, `ToolCall`, `TypingIndicator` inside.
 
 ```tsx
@@ -722,9 +722,9 @@ Three pulsing dots. Props: `label?` (text after the dots, e.g. "Working"), `vari
 
 ### `ToolGroup`, `ToolStep`, `ToolStatusIcon`
 
-Agent tool calls as a bordered, collapsible card. `ToolStatus = "queued" | "waiting" | "running" | "done" | "error" | "stopped"`.
+Agent tool calls as a bordered, collapsible card. Titles, labels and details wrap instead of cutting off. `ToolStatus = "queued" | "waiting" | "running" | "done" | "error" | "stopped"`.
 `ToolGroup` props: `title`, `status`, `meta?` (e.g. time), `autoOpen?` (default open while active, until the user toggles), `open?`/`onOpenChange?`.
-`ToolStep` props: `icon?`, `kind` (verb column), `detail` (monospace command or path), `status`, `meta?` (default from status), `output?` (monospace, shown when expanded; omit for a fixed row), `autoOpen?` (default open while running).
+`ToolStep` props: `icon?`, `kind` (verb column; with an empty `detail` it is the whole label, for plain-language steps such as "Added milk"), `detail` (monospace command or path, or `""`), `status`, `meta?` (default from status), `output?` (monospace, shown when expanded; omit for a fixed row), `autoOpen?` (default open while running).
 `ToolStatusIcon`: spinner while running, else a toned dot. Lighter alternative: `Trace`.
 
 ```tsx
@@ -744,7 +744,7 @@ One assistant conversation across pages. `AssistantProvider` props: `onSend(text
 
 ### `AssistantDock`
 
-The assistant as a floating panel over the page (never reflows it): header (icon, title, full-screen link, close), empty state with suggestions, thread, `AskBox` (Stop while the assistant works, wired to `useAssistant().stop`). Closed, it is a soft launcher button. Escape closes and returns focus to the launcher. Props: `title?` (default "Assistant"), `icon?`, `fullScreenHref?`, `emptyTitle?`, `emptyDescription?`, `suggestions?` (default: the page's), `placeholder?`, `dictation?`, `launcher?` (false when another control opens it), `launcherLabel?`.
+The assistant as a floating panel over the page (never reflows it): header (icon, title, your `actions`, full-screen link, close), empty state with suggestions, thread, `AskBox` (Stop while the assistant works, wired to `useAssistant().stop`). Closed, it is a soft launcher button. Escape closes and returns focus to the launcher. Props: `title?` (default "Assistant"), `icon?`, `fullScreenHref?`, `actions?` (header controls before the full-screen link, e.g. a "New chat" icon button with an `aria-label`), `emptyTitle?`, `emptyDescription?`, `suggestions?` (default: the page's), `placeholder?`, `dictation?`, `launcher?` (false when another control opens it), `launcherLabel?`.
 
 ### `AskBox`
 
@@ -774,7 +774,7 @@ const { send, pending, stop, reply } = useAssistant()
 
 ### `ActionReceipt`
 
-What the assistant did, as a compact card: round check, `title` (past tense), `meta?`, Undo (`onUndo?`, `undoLabel?`). `undone` strikes it through and shows "Undone".
+What the assistant did, as a compact card: round check, `title` (past tense), `meta?` (wraps when long), Undo (`onUndo?`, `undoLabel?`). `undone` strikes it through and shows "Undone".
 
 ### `CodeSnippet`, `InlineCode`, `Prose`, `ProseBlockquote`
 
