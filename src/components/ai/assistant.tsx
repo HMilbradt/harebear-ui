@@ -34,7 +34,10 @@ export interface AssistantSendContext {
   append: (message: Omit<AssistantMessage, "id"> & { id?: string }) => string
   /** Replace a message's content, e.g. while a reply streams in. */
   update: (id: string, content: React.ReactNode) => void
-  /** Aborted when the user presses Stop. Pass it to `fetch`, or listen for `abort` to tell your server to stop. */
+  /**
+   * Aborted when the user presses Stop (`signal.reason` is "stop") or when the next send starts (`signal.reason` is
+   * "superseded"). Pass it to `fetch`, or listen for `abort` and tell your server to stop only on "stop".
+   */
   signal: AbortSignal
 }
 
@@ -56,7 +59,7 @@ export interface AssistantContextValue {
   setPage: (page: AssistantPage | null) => void
   /** Adds the user message, opens the dock (unless `{ open: false }`) and runs the app's onSend. */
   send: (text: string, options?: AssistantSendOptions) => Promise<void>
-  /** Stops the running send: aborts its `signal`, ends `pending` and drops its return value and later `append`/`update` calls. */
+  /** Stops the running send: aborts its `signal` with reason "stop", ends `pending` and drops its return value and later `append`/`update` calls. */
   stop: () => void
   append: AssistantSendContext["append"]
   update: AssistantSendContext["update"]
@@ -107,7 +110,7 @@ function AssistantProvider({ onSend, initialMessages = [], defaultOpen = false, 
   const send = React.useCallback(
     async (text: string, options?: AssistantSendOptions) => {
       const before = messagesRef.current
-      runRef.current?.abort()
+      runRef.current?.abort("superseded")
       const run = new AbortController()
       runRef.current = run
       append({ role: "user", content: text })
@@ -139,7 +142,7 @@ function AssistantProvider({ onSend, initialMessages = [], defaultOpen = false, 
     [append, update],
   )
   const stop = React.useCallback(() => {
-    runRef.current?.abort()
+    runRef.current?.abort("stop")
     runRef.current = null
     setPending(false)
   }, [])
@@ -215,6 +218,11 @@ export interface AssistantDockProps extends Omit<React.ComponentProps<"section">
   launcher?: boolean
   /** Label of the launcher. Default `Ask ${title}`. */
   launcherLabel?: string
+  /**
+   * Allow sending while the assistant works, so the app can queue a follow-up. The new send aborts the running
+   * one's `signal` with reason "superseded", not "stop". Stop stays available. Default false.
+   */
+  queue?: boolean
 }
 
 /**
@@ -234,6 +242,7 @@ function AssistantDock({
   dictation,
   launcher = true,
   launcherLabel,
+  queue,
   className,
   ...props
 }: AssistantDockProps) {
@@ -252,7 +261,7 @@ function AssistantDock({
   }, [open])
 
   const submit = (text: string) => {
-    if (pending) return
+    if (pending && !queue) return
     setDraft("")
     // Suggestion pills unmount once the thread starts: keep focus in the composer.
     panelRef.current?.querySelector("textarea")?.focus()
@@ -342,6 +351,7 @@ function AssistantDock({
           suggestions={messages.length === 0 ? pills : undefined}
           dictation={dictation}
           pending={pending}
+          queue={queue}
           onStop={stop}
         />
       </div>

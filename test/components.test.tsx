@@ -99,7 +99,7 @@ describe("PromptInput", () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
     render(<Harness onSubmit={onSubmit} />)
-    const box = screen.getByLabelText("Message")
+    const box = screen.getByLabelText("Send a message…")
     await user.type(box, "  hello{Shift>}{Enter}{/Shift}world  ")
     expect(onSubmit).not.toHaveBeenCalled()
     await user.type(box, "{Enter}")
@@ -110,6 +110,31 @@ describe("PromptInput", () => {
   it("disables send when empty", () => {
     render(<Harness onSubmit={() => {}} />)
     expect(screen.getByRole("button", { name: "Send message" })).toBeDisabled()
+  })
+
+  it("names the field from label, else the placeholder", () => {
+    const props = { value: "", onValueChange: () => {}, onSubmit: () => {} }
+    const { rerender } = render(<PromptInput {...props} placeholder="Ask HomeBot" />)
+    expect(screen.getByRole("textbox", { name: "Ask HomeBot" })).toBeInTheDocument()
+    rerender(<PromptInput {...props} placeholder="Ask HomeBot" label="Message HomeBot" />)
+    expect(screen.getByRole("textbox", { name: "Message HomeBot" })).toBeInTheDocument()
+  })
+
+  it("blocks sending while loading unless queue, and keeps Stop with queue", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    const onStop = vi.fn()
+    const props = { value: "And dessert?", onValueChange: () => {}, onSubmit, onStop, loading: true }
+    const { rerender } = render(<PromptInput {...props} />)
+    await user.type(screen.getByRole("textbox"), "{Enter}")
+    expect(onSubmit).not.toHaveBeenCalled()
+    rerender(<PromptInput {...props} queue />)
+    await user.type(screen.getByRole("textbox"), "{Enter}")
+    expect(onSubmit).toHaveBeenCalledWith("And dessert?")
+    await user.click(screen.getByRole("button", { name: "Send message" }))
+    expect(onSubmit).toHaveBeenCalledTimes(2)
+    await user.click(screen.getByRole("button", { name: "Stop generating" }))
+    expect(onStop).toHaveBeenCalledTimes(1)
   })
 })
 

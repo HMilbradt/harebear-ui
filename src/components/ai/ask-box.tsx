@@ -25,8 +25,13 @@ export interface AskBoxProps extends Omit<React.ComponentProps<"form">, "onSubmi
   lang?: string
   disabled?: boolean
   autoFocus?: boolean
-  /** The assistant is working: sending is blocked and, with `onStop`, the send button becomes Stop. */
+  /** The assistant is working: sending is blocked (unless `queue`) and, with `onStop`, the send button becomes Stop. */
   pending?: boolean
+  /**
+   * Allow sending while `pending`, so the app can queue a follow-up. Enter submits and the send button shows beside
+   * Stop. Default false.
+   */
+  queue?: boolean
   /** Stops the assistant. Shown as a Stop button while `pending`. */
   onStop?: () => void
   /**
@@ -43,7 +48,7 @@ const noSpeech: SpeechSource = { isSupported: () => false, start: () => () => {}
 /**
  * The large rounded input an assistant starts from: auto-growing text, chips while typing, suggestion pills and the
  * DictationButton (mic, stop, send). The focus ring is on the whole box. With `reply` the answer shows under the box;
- * with `pending` and `onStop` the send button becomes Stop.
+ * with `pending` and `onStop` the send button becomes Stop (with `queue`, send stays beside it).
  */
 function AskBox({
   value,
@@ -58,6 +63,7 @@ function AskBox({
   disabled,
   autoFocus,
   pending,
+  queue,
   onStop,
   reply,
   chatHref,
@@ -67,7 +73,7 @@ function AskBox({
   const id = React.useId()
   const submit = () => {
     const text = value.trim()
-    if (!text || disabled || pending) return
+    if (!text || disabled || (pending && !queue)) return
     onSubmit(text)
     // The send button may unmount (Stop replaces it): keep focus in the field.
     document.getElementById(id)?.focus()
@@ -106,7 +112,7 @@ function AskBox({
             }}
             className="field-sizing-content max-h-48 min-h-10 min-w-0 flex-1 resize-none border-0 bg-transparent py-2 text-base leading-6 text-foreground outline-none placeholder:text-muted-foreground"
           />
-          {pending && onStop ? (
+          {pending && onStop && (
             <Button
               type="button"
               size="icon"
@@ -120,10 +126,11 @@ function AskBox({
             >
               <SquareIcon className="size-3.5 fill-current" />
             </Button>
-          ) : (
+          )}
+          {(!pending || !onStop || queue) && (
             <DictationButton
               value={value}
-              disabled={disabled || pending}
+              disabled={disabled || (pending && !queue)}
               source={dictation === false ? noSpeech : dictation}
               lang={lang}
               onTranscript={(text) => onValueChange(value ? `${value.replace(/\s+$/, "")} ${text}` : text)}

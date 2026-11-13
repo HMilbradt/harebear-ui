@@ -17,7 +17,7 @@ const buttonVariants = cva(
         outline: "border-border bg-card text-foreground hover:bg-muted aria-expanded:bg-muted",
         ghost:
           "text-muted-foreground hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
-        soft: "bg-primary-soft text-primary hover:bg-[color-mix(in_oklab,var(--primary-soft),var(--primary)_8%)]",
+        soft: "bg-primary-soft text-primary hover:bg-[color-mix(in_oklab,var(--primary-soft),var(--primary)_8%)] dark:text-[color-mix(in_oklab,var(--primary),white_30%)]",
         dashed:
           "border-dashed border-border bg-transparent text-muted-foreground hover:border-muted-foreground hover:text-foreground",
         destructive:
