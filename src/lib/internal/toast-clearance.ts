@@ -18,6 +18,19 @@ export function keepOpenOnToast<E extends Event>(handler?: (event: E) => void) {
   }
 }
 
+/**
+ * For a modal's `onEscapeKeyDown`: Escape in an open Combobox closes its list, not the modal. Radix listens for
+ * Escape on the document before the input sees it, and does not know about Base UI popups.
+ */
+export function keepOpenOnPopupEscape(handler?: (event: KeyboardEvent) => void) {
+  return (event: KeyboardEvent) => {
+    handler?.(event)
+    if (event.target instanceof Element && event.target.closest('[role="combobox"][data-popup-open]')) {
+      event.preventDefault()
+    }
+  }
+}
+
 export function useToastClearance(name: `--hb-toast-${string}`, value: string, enabled = true) {
   React.useEffect(() => {
     if (!enabled || typeof document === "undefined") return

@@ -1,7 +1,8 @@
 "use client"
 
 import type * as React from "react"
-import { keepOpenOnToast } from "@/lib/internal/toast-clearance"
+import { PopupContainerContext, usePopupContainer } from "@/lib/internal/popup-container"
+import { keepOpenOnPopupEscape, keepOpenOnToast } from "@/lib/internal/toast-clearance"
 import { cn } from "@/lib/utils"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
@@ -42,10 +43,13 @@ function DialogContent({
   children,
   showCloseButton = true,
   onInteractOutside,
+  onEscapeKeyDown,
+  ref,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  const [container, contentRef] = usePopupContainer(ref)
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -56,9 +60,11 @@ function DialogContent({
           className,
         )}
         {...props}
+        ref={contentRef}
         onInteractOutside={keepOpenOnToast(onInteractOutside)}
+        onEscapeKeyDown={keepOpenOnPopupEscape(onEscapeKeyDown)}
       >
-        {children}
+        <PopupContainerContext value={container}>{children}</PopupContainerContext>
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button variant="ghost" className="absolute top-2 right-2" size="icon-sm">

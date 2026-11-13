@@ -1,7 +1,8 @@
 "use client"
 
 import type * as React from "react"
-import { keepOpenOnToast } from "@/lib/internal/toast-clearance"
+import { PopupContainerContext, usePopupContainer } from "@/lib/internal/popup-container"
+import { keepOpenOnPopupEscape, keepOpenOnToast } from "@/lib/internal/toast-clearance"
 import { cn } from "@/lib/utils"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
@@ -43,11 +44,14 @@ function SheetContent({
   side = "right",
   showCloseButton = true,
   onInteractOutside,
+  onEscapeKeyDown,
+  ref,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
 }) {
+  const [container, contentRef] = usePopupContainer(ref)
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -59,9 +63,11 @@ function SheetContent({
           className,
         )}
         {...props}
+        ref={contentRef}
         onInteractOutside={keepOpenOnToast(onInteractOutside)}
+        onEscapeKeyDown={keepOpenOnPopupEscape(onEscapeKeyDown)}
       >
-        {children}
+        <PopupContainerContext value={container}>{children}</PopupContainerContext>
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
             <Button variant="ghost" className="absolute top-3 right-3" size="icon-sm">

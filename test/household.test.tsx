@@ -925,6 +925,13 @@ describe("SettingsDialog", () => {
     expect(panel.compareDocumentPosition(desktopClose) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
+  it("keeps the nav's end padding when a tab is scrolled into view on phones", () => {
+    // jsdom does not scroll, so this checks the class: scroll-padding matching px-3 stops scrollIntoView from
+    // leaving the active tab flush against the edge (measured in the playground at 375px: 0px before, 12px after).
+    render(<SettingsDialog open onOpenChange={() => {}} sections={[{ id: "a", label: "A", content: null }]} />)
+    expect(screen.getByRole("tablist")).toHaveClass("px-3", "scroll-px-3")
+  })
+
   it("scrolls the active tab into view on phones", () => {
     const width = window.innerWidth
     const scrolled: Element[] = []
@@ -1003,7 +1010,7 @@ describe("AppNav", () => {
       (el.getAttribute("class") ?? "")
         .split(/\s+/)
         .filter((c) =>
-          /^group-data-\[collapsible=icon\]:(items-center|justify-center|mx-auto|px-(0|0\.5|1|1\.5|2|2\.5)|pl-[\d.]+)$/.test(
+          /^group-data-\[collapsible=icon\]:(items-center|justify-center|mx-auto|px-(0|0\.5|1|1\.5|2|2\.5)|pl-[\d.]+|p-[\d.]+)$/.test(
             c,
           ),
         ),

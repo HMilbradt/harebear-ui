@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Combobox as ComboboxPrimitive } from "@base-ui/react"
+import { PopupContainerContext } from "@/lib/internal/popup-container"
 import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
@@ -85,8 +86,11 @@ function ComboboxContent({
   ...props
 }: ComboboxPrimitive.Popup.Props &
   Pick<ComboboxPrimitive.Positioner.Props, "side" | "align" | "sideOffset" | "alignOffset" | "anchor">) {
+  // Inside a Dialog, Sheet or Drawer, portal into it so the modal treats the list as inside: clicks, focus and
+  // wheel or touch scrolling. Elsewhere, <body>.
+  const container = React.useContext(PopupContainerContext)
   return (
-    <ComboboxPrimitive.Portal>
+    <ComboboxPrimitive.Portal container={container}>
       <ComboboxPrimitive.Positioner
         side={side}
         sideOffset={sideOffset}
@@ -94,6 +98,10 @@ function ComboboxContent({
         alignOffset={alignOffset}
         anchor={anchor}
         className="isolate z-50"
+        // A modal that is not ours (a raw Radix Dialog, AlertDialog) still sets pointer-events: none on <body>.
+        style={{ pointerEvents: "auto" }}
+        // Inside a Drawer, pressing or scrolling the list must not drag the drawer.
+        data-vaul-no-drag=""
       >
         <ComboboxPrimitive.Popup
           data-slot="combobox-content"

@@ -3,16 +3,28 @@ import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
   AuthForm,
   Celebration,
   TaskRow,
   Combobox,
+  ComboboxContent,
   ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
   CopyField,
   celebrate,
   DateTimePicker,
   type DateTimeValue,
   DetailSheet,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
   LoginForm,
   MarkdownEditor,
   NewPasswordForm,
@@ -20,6 +32,12 @@ import {
   PromptDialog,
   Prose,
   ProseBlockquote,
+  SettingsDialog,
+  SettingsRow,
+  SettingsSection,
+  Sheet,
+  SheetContent,
+  SheetTitle,
   SignupForm,
   TimeZonePicker,
   Toaster,
@@ -484,5 +502,142 @@ describe("toast", () => {
     })
     expect(await screen.findByText("Saved")).toBeInTheDocument()
     expect(screen.getByText("Could not save")).toBeInTheDocument()
+  })
+})
+
+function TimeZoneSettings({ onValueChange }: { onValueChange: (zone: string) => void }) {
+  const [open, setOpen] = useState(true)
+  const [zone, setZone] = useState("UTC")
+  return (
+    <SettingsDialog
+      open={open}
+      onOpenChange={setOpen}
+      sections={[
+        {
+          id: "home",
+          label: "Home",
+          content: (
+            <SettingsSection title="Home">
+              <SettingsRow
+                label="Time zone"
+                htmlFor="tz"
+                control={
+                  <TimeZonePicker
+                    id="tz"
+                    value={zone}
+                    onValueChange={(next) => {
+                      setZone(next)
+                      onValueChange(next)
+                    }}
+                  />
+                }
+              />
+            </SettingsSection>
+          ),
+        },
+      ]}
+    />
+  )
+}
+
+function Fruit({ onValueChange }: { onValueChange?: (value: string | null) => void }) {
+  return (
+    <Combobox items={["Apple", "Banana"]} onValueChange={onValueChange}>
+      <ComboboxInput aria-label="Fruit" />
+      <ComboboxContent>
+        <ComboboxList>
+          {(fruit: string) => (
+            <ComboboxItem key={fruit} value={fruit}>
+              {fruit}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  )
+}
+
+describe("Combobox inside a modal", () => {
+  it("selects an option clicked inside an open SettingsDialog and keeps the dialog open", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(<TimeZoneSettings onValueChange={onValueChange} />)
+    const dialog = screen.getByRole("dialog", { name: "Settings" })
+    const input = within(dialog).getByRole("combobox")
+    await user.clear(input)
+    await user.type(input, "vancouver")
+    await user.click(await screen.findByRole("option", { name: "America/Vancouver" }))
+    expect(onValueChange).toHaveBeenCalledWith("America/Vancouver")
+    expect(screen.getByRole("dialog", { name: "Settings" })).toBeInTheDocument()
+    expect(input).toHaveValue("America/Vancouver")
+  })
+
+  it("closes only the option list on Escape, not the dialog", async () => {
+    const user = userEvent.setup()
+    render(<TimeZoneSettings onValueChange={() => {}} />)
+    const input = within(screen.getByRole("dialog", { name: "Settings" })).getByRole("combobox")
+    await user.clear(input)
+    await user.type(input, "vanc")
+    expect(await screen.findByRole("option", { name: "America/Vancouver" })).toBeInTheDocument()
+    await user.keyboard("{Escape}")
+    expect(screen.queryByRole("option", { name: "America/Vancouver" })).not.toBeInTheDocument()
+    expect(screen.getByRole("dialog", { name: "Settings" })).toBeInTheDocument()
+    await user.keyboard("{Escape}")
+    expect(screen.queryByRole("dialog", { name: "Settings" })).not.toBeInTheDocument()
+  })
+
+  // Portaled into the modal, the list is inside its scroll lock, focus trap and outside-press check. jsdom cannot
+  // scroll, so this checks where the list is (a wheel over a list in <body> was cancelled in the playground).
+  it.each([
+    [
+      "Dialog",
+      <Dialog open key="d">
+        <DialogContent>
+          <DialogTitle>Modal</DialogTitle>
+          <Fruit />
+        </DialogContent>
+      </Dialog>,
+    ],
+    [
+      "Sheet",
+      <Sheet open key="s">
+        <SheetContent>
+          <SheetTitle>Modal</SheetTitle>
+          <Fruit />
+        </SheetContent>
+      </Sheet>,
+    ],
+    [
+      "Drawer",
+      <Drawer open key="r">
+        <DrawerContent>
+          <DrawerTitle>Modal</DrawerTitle>
+          <Fruit />
+        </DrawerContent>
+      </Drawer>,
+    ],
+  ])("puts the list inside an open %s", async (_name, ui) => {
+    const user = userEvent.setup()
+    render(ui)
+    const modal = screen.getByRole("dialog", { name: "Modal" })
+    await user.type(within(modal).getByRole("combobox", { name: "Fruit" }), "a")
+    expect(modal).toContainElement(await screen.findByRole("listbox"))
+  })
+
+  it("can be clicked inside a modal that does not host the list, such as AlertDialog", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(
+      <AlertDialog open>
+        <AlertDialogContent>
+          <AlertDialogTitle>Pick</AlertDialogTitle>
+          <Fruit onValueChange={onValueChange} />
+        </AlertDialogContent>
+      </AlertDialog>,
+    )
+    await user.type(screen.getByRole("combobox", { name: "Fruit" }), "ban")
+    await user.click(await screen.findByRole("option", { name: "Banana" }))
+    expect(onValueChange).toHaveBeenCalledWith("Banana", expect.anything())
+    expect(screen.getByRole("alertdialog", { name: "Pick" })).toBeInTheDocument()
   })
 })
