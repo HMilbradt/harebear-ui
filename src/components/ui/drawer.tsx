@@ -1,7 +1,8 @@
 "use client"
 
 import type * as React from "react"
-import { keepOpenOnToast } from "@/lib/internal/toast-clearance"
+import { PopupContainerContext, usePopupContainer } from "@/lib/internal/popup-container"
+import { keepOpenOnPopupEscape, keepOpenOnToast } from "@/lib/internal/toast-clearance"
 import { cn } from "@/lib/utils"
 import { Drawer as DrawerPrimitive } from "vaul"
 
@@ -38,8 +39,11 @@ function DrawerContent({
   className,
   children,
   onInteractOutside,
+  onEscapeKeyDown,
+  ref,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Content>) {
+  const [container, contentRef] = usePopupContainer(ref)
   return (
     <DrawerPortal data-slot="drawer-portal">
       <DrawerOverlay />
@@ -50,10 +54,12 @@ function DrawerContent({
           className,
         )}
         {...props}
+        ref={contentRef}
         onInteractOutside={keepOpenOnToast(onInteractOutside)}
+        onEscapeKeyDown={keepOpenOnPopupEscape(onEscapeKeyDown)}
       >
         <div className="mx-auto mt-4 hidden h-1 w-[100px] shrink-0 rounded-full bg-muted group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
-        {children}
+        <PopupContainerContext value={container}>{children}</PopupContainerContext>
       </DrawerPrimitive.Content>
     </DrawerPortal>
   )

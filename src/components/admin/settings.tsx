@@ -226,7 +226,7 @@ function SettingsDialog({
               ref={navRef}
               aria-label="Settings sections"
               data-slot="settings-dialog-nav"
-              className="no-scrollbar flex gap-1 overflow-x-auto px-3 pb-2 md:flex-col md:overflow-visible md:px-0 md:pb-0"
+              className="no-scrollbar flex scroll-px-3 gap-1 overflow-x-auto px-3 pb-2 md:flex-col md:overflow-visible md:px-0 md:pb-0"
             >
               {sections.map((section) => (
                 <TabsPrimitive.Trigger

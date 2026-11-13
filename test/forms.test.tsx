@@ -1,18 +1,32 @@
 import { act, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import type * as React from "react"
 import { useState } from "react"
+import { Dialog as RadixDialog } from "radix-ui"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
   AuthForm,
   Celebration,
   TaskRow,
   Combobox,
+  ComboboxContent,
   ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
   CopyField,
   celebrate,
   DateTimePicker,
   type DateTimeValue,
   DetailSheet,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
   LoginForm,
   MarkdownEditor,
   NewPasswordForm,
@@ -20,6 +34,12 @@ import {
   PromptDialog,
   Prose,
   ProseBlockquote,
+  SettingsDialog,
+  SettingsRow,
+  SettingsSection,
+  Sheet,
+  SheetContent,
+  SheetTitle,
   SignupForm,
   TimeZonePicker,
   Toaster,
@@ -484,5 +504,172 @@ describe("toast", () => {
     })
     expect(await screen.findByText("Saved")).toBeInTheDocument()
     expect(screen.getByText("Could not save")).toBeInTheDocument()
+  })
+})
+
+function TimeZoneSettings({ onValueChange }: { onValueChange: (zone: string) => void }) {
+  const [open, setOpen] = useState(true)
+  const [zone, setZone] = useState("UTC")
+  return (
+    <SettingsDialog
+      open={open}
+      onOpenChange={setOpen}
+      sections={[
+        {
+          id: "home",
+          label: "Home",
+          content: (
+            <SettingsSection title="Home">
+              <SettingsRow
+                label="Time zone"
+                htmlFor="tz"
+                control={
+                  <TimeZonePicker
+                    id="tz"
+                    value={zone}
+                    onValueChange={(next) => {
+                      setZone(next)
+                      onValueChange(next)
+                    }}
+                  />
+                }
+              />
+            </SettingsSection>
+          ),
+        },
+      ]}
+    />
+  )
+}
+
+function Fruit({ onValueChange }: { onValueChange?: (value: string | null) => void }) {
+  return (
+    <Combobox items={["Apple", "Banana"]} onValueChange={onValueChange}>
+      <ComboboxInput aria-label="Fruit" />
+      <ComboboxContent>
+        <ComboboxList>
+          {(fruit: string) => (
+            <ComboboxItem key={fruit} value={fruit}>
+              {fruit}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  )
+}
+
+const modals: [string, "dialog" | "alertdialog", React.ReactElement][] = [
+  [
+    "Dialog",
+    "dialog",
+    <Dialog defaultOpen key="d">
+      <DialogContent>
+        <DialogTitle>Modal</DialogTitle>
+        <Fruit />
+      </DialogContent>
+    </Dialog>,
+  ],
+  [
+    "AlertDialog",
+    "alertdialog",
+    <AlertDialog defaultOpen key="a">
+      <AlertDialogContent>
+        <AlertDialogTitle>Modal</AlertDialogTitle>
+        <Fruit />
+      </AlertDialogContent>
+    </AlertDialog>,
+  ],
+  [
+    "Sheet",
+    "dialog",
+    <Sheet defaultOpen key="s">
+      <SheetContent>
+        <SheetTitle>Modal</SheetTitle>
+        <Fruit />
+      </SheetContent>
+    </Sheet>,
+  ],
+  [
+    "Drawer",
+    "dialog",
+    <Drawer defaultOpen key="r">
+      <DrawerContent>
+        <DrawerTitle>Modal</DrawerTitle>
+        <Fruit />
+      </DrawerContent>
+    </Drawer>,
+  ],
+]
+
+describe("Combobox inside a modal", () => {
+  it("selects an option clicked inside an open SettingsDialog and keeps the dialog open", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(<TimeZoneSettings onValueChange={onValueChange} />)
+    const dialog = screen.getByRole("dialog", { name: "Settings" })
+    const input = within(dialog).getByRole("combobox")
+    await user.clear(input)
+    await user.type(input, "vancouver")
+    await user.click(await screen.findByRole("option", { name: "America/Vancouver" }))
+    expect(onValueChange).toHaveBeenCalledWith("America/Vancouver")
+    expect(screen.getByRole("dialog", { name: "Settings" })).toBeInTheDocument()
+    expect(input).toHaveValue("America/Vancouver")
+  })
+
+  it("closes only the option list on Escape, not the dialog", async () => {
+    const user = userEvent.setup()
+    render(<TimeZoneSettings onValueChange={() => {}} />)
+    const input = within(screen.getByRole("dialog", { name: "Settings" })).getByRole("combobox")
+    await user.clear(input)
+    await user.type(input, "vanc")
+    expect(await screen.findByRole("option", { name: "America/Vancouver" })).toBeInTheDocument()
+    await user.keyboard("{Escape}")
+    expect(screen.queryByRole("option", { name: "America/Vancouver" })).not.toBeInTheDocument()
+    expect(screen.getByRole("dialog", { name: "Settings" })).toBeInTheDocument()
+    await user.keyboard("{Escape}")
+    expect(screen.queryByRole("dialog", { name: "Settings" })).not.toBeInTheDocument()
+  })
+
+  // Portaled into the modal, the list is inside its scroll lock, focus trap and outside-press check. jsdom cannot
+  // scroll, so this checks where the list is (a wheel over a list in <body> was cancelled in the playground).
+  it.each(modals)("puts the list inside an open %s", async (_name, role, ui) => {
+    const user = userEvent.setup()
+    render(ui)
+    const modal = screen.getByRole(role, { name: "Modal" })
+    await user.type(within(modal).getByRole("combobox", { name: "Fruit" }), "a")
+    expect(modal).toContainElement(await screen.findByRole("listbox"))
+  })
+
+  it.each(modals)("closes only the list on Escape inside an open %s", async (_name, role, ui) => {
+    const user = userEvent.setup()
+    render(ui)
+    await user.type(screen.getByRole("combobox", { name: "Fruit" }), "a")
+    expect(await screen.findByRole("listbox")).toBeInTheDocument()
+    await user.keyboard("{Escape}")
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument()
+    // A closing Drawer stays mounted until its exit transition ends, so check the state rather than presence.
+    expect(screen.getByRole(role, { name: "Modal" })).toHaveAttribute("data-state", "open")
+  })
+
+  it("can be clicked inside a modal that does not host the list, such as a raw Radix Dialog", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(
+      <RadixDialog.Root open>
+        <RadixDialog.Portal>
+          <RadixDialog.Content aria-describedby={undefined}>
+            <RadixDialog.Title>Pick</RadixDialog.Title>
+            <Fruit onValueChange={onValueChange} />
+          </RadixDialog.Content>
+        </RadixDialog.Portal>
+      </RadixDialog.Root>,
+    )
+    await user.type(screen.getByRole("combobox", { name: "Fruit" }), "ban")
+    const option = await screen.findByRole("option", { name: "Banana" })
+    expect(screen.getByRole("dialog", { name: "Pick" })).not.toContainElement(option)
+    await user.click(option)
+    expect(onValueChange).toHaveBeenCalledWith("Banana", expect.anything())
+    expect(screen.getByRole("dialog", { name: "Pick" })).toBeInTheDocument()
   })
 })

@@ -3,6 +3,8 @@
 import type * as React from "react"
 import { cn } from "@/lib/utils"
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
+import { PopupContainerContext, usePopupContainer } from "@/lib/internal/popup-container"
+import { keepOpenOnPopupEscape } from "@/lib/internal/toast-clearance"
 
 import { Button } from "@/components/ui/button"
 
@@ -34,10 +36,14 @@ function AlertDialogOverlay({ className, ...props }: React.ComponentProps<typeof
 function AlertDialogContent({
   className,
   size = "default",
+  children,
+  onEscapeKeyDown,
+  ref,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content> & {
   size?: "default" | "sm"
 }) {
+  const [container, contentRef] = usePopupContainer(ref)
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -49,7 +55,11 @@ function AlertDialogContent({
           className,
         )}
         {...props}
-      />
+        ref={contentRef}
+        onEscapeKeyDown={keepOpenOnPopupEscape(onEscapeKeyDown)}
+      >
+        <PopupContainerContext value={container}>{children}</PopupContainerContext>
+      </AlertDialogPrimitive.Content>
     </AlertDialogPortal>
   )
 }
