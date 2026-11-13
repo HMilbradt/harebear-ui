@@ -1,6 +1,6 @@
 "use client"
 
-import type * as React from "react"
+import * as React from "react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,9 +37,22 @@ function ConfirmDialog({
   destructive,
   onConfirm,
 }: ConfirmDialogProps) {
+  // Radix only returns focus to an AlertDialogTrigger, and this dialog has none, so remember what had focus when it
+  // opened and put it back on close (when that element is still on the page).
+  const returnFocus = React.useRef<HTMLElement | null>(null)
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent data-slot="confirm-dialog">
+      <AlertDialogContent
+        data-slot="confirm-dialog"
+        onOpenAutoFocus={() => {
+          returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+        }}
+        onCloseAutoFocus={(e) => {
+          if (!returnFocus.current?.isConnected) return
+          e.preventDefault()
+          returnFocus.current.focus()
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           {description && <AlertDialogDescription>{description}</AlertDialogDescription>}

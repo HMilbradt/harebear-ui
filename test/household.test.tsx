@@ -907,6 +907,47 @@ describe("SettingsDialog", () => {
     await user.click(within(dialog).getAllByRole("button", { name: "Close" })[0]!)
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
+
+  it("is not capped at the small dialog width between 640 and 767px", () => {
+    // DialogContent's sm:max-w-sm comes later in the CSS than max-md:max-w-none, so it must be merged away.
+    render(<SettingsDialog open onOpenChange={() => {}} sections={[{ id: "a", label: "A", content: null }]} />)
+    const classes = screen.getByRole("dialog").className.split(/\s+/)
+    expect(classes).not.toContain("sm:max-w-sm")
+    expect(classes).toContain("sm:max-w-none")
+  })
+
+  it("puts the desktop close button after the panels in tab order", () => {
+    render(<SettingsDialog open onOpenChange={() => {}} sections={[{ id: "a", label: "A", content: <p>Alpha</p> }]} />)
+    const dialog = screen.getByRole("dialog")
+    const panel = within(dialog).getByRole("tabpanel")
+    const closes = within(dialog).getAllByRole("button", { name: "Close" })
+    const desktopClose = closes[closes.length - 1]!
+    expect(panel.compareDocumentPosition(desktopClose) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it("scrolls the active tab into view on phones", () => {
+    const width = window.innerWidth
+    const scrolled: Element[] = []
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this)
+    }
+    window.innerWidth = 375
+    try {
+      render(
+        <SettingsDialog
+          open
+          onOpenChange={() => {}}
+          value="c"
+          sections={["a", "b", "c"].map((id) => ({ id, label: id.toUpperCase(), content: <p>{id}</p> }))}
+        />,
+      )
+      expect(scrolled).toContain(screen.getByRole("tab", { name: "C" }))
+    } finally {
+      window.innerWidth = width
+      Element.prototype.scrollIntoView = original
+    }
+  })
 })
 
 describe("AppNav", () => {
@@ -961,7 +1002,11 @@ describe("AppNav", () => {
     const offenders = [sidebar, ...sidebar.querySelectorAll<HTMLElement>("*")].flatMap((el) =>
       (el.getAttribute("class") ?? "")
         .split(/\s+/)
-        .filter((c) => /^group-data-\[collapsible=icon\]:(items-center|justify-center|mx-auto|px-0)$/.test(c)),
+        .filter((c) =>
+          /^group-data-\[collapsible=icon\]:(items-center|justify-center|mx-auto|px-(0|0\.5|1|1\.5|2|2\.5)|pl-[\d.]+)$/.test(
+            c,
+          ),
+        ),
     )
     expect(offenders).toEqual([])
     const link = within(sidebar).getByRole("link", { name: "Today" })

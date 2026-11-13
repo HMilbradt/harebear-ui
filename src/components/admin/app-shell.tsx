@@ -113,10 +113,7 @@ function AppShell({
       sidebar={
         <div className="flex flex-1 flex-col gap-5">
           {nav.map((section, i) => (
-            <SidebarGroup
-              key={section.label ?? i}
-              className="transition-[padding] duration-200 ease-linear group-data-[collapsible=icon]:px-0 motion-reduce:transition-none"
-            >
+            <SidebarGroup key={section.label ?? i}>
               {section.label && <SidebarGroupLabel className="text-xs font-medium">{section.label}</SidebarGroupLabel>}
               <SidebarMenu className="gap-1">
                 {section.items.map((item) => (

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
@@ -12,6 +12,7 @@ import {
   ChatShell,
   ConfirmDialog,
   ConversationList,
+  NewConversationButton,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -304,6 +305,22 @@ describe("ChatShell", () => {
     await user.click(screen.getByRole("button", { name: "Toggle conversation details" }))
     expect(await screen.findByText("Model: x")).toBeInTheDocument()
   })
+
+  it("keeps the same New conversation button through collapse, so its icon does not jump", async () => {
+    const user = userEvent.setup()
+    localStorage.removeItem("test-new-chat")
+    render(
+      <ChatShell storageKey="test-new-chat" sidebarActions={<NewConversationButton label="New chat" />}>
+        <p>thread</p>
+      </ChatShell>,
+    )
+    const button = screen.getByRole("button", { name: "New chat" })
+    await user.click(screen.getByRole("button", { name: "Collapse sidebar" }))
+    // Same node (not swapped for an icon button), label kept and faded, and no rail-only padding that moves the icon.
+    expect(screen.getByRole("button", { name: "New chat" })).toBe(button)
+    expect(within(button).getByText("New chat")).toHaveClass("group-data-[collapsible=icon]:opacity-0")
+    expect(button.className).not.toMatch(/group-data-\[collapsible=icon\]:(px|pl)-/)
+  })
 })
 
 describe("UserMenu", () => {
@@ -460,6 +477,23 @@ describe("P1 props", () => {
     expect(onDelete).not.toHaveBeenCalled()
     await user.click(screen.getByRole("button", { name: "Delete" }))
     expect(onDelete).toHaveBeenCalledWith(expect.objectContaining({ id: "a" }))
+  })
+
+  it("ConversationList keeps the row highlighted while the delete confirmation is open, and returns focus on cancel", async () => {
+    const user = userEvent.setup()
+    render(
+      <ConversationList groups={[{ label: "Today", items: [{ id: "a", title: "Disk alert" }] }]} onDelete={() => {}} />,
+    )
+    const del = screen.getByRole("button", { name: "Delete Disk alert" })
+    const row = del.closest<HTMLElement>("[data-slot=conversation-item]")!
+    expect(row).toHaveAttribute("data-state", "closed")
+    await user.click(del)
+    await screen.findByRole("alertdialog")
+    expect(row).toHaveAttribute("data-state", "open")
+    await user.keyboard("{Escape}")
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    expect(row).toHaveAttribute("data-state", "closed")
+    await waitFor(() => expect(del).toHaveFocus())
   })
 
   it("ApprovalCard reason renders before the body", () => {

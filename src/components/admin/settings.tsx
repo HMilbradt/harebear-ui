@@ -172,6 +172,16 @@ function SettingsDialog({
   // Radix only returns focus to a DialogTrigger, and this dialog usually opens from a menu item or a button
   // elsewhere, so remember what had focus and put it back on close.
   const returnFocus = React.useRef<HTMLElement | null>(null)
+  // On phones the tabs scroll sideways, and neither roving focus nor opening at a later section scrolls the active
+  // tab into view.
+  const navRef = React.useRef<HTMLDivElement>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-run when the active section changes; the DOM holds it.
+  React.useEffect(() => {
+    if (!open || !mobile) return
+    navRef.current
+      ?.querySelector<HTMLElement>("[role=tab][data-state=active]")
+      ?.scrollIntoView?.({ block: "nearest", inline: "nearest" })
+  }, [open, value, mobile])
   const noDescription = description ? {} : { "aria-describedby": undefined }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -188,7 +198,7 @@ function SettingsDialog({
           returnFocus.current.focus()
         }}
         className={cn(
-          "flex flex-col gap-0 overflow-hidden bg-background p-0 max-md:inset-0 max-md:h-dvh max-md:max-w-none max-md:translate-x-0 max-md:translate-y-0 max-md:rounded-none max-md:ring-0 md:h-[min(42rem,calc(100dvh-4rem))] md:max-w-[min(56rem,calc(100%-4rem))] md:flex-row",
+          "flex flex-col gap-0 overflow-hidden bg-background p-0 max-md:inset-0 max-md:h-dvh max-md:max-w-none max-md:translate-x-0 sm:max-w-none max-md:translate-y-0 max-md:rounded-none max-md:ring-0 md:h-[min(42rem,calc(100dvh-4rem))] md:max-w-[min(56rem,calc(100%-4rem))] md:flex-row",
           className,
         )}
       >
@@ -213,6 +223,7 @@ function SettingsDialog({
               </DialogClose>
             </div>
             <TabsPrimitive.List
+              ref={navRef}
               aria-label="Settings sections"
               data-slot="settings-dialog-nav"
               className="no-scrollbar flex gap-1 overflow-x-auto px-3 pb-2 md:flex-col md:overflow-visible md:px-0 md:pb-0"
@@ -230,16 +241,6 @@ function SettingsDialog({
             </TabsPrimitive.List>
           </div>
           <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
-            <DialogClose asChild>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Close"
-                className="absolute top-4 right-4 z-10 max-md:hidden"
-              >
-                <XIcon />
-              </Button>
-            </DialogClose>
             {sections.map((section) => (
               <TabsPrimitive.Content
                 key={section.id}
@@ -253,6 +254,17 @@ function SettingsDialog({
                 <div className="flex flex-col gap-5">{section.content}</div>
               </TabsPrimitive.Content>
             ))}
+            {/* After the panels so desktop Tab order is nav, panel, close. */}
+            <DialogClose asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Close"
+                className="absolute top-4 right-4 z-10 max-md:hidden"
+              >
+                <XIcon />
+              </Button>
+            </DialogClose>
           </div>
         </TabsPrimitive.Root>
       </DialogContent>

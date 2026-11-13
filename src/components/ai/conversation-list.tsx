@@ -72,7 +72,9 @@ function ConversationList({
       aria-label={`Delete ${c.title}`}
       title={typeof c.deleteDisabled === "string" ? c.deleteDisabled : "Delete conversation"}
       disabled={!!c.deleteDisabled}
-      onClick={() => {
+      onClick={(e) => {
+        // Safari does not focus a clicked button; ConfirmDialog returns focus to whatever had it when it opened.
+        e.currentTarget.focus()
         setConfirm(c)
         setConfirmOpen(true)
       }}
@@ -99,7 +101,11 @@ function ConversationList({
             const active = c.id === activeId
             const action = renderAction ? renderAction(c) : onDelete ? deleteButton(c) : null
             return (
-              <ConversationRow key={c.id} active={active}>
+              <ConversationRow
+                key={c.id}
+                active={active}
+                confirming={!renderAction && confirmOpen && confirm?.id === c.id}
+              >
                 <button
                   type="button"
                   aria-current={active ? "page" : undefined}
@@ -153,9 +159,18 @@ function ConversationList({
 
 /**
  * One row. `data-state="open"` while a menu or popover opened from its action is open (any descendant with
- * aria-expanded="true"), so the row keeps its hover highlight while the pointer is over the portaled menu.
+ * aria-expanded="true") or its delete confirmation is open, so the row keeps its hover highlight while the pointer
+ * is over the portaled menu or dialog.
  */
-function ConversationRow({ active, children }: { active: boolean; children: React.ReactNode }) {
+function ConversationRow({
+  active,
+  confirming,
+  children,
+}: {
+  active: boolean
+  confirming: boolean
+  children: React.ReactNode
+}) {
   const ref = React.useRef<HTMLDivElement>(null)
   const [open, setOpen] = React.useState(false)
   React.useEffect(() => {
@@ -172,7 +187,7 @@ function ConversationRow({ active, children }: { active: boolean; children: Reac
       ref={ref}
       data-slot="conversation-item"
       data-active={active || undefined}
-      data-state={open ? "open" : "closed"}
+      data-state={open || confirming ? "open" : "closed"}
       className={cn(
         "group/conversation flex min-w-0 items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground",
         active && "bg-card text-foreground shadow-card hover:bg-card data-[state=open]:bg-card",
@@ -269,13 +284,18 @@ function NewConversationButton({
 }: NewConversationButtonProps) {
   const sidebar = useSidebarOptional()
   const rail = sidebar?.state === "collapsed" && !sidebar.isMobile
+  // One button in both states, so the icon stays at the same x while the sidebar narrows: the width shrinks to the
+  // rail and the label fades and clips, like the AppNav action. Inside a sidebar the tooltip is always mounted and
+  // only shown in the rail, so collapsing does not remount the button.
   const button = (
     <Button
       data-slot="new-conversation-button"
       variant={variant}
-      size={rail ? "icon" : "default"}
       aria-label={rail ? label : undefined}
-      className={cn(!rail && "w-full justify-start", className)}
+      className={cn(
+        "w-full justify-start overflow-hidden transition-[background-color,color,box-shadow,border-color,width] duration-200 ease-linear group-data-[collapsible=icon]:w-10 motion-reduce:transition-none",
+        className,
+      )}
       onClick={(e) => {
         onClick?.(e)
         sidebar?.setOpenMobile(false)
@@ -283,17 +303,22 @@ function NewConversationButton({
       {...props}
     >
       {icon}
-      {!rail && <span className="flex-1 truncate text-left">{label}</span>}
-      {!rail && shortcut}
+      <span className={cn("flex-1 truncate text-left", railLabel)}>{label}</span>
+      {shortcut && <span className={cn("flex", railLabel)}>{shortcut}</span>}
     </Button>
   )
-  if (!rail) return button
+  if (!sidebar) return button
   return (
     <Tooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent side="right">{label}</TooltipContent>
+      <TooltipContent side="right" hidden={!rail}>
+        {label}
+      </TooltipContent>
     </Tooltip>
   )
 }
+
+const railLabel =
+  "transition-opacity duration-200 ease-linear group-data-[collapsible=icon]:opacity-0 motion-reduce:transition-none"
 
 export { ConversationList, NewConversationButton, formatWhen, groupByDate }

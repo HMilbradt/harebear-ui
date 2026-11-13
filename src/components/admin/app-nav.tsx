@@ -123,7 +123,7 @@ function AppNav({
             type="button"
             aria-label={action.label}
             onClick={action.onSelect}
-            className="w-full justify-start overflow-hidden transition-[background-color,color,box-shadow,border-color,width,padding] duration-200 ease-linear group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:px-2.5 motion-reduce:transition-none"
+            className="w-full justify-start overflow-hidden transition-[background-color,color,box-shadow,border-color,width] duration-200 ease-linear group-data-[collapsible=icon]:w-10 motion-reduce:transition-none"
           >
             {action.icon}
             <span className={railLabel}>{action.label}</span>
