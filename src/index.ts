@@ -430,8 +430,13 @@ export { PromptDialog } from "./components/admin/prompt-dialog"
 export type { PromptDialogProps } from "./components/admin/prompt-dialog"
 export { SearchInput } from "./components/admin/search-input"
 export type { SearchInputProps } from "./components/admin/search-input"
-export { SettingsSection, SettingsRow } from "./components/admin/settings"
-export type { SettingsSectionProps, SettingsRowProps } from "./components/admin/settings"
+export { SettingsSection, SettingsRow, SettingsDialog } from "./components/admin/settings"
+export type {
+  SettingsSectionProps,
+  SettingsRowProps,
+  SettingsDialogSection,
+  SettingsDialogProps,
+} from "./components/admin/settings"
 export { SidebarLayout, SidebarCollapseButton } from "./components/admin/sidebar-layout"
 export type { SidebarLayoutProps } from "./components/admin/sidebar-layout"
 export { StatCard } from "./components/admin/stat-card"

@@ -47,7 +47,7 @@ A household or personal app where an assistant sits on every page and safe actio
 - A record's details (`DetailSheet`): `ChecklistEditor` for steps, `CommentThread` for comments, `MarkdownEditor` for notes.
 - In the assistant thread, each action it took is an `ActionReceipt` with Undo (append it from `onSend`).
 - A page with its own ask box (Today) answers under it: `AskBox` with `reply` and `pending` from `useAssistant()`, `onStop={stop}`, and `send(text, { open: false })`.
-- Settings and setup flows leave the frame: `FocusLayout` around `SettingsSection`s of `SettingsRow`s.
+- Settings open over any page in a `SettingsDialog` (a section per topic, each one or more `SettingsSection`s of `SettingsRow`s); setup flows leave the frame in a `FocusLayout`.
 - Members, lists and calendars take a `category-1..6` color (`CategoryColor`); status colors never double as categories. People are `MemberAvatar` (`AvatarStack`, `VisibilityBadge`), list dots are `CategoryDot`, profile settings use `AvatarUpload` and `ColorSwatchPicker`.
 - Live example: `playground/screens/household.tsx` (`#household`) and `settings.tsx` (`#settings`).
 
@@ -143,7 +143,7 @@ Every component in the shadcn registry is included. (shadcn's `form` item is an 
 
 ### `SidebarLayout`, `SidebarCollapseButton`
 
-The base layout every shell is built on: a sidebar (brand, actions, scrolling body, footer) next to the main column. On desktop a collapse button shrinks the sidebar to an icon rail (logo tile, icon actions, avatar); on mobile it is a sheet opened with a `SidebarTrigger`. Harebear parts adapt to the rail by themselves (`AppBrand`, `UserChip`, `UserMenu`, `NewConversationButton`, `SearchInput`, `ConversationList`, nav `SidebarMenuButton`s with `tooltip`).
+The base layout every shell is built on: a sidebar (brand, actions, scrolling body, footer) next to the main column. On desktop a collapse button shrinks the sidebar to an icon rail (logo tile, icon actions, avatar); on mobile it is a sheet opened with a `SidebarTrigger`. Harebear parts adapt to the rail by themselves (`AppBrand`, `UserChip`, `UserMenu`, `NewConversationButton`, `SearchInput`, `ConversationList`, nav `SidebarMenuButton`s with `tooltip`). Items stay pinned to the left while the width animates (labels fade and clip, icons keep their x); in custom sidebar content, do not center items in the rail with `group-data-[collapsible=icon]:items-center` or `justify-center`, which makes them jump right and slide back.
 
 Props: `brand?`, `sidebarActions?`, `sidebar?` (body), `sidebarFooter?`, `collapsible?` (`"icon"` default, `"offcanvas"` hides it entirely, `"none"` always expanded on desktop), `storageKey?` (remember collapsed state in localStorage, applied after hydration so SSR matches), `defaultOpen?`, `width?` (default `"16rem"`; the rail is `4.25rem`), `className?` (main column), `children` (main column).
 `SidebarCollapseButton`: the collapse/expand button with a tooltip, for custom `Sidebar` layouts. Renders nothing on mobile.
@@ -399,7 +399,7 @@ Quiet note with an icon (sparkle by default). Props: `icon?`, `tone?` (`"muted" 
 
 ### `Celebration`, `celebrate`
 
-An occasional confetti burst, e.g. when the last to-do of the day is ticked. Mount `<Celebration />` once near the root (like `Toaster`), then call `celebrate()` from anywhere. CSS only, about 1.5 s, renders nothing between bursts (`data-slot="celebration"` while it plays), and does nothing under `prefers-reduced-motion`. Keep it rare.
+An occasional confetti burst, e.g. when the member ticks the last to-do of the day. It only plays when you call `celebrate()`: `CheckCircle`, `TaskRow` and `SectionedList` never fire it (a ticked check has its own small pop). Mount `<Celebration />` once near the root (like `Toaster`), then call `celebrate()` from anywhere. CSS only, about 1.5 s, renders nothing between bursts (`data-slot="celebration"` while it plays), and does nothing under `prefers-reduced-motion`. Keep it rare.
 
 ### `LinkTile`
 
@@ -481,6 +481,27 @@ A page outside the app frame (settings, onboarding, setup): slim sticky top bar,
     <SettingsRow label="Connections" body={<ConnectionList />} />
   </SettingsSection>
 </FocusLayout>
+```
+
+### `SettingsDialog`
+
+App settings as a modal that opens over any page, like Notion's. Desktop: a dialog with a section nav at the left (icon and label per section) and a scrolling content pane. Phones (under 768px): full screen, with the sections as a scrollable row of tabs at the top. The nav is a tab list (arrow keys move between sections, each panel is named by its tab), Escape closes it, and focus returns to whatever opened it. Props: `open`, `onOpenChange`, `sections: { id; label; icon?; content }[]` (`content` is usually one or more `SettingsSection`s), `value?` / `onValueChange?` (active section id; open straight at one, e.g. from a "Notification settings" link), `defaultValue?` (default the first section), `title?` (default "Settings"), `description?`. Inactive sections unmount, so keep drafts in your own state if they must survive a switch. On desktop each panel starts with its section label as a heading, so title the cards inside by what they hold (for example "Profile" and "Password" under "You") rather than repeating the label.
+
+```tsx
+const [open, setOpen] = useState(false)
+const [section, setSection] = useState("general")
+// e.g. a Settings item in UserMenu: <DropdownMenuItem onSelect={() => setOpen(true)}>Settings</DropdownMenuItem>
+;<SettingsDialog
+  open={open}
+  onOpenChange={setOpen}
+  value={section}
+  onValueChange={setSection}
+  sections={[
+    { id: "general", label: "General", icon: <SettingsIcon />, content: <GeneralSettings /> },
+    { id: "homebot", label: "HomeBot", icon: <SparklesIcon />, content: <HomeBotSettings /> },
+    { id: "notifications", label: "Notifications", icon: <BellIcon />, content: <NotificationSettings /> },
+  ]}
+/>
 ```
 
 ## Layout and text
@@ -702,7 +723,7 @@ Pill showing the active model with a status dot, opening a menu. Props: `models:
 
 ### `ConversationList`
 
-Grouped thread list. Props: `groups: { label; items: Conversation[] }[]`, `activeId?`, `onSelect?(id)`, `onDelete?(conversation)` (adds a delete button per row that confirms first; `deleteDescription?` is the confirmation body), `renderAction?(conversation)` (any other trailing control; wins over `onDelete`; on desktop it shows on hover/focus), `empty?`.
+Grouped thread list. Props: `groups: { label; items: Conversation[] }[]`, `activeId?`, `onSelect?(id)`, `onDelete?(conversation)` (adds a delete button per row that confirms first; `deleteDescription?` is the confirmation body), `renderAction?(conversation)` (any other trailing control, e.g. a "…" `DropdownMenu`; wins over `onDelete`; on desktop it shows on hover, keyboard focus, or while its menu is open), `empty?`. A row (`data-slot="conversation-item"`) has `data-state="open"` and keeps its hover highlight while a menu or popover opened from its action is open (any descendant with `aria-expanded="true"`).
 `Conversation = { id; title; description?; tone?; pulse?; deleteDisabled? }`: `description` is the second line (time, or a live state with a `tone` dot); `deleteDisabled` blocks delete for that row (a string is the reason, shown as the tooltip).
 Inside a `Sidebar` it closes the mobile sheet on select and hides in the icon rail.
 `groupByDate(items, getDate, toConversation, options?)` buckets items into Today / Yesterday / Previous 7 days / Earlier, newest first. `options` is `{ now?, buckets? }` (or just `now`); `buckets: "week"` gives Today / This week (the 6 days before today) / Earlier.

@@ -76,6 +76,11 @@ export interface AppNavProps {
 }
 
 const TAB_LIMIT = 5
+// Icon rail geometry: items keep their left padding while the sidebar narrows, so icons stay pinned at the same x
+// instead of re-centering (which made them jump right and slide back). Labels fade and clip with the width.
+const railButton = "group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:px-3!"
+const railLabel =
+  "whitespace-nowrap transition-opacity duration-200 ease-linear group-data-[collapsible=icon]:opacity-0 motion-reduce:transition-none"
 
 /**
  * App navigation from one config. Desktop (768px and up): SidebarLayout with the brand, action, places, a
@@ -118,16 +123,16 @@ function AppNav({
             type="button"
             aria-label={action.label}
             onClick={action.onSelect}
-            className="w-full justify-start group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+            className="w-full justify-start overflow-hidden transition-[background-color,color,box-shadow,border-color,width] duration-200 ease-linear group-data-[collapsible=icon]:w-10 motion-reduce:transition-none"
           >
             {action.icon}
-            <span className="group-data-[collapsible=icon]:hidden">{action.label}</span>
+            <span className={railLabel}>{action.label}</span>
           </Button>
         )
       }
       sidebar={
         <nav aria-label={label} data-slot="app-nav" className="flex flex-col gap-5">
-          <SidebarMenu className="gap-1 group-data-[collapsible=icon]:items-center">
+          <SidebarMenu className="gap-1">
             {places
               .filter((p) => p.sidebar !== false)
               .map((place) => (
@@ -167,7 +172,7 @@ function PlaceItem({ place, Link }: { place: AppNavPlace; Link: React.ElementTyp
   const content = (
     <>
       {place.icon}
-      <span className="flex-1">{place.label}</span>
+      <span className={cn("flex-1", railLabel)}>{place.label}</span>
       {!!place.count && (
         <Badge variant="soft" className="h-5 px-2 group-data-[collapsible=icon]:hidden">
           {place.count}
@@ -183,6 +188,7 @@ function PlaceItem({ place, Link }: { place: AppNavPlace; Link: React.ElementTyp
         aria-current={place.active ? "page" : undefined}
         onClick={place.onSelect}
         tooltip={place.label}
+        className={railButton}
       >
         {place.href ? <Link href={place.href}>{content}</Link> : content}
       </SidebarMenuButton>

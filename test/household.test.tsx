@@ -1,4 +1,4 @@
-import { act, render, screen, within } from "@testing-library/react"
+import { act, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -23,6 +23,7 @@ import {
   PageSection,
   SectionedList,
   type SectionedListSection,
+  SettingsDialog,
   SettingsRow,
   SettingsSection,
   type SpeechSource,
@@ -814,6 +815,141 @@ describe("AssistantDock actions (L-37)", () => {
   })
 })
 
+function SettingsDialogHarness({ onOpenChange }: { onOpenChange: (open: boolean) => void }) {
+  const [open, setOpen] = useState(false)
+  const [section, setSection] = useState("profile")
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open settings
+      </button>
+      <SettingsDialog
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next)
+          onOpenChange(next)
+        }}
+        value={section}
+        onValueChange={setSection}
+        sections={[
+          {
+            id: "profile",
+            label: "Profile",
+            icon: <svg aria-hidden="true" />,
+            content: (
+              <SettingsSection title="You">
+                <SettingsRow label="Name" />
+              </SettingsSection>
+            ),
+          },
+          {
+            id: "homebot",
+            label: "HomeBot",
+            content: (
+              <SettingsSection title="HomeBot">
+                <SettingsRow label="Model" />
+              </SettingsSection>
+            ),
+          },
+        ]}
+      />
+    </>
+  )
+}
+
+describe("SettingsDialog", () => {
+  it("is a named modal with a section tab list, keyboard navigation, and focus back on close", async () => {
+    const user = userEvent.setup()
+    const onOpenChange = vi.fn()
+    render(<SettingsDialogHarness onOpenChange={onOpenChange} />)
+    const opener = screen.getByRole("button", { name: "Open settings" })
+    await user.click(opener)
+    const dialog = screen.getByRole("dialog", { name: "Settings" })
+    const tabs = within(dialog).getByRole("tablist", { name: "Settings sections" })
+    expect(
+      within(tabs)
+        .getAllByRole("tab")
+        .map((t) => t.textContent),
+    ).toEqual(["Profile", "HomeBot"])
+    expect(within(dialog).getByRole("tabpanel", { name: "Profile" })).toContainElement(
+      within(dialog).getByRole("heading", { name: "You" }),
+    )
+    await user.click(within(tabs).getByRole("tab", { name: "HomeBot" }))
+    expect(within(dialog).getByRole("tabpanel", { name: "HomeBot" })).toHaveTextContent("Model")
+    expect(within(dialog).queryByText("Name")).not.toBeInTheDocument()
+    // Vertical tab list on desktop: arrow keys move between sections.
+    await user.keyboard("{ArrowUp}")
+    expect(within(tabs).getByRole("tab", { name: "Profile" })).toHaveAttribute("aria-selected", "true")
+    await user.keyboard("{Escape}")
+    expect(onOpenChange).toHaveBeenLastCalledWith(false)
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    await waitFor(() => expect(opener).toHaveFocus())
+  })
+
+  it("opens at the controlled section and closes from its close button", async () => {
+    const user = userEvent.setup()
+    const onOpenChange = vi.fn()
+    render(
+      <SettingsDialog
+        open
+        onOpenChange={onOpenChange}
+        title="Preferences"
+        value="b"
+        sections={[
+          { id: "a", label: "A", content: <p>Alpha</p> },
+          { id: "b", label: "B", content: <p>Beta</p> },
+        ]}
+      />,
+    )
+    const dialog = screen.getByRole("dialog", { name: "Preferences" })
+    expect(within(dialog).getByRole("tab", { name: "B" })).toHaveAttribute("aria-selected", "true")
+    expect(within(dialog).getByText("Beta")).toBeInTheDocument()
+    await user.click(within(dialog).getAllByRole("button", { name: "Close" })[0]!)
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  it("is not capped at the small dialog width between 640 and 767px", () => {
+    // DialogContent's sm:max-w-sm comes later in the CSS than max-md:max-w-none, so it must be merged away.
+    render(<SettingsDialog open onOpenChange={() => {}} sections={[{ id: "a", label: "A", content: null }]} />)
+    const classes = screen.getByRole("dialog").className.split(/\s+/)
+    expect(classes).not.toContain("sm:max-w-sm")
+    expect(classes).toContain("sm:max-w-none")
+  })
+
+  it("puts the desktop close button after the panels in tab order", () => {
+    render(<SettingsDialog open onOpenChange={() => {}} sections={[{ id: "a", label: "A", content: <p>Alpha</p> }]} />)
+    const dialog = screen.getByRole("dialog")
+    const panel = within(dialog).getByRole("tabpanel")
+    const closes = within(dialog).getAllByRole("button", { name: "Close" })
+    const desktopClose = closes[closes.length - 1]!
+    expect(panel.compareDocumentPosition(desktopClose) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it("scrolls the active tab into view on phones", () => {
+    const width = window.innerWidth
+    const scrolled: Element[] = []
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this)
+    }
+    window.innerWidth = 375
+    try {
+      render(
+        <SettingsDialog
+          open
+          onOpenChange={() => {}}
+          value="c"
+          sections={["a", "b", "c"].map((id) => ({ id, label: id.toUpperCase(), content: <p>{id}</p> }))}
+        />,
+      )
+      expect(scrolled).toContain(screen.getByRole("tab", { name: "C" }))
+    } finally {
+      window.innerWidth = width
+      Element.prototype.scrollIntoView = original
+    }
+  })
+})
+
 describe("AppNav", () => {
   it("renders places in the sidebar and up to 5 tabs with the active one marked", () => {
     const places = ["Today", "Upcoming", "Calendar", "Docs", "Chats", "Settings"].map((label) => ({
@@ -844,6 +980,38 @@ describe("AppNav", () => {
     expect(within(tabs).getByRole("link", { name: /Today/ })).toHaveAttribute("aria-current", "page")
     expect(screen.getAllByRole("button", { name: "New to-do" }).length).toBeGreaterThan(0)
     expect(screen.getByText("Page")).toBeInTheDocument()
+  })
+
+  it("keeps rail items pinned left while the sidebar collapses (no re-centering)", () => {
+    // jsdom has no layout, so this checks the classes that decide x: in the icon rail nothing may center, drop the
+    // container padding, or auto-margin, because those apply at once while the width animates over 200ms and made
+    // the icons jump right and slide back. The playground check measured the place icon x each frame (26px throughout).
+    const { container } = render(
+      <ThemeProvider>
+        <AppNav
+          defaultOpen={false}
+          brand={<span>Brand</span>}
+          places={[{ label: "Today", href: "/", icon: <svg aria-hidden="true" /> }]}
+          action={{ label: "New to-do", icon: <svg aria-hidden="true" />, onSelect: () => {} }}
+          footer={<UserMenu name="Maya Chen" />}
+        />
+      </ThemeProvider>,
+    )
+    const sidebar = container.querySelector<HTMLElement>("[data-slot=sidebar]")!
+    expect(sidebar).toHaveAttribute("data-collapsible", "icon")
+    const offenders = [sidebar, ...sidebar.querySelectorAll<HTMLElement>("*")].flatMap((el) =>
+      (el.getAttribute("class") ?? "")
+        .split(/\s+/)
+        .filter((c) =>
+          /^group-data-\[collapsible=icon\]:(items-center|justify-center|mx-auto|px-(0|0\.5|1|1\.5|2|2\.5)|pl-[\d.]+)$/.test(
+            c,
+          ),
+        ),
+    )
+    expect(offenders).toEqual([])
+    const link = within(sidebar).getByRole("link", { name: "Today" })
+    expect(link).toHaveClass("group-data-[collapsible=icon]:px-3!")
+    expect(within(link).getByText("Today")).toHaveClass("group-data-[collapsible=icon]:opacity-0")
   })
 
   it("makes the group heading a link with a separate collapse button", async () => {

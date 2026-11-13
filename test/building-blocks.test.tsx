@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
@@ -12,13 +12,18 @@ import {
   ChatShell,
   ConfirmDialog,
   ConversationList,
+  NewConversationButton,
+  DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
   Empty,
   formatWhen,
   groupByDate,
   InlineCode,
   ModelPicker,
   PromptInputSelect,
+  SidebarMenuAction,
   StatusBadge,
   ToolGroup,
   ThemeProvider,
@@ -127,6 +132,78 @@ describe("ConversationList", () => {
     rerender(<ConversationList groups={[]} empty="Nothing here" />)
     expect(screen.getByText("Nothing here")).toBeInTheDocument()
   })
+
+  it("keeps a row highlighted while its row menu is open, and closes the menu on Escape, outside click and select", async () => {
+    const user = userEvent.setup()
+    const onRename = vi.fn()
+    render(
+      <>
+        <ConversationList
+          groups={[{ label: "Today", items: [{ id: "a", title: "Groceries" }] }]}
+          renderAction={(c) => (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label={`Options for ${c.title}`}>
+                  …
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => onRename(c.id)}>Rename</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        />
+        <button type="button">Elsewhere</button>
+      </>,
+    )
+    const row = document.querySelector<HTMLElement>("[data-slot=conversation-item]")!
+    const trigger = screen.getByRole("button", { name: "Options for Groceries" })
+    expect(row).toHaveAttribute("data-state", "closed")
+    // Revealed by keyboard focus, not focus-within: the menu hands focus back to its trigger on close, and
+    // focus-within kept the button showing after a mouse user had finished.
+    const reveal = trigger.parentElement!.className
+    expect(reveal).not.toMatch(/focus-within/)
+    expect(reveal).toMatch(/group-has-focus-visible\/conversation:opacity-100/)
+    expect(reveal).toMatch(/group-data-\[state=open\]\/conversation:opacity-100/)
+    expect(row.className).toMatch(/data-\[state=open\]:bg-muted/)
+
+    await user.click(trigger)
+    expect(await screen.findByRole("menu")).toBeInTheDocument()
+    expect(row).toHaveAttribute("data-state", "open")
+    await user.keyboard("{Escape}")
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+    expect(row).toHaveAttribute("data-state", "closed")
+    expect(trigger).toHaveFocus()
+
+    await user.click(trigger)
+    expect(row).toHaveAttribute("data-state", "open")
+    await user.click(screen.getByRole("menuitem", { name: "Rename" }))
+    expect(onRename).toHaveBeenCalledWith("a")
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+    expect(row).toHaveAttribute("data-state", "closed")
+
+    await user.click(trigger)
+    expect(row).toHaveAttribute("data-state", "open")
+    // A modal menu sets pointer-events: none on the page behind it; the real pointerdown still reaches Radix.
+    await userEvent
+      .setup({ pointerEventsCheck: 0 })
+      .click(screen.getByRole("button", { name: "Elsewhere", hidden: true }))
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+    expect(row).toHaveAttribute("data-state", "closed")
+  })
+})
+
+describe("SidebarMenuAction", () => {
+  it("shows on hover or keyboard focus, not on focus handed back by a closing menu", () => {
+    render(
+      <SidebarMenuAction showOnHover aria-label="More">
+        …
+      </SidebarMenuAction>,
+    )
+    const cls = screen.getByRole("button", { name: "More" }).className
+    expect(cls).not.toMatch(/focus-within/)
+    expect(cls).toMatch(/group-has-focus-visible\/menu-item:opacity-100/)
+  })
 })
 
 function ToolHarness() {
@@ -227,6 +304,22 @@ describe("ChatShell", () => {
     // jsdom's matchMedia never matches, so details open as a sheet.
     await user.click(screen.getByRole("button", { name: "Toggle conversation details" }))
     expect(await screen.findByText("Model: x")).toBeInTheDocument()
+  })
+
+  it("keeps the same New conversation button through collapse, so its icon does not jump", async () => {
+    const user = userEvent.setup()
+    localStorage.removeItem("test-new-chat")
+    render(
+      <ChatShell storageKey="test-new-chat" sidebarActions={<NewConversationButton label="New chat" />}>
+        <p>thread</p>
+      </ChatShell>,
+    )
+    const button = screen.getByRole("button", { name: "New chat" })
+    await user.click(screen.getByRole("button", { name: "Collapse sidebar" }))
+    // Same node (not swapped for an icon button), label kept and faded, and no rail-only padding that moves the icon.
+    expect(screen.getByRole("button", { name: "New chat" })).toBe(button)
+    expect(within(button).getByText("New chat")).toHaveClass("group-data-[collapsible=icon]:opacity-0")
+    expect(button.className).not.toMatch(/group-data-\[collapsible=icon\]:(px|pl)-/)
   })
 })
 
@@ -384,6 +477,23 @@ describe("P1 props", () => {
     expect(onDelete).not.toHaveBeenCalled()
     await user.click(screen.getByRole("button", { name: "Delete" }))
     expect(onDelete).toHaveBeenCalledWith(expect.objectContaining({ id: "a" }))
+  })
+
+  it("ConversationList keeps the row highlighted while the delete confirmation is open, and returns focus on cancel", async () => {
+    const user = userEvent.setup()
+    render(
+      <ConversationList groups={[{ label: "Today", items: [{ id: "a", title: "Disk alert" }] }]} onDelete={() => {}} />,
+    )
+    const del = screen.getByRole("button", { name: "Delete Disk alert" })
+    const row = del.closest<HTMLElement>("[data-slot=conversation-item]")!
+    expect(row).toHaveAttribute("data-state", "closed")
+    await user.click(del)
+    await screen.findByRole("alertdialog")
+    expect(row).toHaveAttribute("data-state", "open")
+    await user.keyboard("{Escape}")
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    expect(row).toHaveAttribute("data-state", "closed")
+    await waitFor(() => expect(del).toHaveFocus())
   })
 
   it("ApprovalCard reason renders before the body", () => {
