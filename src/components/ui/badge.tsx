@@ -12,7 +12,7 @@ const badgeVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         secondary: "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
-        soft: "bg-primary-soft text-primary",
+        soft: "bg-primary-soft text-primary-soft-foreground",
         success: "bg-success/12 text-success",
         warning: "bg-warning/12 text-warning",
         destructive:

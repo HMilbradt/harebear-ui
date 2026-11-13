@@ -17,6 +17,7 @@ import {
   InputGroup,
   InputGroupInput,
   PromptInput,
+  PromptInputChip,
   StatCard,
   ThemeProvider,
   ThemeToggle,
@@ -110,6 +111,17 @@ describe("PromptInput", () => {
   it("disables send when empty", () => {
     render(<Harness onSubmit={() => {}} />)
     expect(screen.getByRole("button", { name: "Send message" })).toBeDisabled()
+  })
+
+  it("keeps a warning chip's text colour when active (no soft-variant colour wins over it)", () => {
+    render(
+      <PromptInputChip active tone="warning">
+        Private
+      </PromptInputChip>,
+    )
+    const chip = screen.getByRole("button", { name: "Private" })
+    expect(chip).toHaveClass("text-warning")
+    expect(chip.className).not.toMatch(/(^|\s)(dark:text-|text-primary)/)
   })
 
   it("names the field from label, else the placeholder", () => {

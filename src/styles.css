@@ -34,6 +34,7 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -96,6 +97,7 @@
   --primary: var(--brand);
   --primary-foreground: #ffffff;
   --primary-soft: color-mix(in oklab, var(--primary) 10%, var(--card));
+  --primary-soft-foreground: var(--primary);
   --secondary: #f1f1f3;
   --secondary-foreground: #18181b;
   --muted: #f1f1f3;
@@ -148,6 +150,8 @@
   --primary: color-mix(in oklab, var(--brand), white 26%);
   --primary-foreground: #0b1020;
   --primary-soft: color-mix(in oklab, var(--primary) 15%, var(--card));
+  /* Text on primary-soft: plain primary is 4.35:1 here with the default brand; this is 6.6:1. */
+  --primary-soft-foreground: color-mix(in oklab, var(--primary), white 30%);
   --secondary: #232326;
   --secondary-foreground: #ededef;
   --muted: #232326;

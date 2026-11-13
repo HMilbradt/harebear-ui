@@ -21,7 +21,7 @@ export interface PromptInputProps extends Omit<React.ComponentProps<"form">, "on
   placeholder?: string
   /** The text field's accessible name. Default the placeholder. */
   label?: string
-  /** While true, the send button becomes a stop button. */
+  /** While true, the send button becomes a stop button (with `queue`, send stays beside it). */
   loading?: boolean
   /**
    * Allow sending while `loading`, so the app can queue a follow-up. Enter submits and a send button shows beside

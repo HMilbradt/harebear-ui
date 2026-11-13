@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
+import { badgeVariants } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 
 const css = readFileSync(join(process.cwd(), "src/styles.css"), "utf8")
@@ -84,8 +85,13 @@ describe("soft button contrast (axe color-contrast, 4.5:1 for text under 18px)",
   const softPrimary = pct(/--primary-soft: color-mix\(in oklab, var\(--primary\) (\d+)%, var\(--card\)\)/, dark)
   const soft = buttonVariants({ variant: "soft" })
   const hoverPrimary = pct(/hover:bg-\[color-mix\(in_oklab,var\(--primary-soft\),var\(--primary\)_(\d+)%\)\]/, soft)
-  // The dark text override on the soft variant, if any; otherwise the text is plain --primary.
-  const textWhite = soft.match(/dark:text-\[color-mix\(in_oklab,var\(--primary\),white_(\d+)%\)\]/)?.[1]
+  // Text on primary-soft: the --primary-soft-foreground token, if the dark theme mixes it with white; else plain --primary.
+  const textWhite = dark.match(/--primary-soft-foreground: color-mix\(in oklab, var\(--primary\), white (\d+)%\);/)?.[1]
+
+  it("uses the soft foreground token for soft-tinted text", () => {
+    expect(soft).toContain("text-primary-soft-foreground")
+    expect(badgeVariants({ variant: "soft" })).toContain("text-primary-soft-foreground")
+  })
 
   // The default brand, plus a violet and a navy brand passed to ThemeProvider accent.
   for (const brand of ["#2f5bd3", "#7c3aed", "#1e3a8a"]) {

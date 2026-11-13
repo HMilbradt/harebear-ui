@@ -740,11 +740,11 @@ Agent tool calls as a bordered, collapsible card. Titles, labels and details wra
 
 ### `AssistantProvider`, `useAssistant`, `useAssistantPage`
 
-One assistant conversation across pages. `AssistantProvider` props: `onSend(text, { page, messages, append, update, signal })` (return the reply, or `append`/`update` messages yourself for streaming and receipts; a thrown error becomes the reply; `signal` aborts with `signal.reason` `"stop"` when the user presses Stop and `"superseded"` when the next send starts, so pass it to `fetch`, or listen for `abort` and tell your server to stop only on `"stop"`), `initialMessages?`, `defaultOpen?`. `useAssistant()` returns `{ open, setOpen, toggle, messages, pending, reply, page, setPage, send, stop, append, update, clear }`: `send(text, { open: false }?)` skips opening the dock, `stop()` aborts the running send (reason `"stop"`), ends `pending` and drops its late reply, `reply` is the assistant messages after the latest user message (null until there is one), for `AskBox`. A page calls `useAssistantPage({ id, title?, data?, suggestions? })` to become the context while mounted.
+One assistant conversation across pages. `AssistantProvider` props: `onSend(text, { page, messages, append, update, signal })` (return the reply, or `append`/`update` messages yourself for streaming and receipts; a thrown error becomes the reply; `signal` aborts with `signal.reason` `"stop"` when the user presses Stop and `"superseded"` when the next send starts, so pass it to `fetch`, or listen for `abort` and tell your server to stop only on `"stop"`; after either abort that send's return value and later `append`/`update` calls are dropped, so on `"superseded"` show the rest of the run through the new send), `initialMessages?`, `defaultOpen?`. `useAssistant()` returns `{ open, setOpen, toggle, messages, pending, reply, page, setPage, send, stop, append, update, clear }`: `send(text, { open: false }?)` skips opening the dock, `stop()` aborts the running send (reason `"stop"`), ends `pending` and drops its late reply, `reply` is the assistant messages after the latest user message (null until there is one), for `AskBox`. A page calls `useAssistantPage({ id, title?, data?, suggestions? })` to become the context while mounted.
 
 ### `AssistantDock`
 
-The assistant as a floating panel over the page (never reflows it): header (icon, title, your `actions`, full-screen link, close), empty state with suggestions, thread, `AskBox` (Stop while the assistant works, wired to `useAssistant().stop`). Closed, it is a soft launcher button. Escape closes and returns focus to the launcher. Props: `title?` (default "Assistant"), `icon?`, `fullScreenHref?`, `actions?` (header controls before the full-screen link, e.g. a "New chat" icon button with an `aria-label`), `emptyTitle?`, `emptyDescription?`, `suggestions?` (default: the page's), `placeholder?`, `dictation?`, `launcher?` (false when another control opens it), `launcherLabel?`, `queue?` (send follow-ups while the assistant works; the running send's `signal` aborts with reason `"superseded"`, and Stop stays).
+The assistant as a floating panel over the page (never reflows it): header (icon, title, your `actions`, full-screen link, close), empty state with suggestions, thread, `AskBox` (Stop while the assistant works, wired to `useAssistant().stop`). Closed, it is a soft launcher button. Escape closes and returns focus to the launcher. Props: `title?` (default "Assistant"), `icon?`, `fullScreenHref?`, `actions?` (header controls before the full-screen link, e.g. a "New chat" icon button with an `aria-label`), `emptyTitle?`, `emptyDescription?`, `suggestions?` (default: the page's), `placeholder?`, `dictation?`, `launcher?` (false when another control opens it), `launcherLabel?`, `queue?` (send follow-ups while the assistant works; the running send's `signal` aborts with reason `"superseded"` and its later output is dropped, so the new send shows the rest; Stop stays).
 
 ### `AskBox`
 
@@ -884,22 +884,22 @@ Reset or first password: "New password" + "Confirm password" (a mismatch is bloc
 
 Use these as Tailwind utilities (`bg-*`, `text-*`, `border-*`, `ring-*`, `fill-*`, `stroke-*`):
 
-| Token                               | Use                                                                                                     |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `background` / `foreground`         | Page background and body text.                                                                          |
-| `card` / `card-foreground`          | Raised surfaces (cards, active nav item, popovers via `popover`).                                       |
-| `muted` / `muted-foreground`        | Inputs, segmented controls, quiet panels; secondary text and labels.                                    |
-| `primary` / `primary-foreground`    | Brand accent (from `--brand`). Primary buttons, links, chart line.                                      |
-| `primary-soft`                      | Tinted primary background for selected rows, soft badges, icon circles. Pair with `text-primary`.       |
-| `secondary`, `accent`               | Same as muted; kept for shadcn compatibility.                                                           |
-| `success`, `warning`, `destructive` | Status colors. Use `bg-success/12 text-success` for soft status fills.                                  |
-| `border`, `input`, `ring`           | Hairlines, input borders, focus rings.                                                                  |
-| `chart-1` … `chart-5`, `chart-grid` | Data series and gridlines.                                                                              |
-| `category-1` … `category-6`         | Members, lists, calendars: blue, teal, violet, rose, slate, cyan, each with a dark value. Never status. |
-| `category-foreground`               | Text and icons on a category fill (initials, a swatch's check).                                         |
-| `sidebar-*`                         | Sidebar surfaces (default to the page tokens).                                                          |
+| Token                                      | Use                                                                                                     |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `background` / `foreground`                | Page background and body text.                                                                          |
+| `card` / `card-foreground`                 | Raised surfaces (cards, active nav item, popovers via `popover`).                                       |
+| `muted` / `muted-foreground`               | Inputs, segmented controls, quiet panels; secondary text and labels.                                    |
+| `primary` / `primary-foreground`           | Brand accent (from `--brand`). Primary buttons, links, chart line.                                      |
+| `primary-soft` / `primary-soft-foreground` | Tinted primary background for selected rows, soft badges, icon circles, and the text that goes on it.   |
+| `secondary`, `accent`                      | Same as muted; kept for shadcn compatibility.                                                           |
+| `success`, `warning`, `destructive`        | Status colors. Use `bg-success/12 text-success` for soft status fills.                                  |
+| `border`, `input`, `ring`                  | Hairlines, input borders, focus rings.                                                                  |
+| `chart-1` … `chart-5`, `chart-grid`        | Data series and gridlines.                                                                              |
+| `category-1` … `category-6`                | Members, lists, calendars: blue, teal, violet, rose, slate, cyan, each with a dark value. Never status. |
+| `category-foreground`                      | Text and icons on a category fill (initials, a swatch's check).                                         |
+| `sidebar-*`                                | Sidebar surfaces (default to the page tokens).                                                          |
 
-In dark mode `text-primary` on `bg-primary-soft` can fall under 4.5:1 contrast (4.35:1 with the default brand). The `soft` Button variant lightens its text there (primary mixed with 30% white, 6.6:1); do the same, `dark:text-[color-mix(in_oklab,var(--primary),white_30%)]`, for small soft-tinted text of your own.
+Put text on `bg-primary-soft` in `text-primary-soft-foreground`, not `text-primary`. In dark mode plain primary on the soft tint is 4.35:1 with the default brand, under axe's 4.5:1; the soft foreground is primary mixed with 30% white there (6.6:1) and plain primary in light mode. The soft Button and Badge, Avatar initials and the toast action use it. Icons alone need only 3:1, so `text-primary` is fine for them.
 
 Other theme values: `rounded-sm/md/lg/xl/2xl` scale from `--radius` (default 14px; cards use `xl`, buttons and inputs `md`), `shadow-card` (the one elevation), `font-sans` (Geist), `font-mono` (Geist Mono), `animate-typing`.
 

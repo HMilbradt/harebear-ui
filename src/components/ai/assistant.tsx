@@ -36,7 +36,9 @@ export interface AssistantSendContext {
   update: (id: string, content: React.ReactNode) => void
   /**
    * Aborted when the user presses Stop (`signal.reason` is "stop") or when the next send starts (`signal.reason` is
-   * "superseded"). Pass it to `fetch`, or listen for `abort` and tell your server to stop only on "stop".
+   * "superseded"). Pass it to `fetch`, or listen for `abort` and tell your server to stop only on "stop". After either
+   * abort, this send's return value and later `append`/`update` calls are dropped; on "superseded", show the rest of
+   * the run through the new send.
    */
   signal: AbortSignal
 }
