@@ -580,6 +580,70 @@ describe("useAssistant inline reply and stop", () => {
   })
 })
 
+describe("Queued follow-ups (Homeclub v1.1)", () => {
+  it("AskBox with queue submits while pending and keeps Stop", async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    const onStop = vi.fn()
+    render(
+      <AskBox
+        value="And the dentist?"
+        onValueChange={() => {}}
+        onSubmit={onSubmit}
+        dictation={false}
+        pending
+        queue
+        onStop={onStop}
+      />,
+    )
+    await user.type(screen.getByLabelText("Ask anything"), "{Enter}")
+    expect(onSubmit).toHaveBeenCalledWith("And the dentist?")
+    await user.click(screen.getByRole("button", { name: "Send message" }))
+    expect(onSubmit).toHaveBeenCalledTimes(2)
+    await user.click(screen.getByRole("button", { name: "Stop" }))
+    expect(onStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("aborts a superseded send with reason superseded and a stopped one with reason stop", async () => {
+    const user = userEvent.setup()
+    const signals: AbortSignal[] = []
+    render(
+      <AssistantProvider
+        defaultOpen
+        onSend={(_t, ctx) => {
+          signals.push(ctx.signal)
+          return new Promise<string>(() => {})
+        }}
+      >
+        <AssistantDock title="HomeBot" dictation={false} queue />
+      </AssistantProvider>,
+    )
+    const field = screen.getByLabelText("Ask HomeBot")
+    await user.type(field, "Plan dinner{Enter}")
+    await user.type(field, "Make it vegetarian{Enter}")
+    expect(signals).toHaveLength(2)
+    expect(signals[0]?.reason).toBe("superseded")
+    expect(signals[1]?.aborted).toBe(false)
+    expect(screen.getByText("Make it vegetarian")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Stop" }))
+    expect(signals[1]?.reason).toBe("stop")
+  })
+
+  it("AssistantDock without queue still blocks a send while the assistant works", async () => {
+    const user = userEvent.setup()
+    const onSend = vi.fn(() => new Promise<string>(() => {}))
+    render(
+      <AssistantProvider defaultOpen onSend={onSend}>
+        <AssistantDock title="HomeBot" dictation={false} />
+      </AssistantProvider>,
+    )
+    const field = screen.getByLabelText("Ask HomeBot")
+    await user.type(field, "Plan dinner{Enter}")
+    await user.type(field, "Make it vegetarian{Enter}")
+    expect(onSend).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe("ActionReceipt", () => {
   it("offers undo, then shows it was undone", async () => {
     const user = userEvent.setup()

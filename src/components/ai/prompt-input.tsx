@@ -19,8 +19,15 @@ export interface PromptInputProps extends Omit<React.ComponentProps<"form">, "on
   /** Called with the trimmed text on Enter or the send button. Shift+Enter inserts a newline. */
   onSubmit: (value: string) => void
   placeholder?: string
-  /** While true, the send button becomes a stop button. */
+  /** The text field's accessible name. Default the placeholder. */
+  label?: string
+  /** While true, the send button becomes a stop button (with `queue`, send stays beside it). */
   loading?: boolean
+  /**
+   * Allow sending while `loading`, so the app can queue a follow-up. Enter submits and a send button shows beside
+   * Stop. Default false: sending waits until `loading` ends.
+   */
+  queue?: boolean
   onStop?: () => void
   /** Shows a paperclip button. */
   onAttach?: () => void
@@ -32,13 +39,15 @@ export interface PromptInputProps extends Omit<React.ComponentProps<"form">, "on
   autoFocus?: boolean
 }
 
-/** Chat composer: auto-growing textarea with attach, tool chips, and send/stop. */
+/** Chat composer: auto-growing textarea with attach, tool chips, and send/stop. With `queue`, follow-ups can be sent while loading. */
 function PromptInput({
   value,
   onValueChange,
   onSubmit,
   placeholder = "Send a message…",
+  label = placeholder,
   loading,
+  queue,
   onStop,
   onAttach,
   tools,
@@ -51,7 +60,7 @@ function PromptInput({
   const id = React.useId()
   const canSend = value.trim().length > 0 && !disabled
   const submit = () => {
-    if (canSend && !loading) onSubmit(value.trim())
+    if (canSend && (!loading || queue)) onSubmit(value.trim())
   }
   return (
     <form
@@ -65,7 +74,7 @@ function PromptInput({
     >
       <div className="flex flex-col gap-2 rounded-[calc(var(--radius-xl)*1.2)] bg-muted pt-3 pr-3 pb-2.5 pl-3.5 transition-shadow focus-within:ring-4 focus-within:ring-primary/12">
         <label htmlFor={id} className="sr-only">
-          Message
+          {label}
         </label>
         <textarea
           id={id}
@@ -98,7 +107,7 @@ function PromptInput({
           )}
           {tools}
           <div className="flex-1" />
-          {loading && onStop ? (
+          {loading && onStop && (
             <Button
               type="button"
               size="icon"
@@ -109,14 +118,15 @@ function PromptInput({
             >
               <SquareIcon className="fill-current" />
             </Button>
-          ) : (
+          )}
+          {(!loading || !onStop || queue) && (
             <Button
               type="submit"
               size="icon"
               shape="pill"
               className="size-9"
               aria-label="Send message"
-              disabled={!canSend || loading}
+              disabled={!canSend || (loading && !queue)}
             >
               <ArrowUpIcon />
             </Button>

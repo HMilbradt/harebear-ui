@@ -68,16 +68,16 @@ Use CSS rather than props when the first paint must be right (SSR apps): `ThemeP
 
 The full token list, with what each is for, is in the [component catalog](../COMPONENTS.md#tokens) (`npx harebear-ui docs Tokens`). The ones you will use most:
 
-| Token                               | Tailwind utilities                                        |
-| ----------------------------------- | --------------------------------------------------------- |
-| `background`, `foreground`          | `bg-background`, `text-foreground`                        |
-| `card`                              | `bg-card` (raised surfaces)                               |
-| `muted`, `muted-foreground`         | `bg-muted` (inputs, quiet panels), secondary text         |
-| `primary`, `primary-soft`           | `bg-primary`, `bg-primary-soft text-primary`              |
-| `success`, `warning`, `destructive` | `text-success`, `bg-success/12`, and so on                |
-| `category-1` … `category-6`         | `bg-category-2` (members, lists, calendars; never status) |
-| `border`                            | `border-border` (the default border color)                |
-| elevation                           | `shadow-card` (the one shadow)                            |
+| Token                               | Tailwind utilities                                           |
+| ----------------------------------- | ------------------------------------------------------------ |
+| `background`, `foreground`          | `bg-background`, `text-foreground`                           |
+| `card`                              | `bg-card` (raised surfaces)                                  |
+| `muted`, `muted-foreground`         | `bg-muted` (inputs, quiet panels), secondary text            |
+| `primary`, `primary-soft`           | `bg-primary`, `bg-primary-soft text-primary-soft-foreground` |
+| `success`, `warning`, `destructive` | `text-success`, `bg-success/12`, and so on                   |
+| `category-1` … `category-6`         | `bg-category-2` (members, lists, calendars; never status)    |
+| `border`                            | `border-border` (the default border color)                   |
+| elevation                           | `shadow-card` (the one shadow)                               |
 
 ## Rules that keep a themed app consistent
 

@@ -32,7 +32,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         classNames: {
           toast: "cn-toast",
           // harebear: the Undo action reads as a soft primary button.
-          actionButton: "bg-primary-soft! text-primary! font-medium! h-8! px-3! rounded-md!",
+          actionButton: "bg-primary-soft! text-primary-soft-foreground! font-medium! h-8! px-3! rounded-md!",
         },
       }}
       {...props}
