@@ -1,6 +1,8 @@
 import { act, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import type * as React from "react"
 import { useState } from "react"
+import { Dialog as RadixDialog } from "radix-ui"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   AlertDialog,
@@ -557,6 +559,49 @@ function Fruit({ onValueChange }: { onValueChange?: (value: string | null) => vo
   )
 }
 
+const modals: [string, "dialog" | "alertdialog", React.ReactElement][] = [
+  [
+    "Dialog",
+    "dialog",
+    <Dialog defaultOpen key="d">
+      <DialogContent>
+        <DialogTitle>Modal</DialogTitle>
+        <Fruit />
+      </DialogContent>
+    </Dialog>,
+  ],
+  [
+    "AlertDialog",
+    "alertdialog",
+    <AlertDialog defaultOpen key="a">
+      <AlertDialogContent>
+        <AlertDialogTitle>Modal</AlertDialogTitle>
+        <Fruit />
+      </AlertDialogContent>
+    </AlertDialog>,
+  ],
+  [
+    "Sheet",
+    "dialog",
+    <Sheet defaultOpen key="s">
+      <SheetContent>
+        <SheetTitle>Modal</SheetTitle>
+        <Fruit />
+      </SheetContent>
+    </Sheet>,
+  ],
+  [
+    "Drawer",
+    "dialog",
+    <Drawer defaultOpen key="r">
+      <DrawerContent>
+        <DrawerTitle>Modal</DrawerTitle>
+        <Fruit />
+      </DrawerContent>
+    </Drawer>,
+  ],
+]
+
 describe("Combobox inside a modal", () => {
   it("selects an option clicked inside an open SettingsDialog and keeps the dialog open", async () => {
     const user = userEvent.setup()
@@ -588,56 +633,43 @@ describe("Combobox inside a modal", () => {
 
   // Portaled into the modal, the list is inside its scroll lock, focus trap and outside-press check. jsdom cannot
   // scroll, so this checks where the list is (a wheel over a list in <body> was cancelled in the playground).
-  it.each([
-    [
-      "Dialog",
-      <Dialog open key="d">
-        <DialogContent>
-          <DialogTitle>Modal</DialogTitle>
-          <Fruit />
-        </DialogContent>
-      </Dialog>,
-    ],
-    [
-      "Sheet",
-      <Sheet open key="s">
-        <SheetContent>
-          <SheetTitle>Modal</SheetTitle>
-          <Fruit />
-        </SheetContent>
-      </Sheet>,
-    ],
-    [
-      "Drawer",
-      <Drawer open key="r">
-        <DrawerContent>
-          <DrawerTitle>Modal</DrawerTitle>
-          <Fruit />
-        </DrawerContent>
-      </Drawer>,
-    ],
-  ])("puts the list inside an open %s", async (_name, ui) => {
+  it.each(modals)("puts the list inside an open %s", async (_name, role, ui) => {
     const user = userEvent.setup()
     render(ui)
-    const modal = screen.getByRole("dialog", { name: "Modal" })
+    const modal = screen.getByRole(role, { name: "Modal" })
     await user.type(within(modal).getByRole("combobox", { name: "Fruit" }), "a")
     expect(modal).toContainElement(await screen.findByRole("listbox"))
   })
 
-  it("can be clicked inside a modal that does not host the list, such as AlertDialog", async () => {
+  it.each(modals)("closes only the list on Escape inside an open %s", async (_name, role, ui) => {
+    const user = userEvent.setup()
+    render(ui)
+    await user.type(screen.getByRole("combobox", { name: "Fruit" }), "a")
+    expect(await screen.findByRole("listbox")).toBeInTheDocument()
+    await user.keyboard("{Escape}")
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument()
+    // A closing Drawer stays mounted until its exit transition ends, so check the state rather than presence.
+    expect(screen.getByRole(role, { name: "Modal" })).toHaveAttribute("data-state", "open")
+  })
+
+  it("can be clicked inside a modal that does not host the list, such as a raw Radix Dialog", async () => {
     const user = userEvent.setup()
     const onValueChange = vi.fn()
     render(
-      <AlertDialog open>
-        <AlertDialogContent>
-          <AlertDialogTitle>Pick</AlertDialogTitle>
-          <Fruit onValueChange={onValueChange} />
-        </AlertDialogContent>
-      </AlertDialog>,
+      <RadixDialog.Root open>
+        <RadixDialog.Portal>
+          <RadixDialog.Content aria-describedby={undefined}>
+            <RadixDialog.Title>Pick</RadixDialog.Title>
+            <Fruit onValueChange={onValueChange} />
+          </RadixDialog.Content>
+        </RadixDialog.Portal>
+      </RadixDialog.Root>,
     )
     await user.type(screen.getByRole("combobox", { name: "Fruit" }), "ban")
-    await user.click(await screen.findByRole("option", { name: "Banana" }))
+    const option = await screen.findByRole("option", { name: "Banana" })
+    expect(screen.getByRole("dialog", { name: "Pick" })).not.toContainElement(option)
+    await user.click(option)
     expect(onValueChange).toHaveBeenCalledWith("Banana", expect.anything())
-    expect(screen.getByRole("alertdialog", { name: "Pick" })).toBeInTheDocument()
+    expect(screen.getByRole("dialog", { name: "Pick" })).toBeInTheDocument()
   })
 })

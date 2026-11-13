@@ -3,7 +3,7 @@
 import * as React from "react"
 
 /**
- * The open modal's content element (Dialog, Sheet, Drawer, so also SettingsDialog). Base UI popups (Combobox) portal
+ * The open modal's content element (Dialog, AlertDialog, Sheet, Drawer, so also SettingsDialog). Base UI popups (Combobox) portal
  * into it instead of <body>, so the modal's scroll lock, focus trap, outside-press check and `pointer-events: none`
  * on <body> all treat them as inside the modal. Radix popups handle this themselves.
  */
