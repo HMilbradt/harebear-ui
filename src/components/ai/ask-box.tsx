@@ -39,6 +39,11 @@ export interface AskBoxProps extends Omit<React.ComponentProps<"form">, "onSubmi
    * while `pending` with no answer yet it shows a typing indicator. `useAssistant().reply` fits here.
    */
   reply?: React.ReactNode
+  /**
+   * Show "Working" in the reply area while `pending` with no answer yet. Default true. Turn off when your `reply`
+   * draws its own in-progress state.
+   */
+  typingIndicator?: boolean
   /** Link under the reply to continue in the full chat, labelled "Open chat". */
   chatHref?: string
 }
@@ -66,6 +71,7 @@ function AskBox({
   queue,
   onStop,
   reply,
+  typingIndicator = true,
   chatHref,
   className,
   ...props
@@ -80,7 +86,7 @@ function AskBox({
   }
   const hasText = value.trim().length > 0
   const hasReply = reply != null && reply !== false
-  const showReply = hasReply || (pending && reply !== undefined)
+  const showReply = hasReply || (pending && reply !== undefined && typingIndicator)
   return (
     <form
       data-slot="ask-box"

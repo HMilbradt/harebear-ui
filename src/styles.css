@@ -187,6 +187,12 @@
   }
   html {
     @apply font-sans;
+    /* Pages that scroll and pages that don't keep the same content width, so centred columns line up across pages. */
+    scrollbar-gutter: stable;
+  }
+  /* A modal's scroll lock adds the scrollbar width as body margin; the stable gutter already reserves it. */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
   }
   body {
     @apply bg-background text-foreground antialiased;

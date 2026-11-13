@@ -106,3 +106,10 @@ describe("soft button contrast (axe color-contrast, 4.5:1 for text under 18px)",
     })
   }
 })
+
+describe("page width", () => {
+  it("keeps a stable scrollbar gutter and drops the scroll lock's extra body margin", () => {
+    expect(css).toMatch(/html\s*{[^}]*scrollbar-gutter:\s*stable/)
+    expect(css).toMatch(/html body\[data-scroll-locked\]\s*{[^}]*margin-right:\s*0 !important/)
+  })
+})

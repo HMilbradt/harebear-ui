@@ -485,6 +485,13 @@ describe("AskBox stop and reply", () => {
     expect(within(region).getByText("Riley has soccer at 4:30.")).toBeInTheDocument()
     expect(within(region).getByRole("link", { name: "Open chat" })).toHaveAttribute("href", "/chat/7")
   })
+
+  it("hides its typing indicator with typingIndicator={false}", () => {
+    const props = { value: "", onValueChange: () => {}, onSubmit: () => {}, dictation: false as const }
+    const { container } = render(<AskBox {...props} pending reply={null} typingIndicator={false} />)
+    expect(screen.queryByText("Working")).not.toBeInTheDocument()
+    expect(container.querySelector("[data-slot=ask-box-reply]")).toBeNull()
+  })
 })
 
 function InlineAsk() {
@@ -703,6 +710,23 @@ describe("AssistantDock", () => {
     await user.type(screen.getByLabelText("Ask HomeBot"), "Is my show ready?{Enter}")
     await user.click(screen.getByRole("button", { name: "Stop" }))
     expect(signal?.aborted).toBe(true)
+    expect(screen.queryByText("Working")).not.toBeInTheDocument()
+  })
+
+  it("shows its own Working indicator while pending unless typingIndicator={false}", async () => {
+    const user = userEvent.setup()
+    const dock = (typingIndicator?: boolean) => (
+      <AssistantProvider defaultOpen onSend={() => new Promise<string>(() => {})}>
+        <AssistantDock title="HomeBot" dictation={false} typingIndicator={typingIndicator} />
+      </AssistantProvider>
+    )
+    const { unmount } = render(dock())
+    await user.type(screen.getByLabelText("Ask HomeBot"), "Hi{Enter}")
+    expect(screen.getByText("Working")).toBeInTheDocument()
+    unmount()
+    render(dock(false))
+    await user.type(screen.getByLabelText("Ask HomeBot"), "Hi{Enter}")
+    expect(screen.getByRole("button", { name: "Stop" })).toBeInTheDocument()
     expect(screen.queryByText("Working")).not.toBeInTheDocument()
   })
 })

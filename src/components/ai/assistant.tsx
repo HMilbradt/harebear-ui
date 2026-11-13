@@ -225,6 +225,11 @@ export interface AssistantDockProps extends Omit<React.ComponentProps<"section">
    * one's `signal` with reason "superseded", not "stop". Stop stays available. Default false.
    */
   queue?: boolean
+  /**
+   * Show the dock's own "Working" indicator under the thread while the assistant works. Default true. Turn off when
+   * your messages draw their own in-progress state, e.g. a "thinking" line inside the reply placeholder.
+   */
+  typingIndicator?: boolean
 }
 
 /**
@@ -245,6 +250,7 @@ function AssistantDock({
   launcher = true,
   launcherLabel,
   queue,
+  typingIndicator = true,
   className,
   ...props
 }: AssistantDockProps) {
@@ -341,7 +347,7 @@ function AssistantDock({
               {m.content}
             </ChatMessage>
           ))}
-          {pending && <TypingIndicator label="Working" />}
+          {pending && typingIndicator && <TypingIndicator label="Working" />}
         </ChatThread>
       )}
       <div className="px-3 pt-2 pb-3">
