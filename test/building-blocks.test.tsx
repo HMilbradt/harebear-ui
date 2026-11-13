@@ -12,13 +12,17 @@ import {
   ChatShell,
   ConfirmDialog,
   ConversationList,
+  DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
   Empty,
   formatWhen,
   groupByDate,
   InlineCode,
   ModelPicker,
   PromptInputSelect,
+  SidebarMenuAction,
   StatusBadge,
   ToolGroup,
   ThemeProvider,
@@ -126,6 +130,78 @@ describe("ConversationList", () => {
     expect(onDelete).toHaveBeenCalledWith("a")
     rerender(<ConversationList groups={[]} empty="Nothing here" />)
     expect(screen.getByText("Nothing here")).toBeInTheDocument()
+  })
+
+  it("keeps a row highlighted while its row menu is open, and closes the menu on Escape, outside click and select", async () => {
+    const user = userEvent.setup()
+    const onRename = vi.fn()
+    render(
+      <>
+        <ConversationList
+          groups={[{ label: "Today", items: [{ id: "a", title: "Groceries" }] }]}
+          renderAction={(c) => (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label={`Options for ${c.title}`}>
+                  …
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => onRename(c.id)}>Rename</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        />
+        <button type="button">Elsewhere</button>
+      </>,
+    )
+    const row = document.querySelector<HTMLElement>("[data-slot=conversation-item]")!
+    const trigger = screen.getByRole("button", { name: "Options for Groceries" })
+    expect(row).toHaveAttribute("data-state", "closed")
+    // Revealed by keyboard focus, not focus-within: the menu hands focus back to its trigger on close, and
+    // focus-within kept the button showing after a mouse user had finished.
+    const reveal = trigger.parentElement!.className
+    expect(reveal).not.toMatch(/focus-within/)
+    expect(reveal).toMatch(/group-has-focus-visible\/conversation:opacity-100/)
+    expect(reveal).toMatch(/group-data-\[state=open\]\/conversation:opacity-100/)
+    expect(row.className).toMatch(/data-\[state=open\]:bg-muted/)
+
+    await user.click(trigger)
+    expect(await screen.findByRole("menu")).toBeInTheDocument()
+    expect(row).toHaveAttribute("data-state", "open")
+    await user.keyboard("{Escape}")
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+    expect(row).toHaveAttribute("data-state", "closed")
+    expect(trigger).toHaveFocus()
+
+    await user.click(trigger)
+    expect(row).toHaveAttribute("data-state", "open")
+    await user.click(screen.getByRole("menuitem", { name: "Rename" }))
+    expect(onRename).toHaveBeenCalledWith("a")
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+    expect(row).toHaveAttribute("data-state", "closed")
+
+    await user.click(trigger)
+    expect(row).toHaveAttribute("data-state", "open")
+    // A modal menu sets pointer-events: none on the page behind it; the real pointerdown still reaches Radix.
+    await userEvent
+      .setup({ pointerEventsCheck: 0 })
+      .click(screen.getByRole("button", { name: "Elsewhere", hidden: true }))
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+    expect(row).toHaveAttribute("data-state", "closed")
+  })
+})
+
+describe("SidebarMenuAction", () => {
+  it("shows on hover or keyboard focus, not on focus handed back by a closing menu", () => {
+    render(
+      <SidebarMenuAction showOnHover aria-label="More">
+        …
+      </SidebarMenuAction>,
+    )
+    const cls = screen.getByRole("button", { name: "More" }).className
+    expect(cls).not.toMatch(/focus-within/)
+    expect(cls).toMatch(/group-has-focus-visible\/menu-item:opacity-100/)
   })
 })
 

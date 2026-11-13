@@ -96,19 +96,23 @@ function SidebarLayout({
         style={{ "--sidebar-width": width, "--sidebar-width-icon": "4.25rem" } as React.CSSProperties}
       >
         <Sidebar collapsible={collapsible === "none" ? "offcanvas" : collapsible} data-slot="sidebar-layout-sidebar">
-          <SidebarHeader className="gap-5 px-3.5 pt-[max(1.25rem,env(safe-area-inset-top))] group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3 group-data-[collapsible=icon]:px-0">
-            <div className="flex min-w-0 items-center gap-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-3">
-              {brand && <div className="min-w-0 flex-1 pl-2 group-data-[collapsible=icon]:pl-0">{brand}</div>}
+          <SidebarHeader className="gap-5 px-3.5 pt-[max(1.25rem,env(safe-area-inset-top))] group-data-[collapsible=icon]:gap-3">
+            <div className="flex min-w-0 items-center gap-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-start group-data-[collapsible=icon]:gap-3">
+              {brand && (
+                <div className="min-w-0 flex-1 pl-2 transition-[padding] duration-200 ease-linear group-data-[collapsible=icon]:pl-0.5 motion-reduce:transition-none">
+                  {brand}
+                </div>
+              )}
               {collapsible === "icon" && <SidebarCollapseButton />}
             </div>
             {sidebarActions && (
-              <div className="flex flex-col gap-2.5 group-data-[collapsible=icon]:items-center">{sidebarActions}</div>
+              <div className="flex flex-col gap-2.5 group-data-[collapsible=icon]:items-start">{sidebarActions}</div>
             )}
           </SidebarHeader>
-          <SidebarContent className="px-3.5 pt-2 group-data-[collapsible=icon]:px-0">{sidebar}</SidebarContent>
+          <SidebarContent className="px-3.5 pt-2">{sidebar}</SidebarContent>
           {sidebarFooter && (
-            <SidebarFooter className="px-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))] group-data-[collapsible=icon]:px-0">
-              <div className="px-2 group-data-[collapsible=icon]:px-0 has-data-[slot=user-menu-trigger]:px-0">
+            <SidebarFooter className="px-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+              <div className="px-2 group-data-[collapsible=icon]:px-0.5 has-data-[slot=user-menu-trigger]:px-0">
                 {sidebarFooter}
               </div>
             </SidebarFooter>

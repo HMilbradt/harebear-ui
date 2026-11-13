@@ -99,15 +99,7 @@ function ConversationList({
             const active = c.id === activeId
             const action = renderAction ? renderAction(c) : onDelete ? deleteButton(c) : null
             return (
-              <div
-                key={c.id}
-                data-slot="conversation-item"
-                data-active={active || undefined}
-                className={cn(
-                  "group/conversation flex min-w-0 items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                  active && "bg-card text-foreground shadow-card hover:bg-card",
-                )}
-              >
+              <ConversationRow key={c.id} active={active}>
                 <button
                   type="button"
                   aria-current={active ? "page" : undefined}
@@ -126,11 +118,13 @@ function ConversationList({
                   )}
                 </button>
                 {action && (
-                  <div className="mr-1 flex shrink-0 items-center [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/conversation:opacity-100 [@media(hover:hover)]:group-focus-within/conversation:opacity-100">
+                  // Revealed by hover, keyboard focus (focus-visible, not focus-within: a menu hands focus back to its
+                  // trigger on close, which kept the button showing after a mouse user was done) or an open menu.
+                  <div className="mr-1 flex shrink-0 items-center [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/conversation:opacity-100 [@media(hover:hover)]:group-has-focus-visible/conversation:opacity-100 [@media(hover:hover)]:group-data-[state=open]/conversation:opacity-100">
                     {action}
                   </div>
                 )}
-              </div>
+              </ConversationRow>
             )
           })}
         </div>
@@ -154,6 +148,38 @@ function ConversationList({
         />
       )}
     </nav>
+  )
+}
+
+/**
+ * One row. `data-state="open"` while a menu or popover opened from its action is open (any descendant with
+ * aria-expanded="true"), so the row keeps its hover highlight while the pointer is over the portaled menu.
+ */
+function ConversationRow({ active, children }: { active: boolean; children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const [open, setOpen] = React.useState(false)
+  React.useEffect(() => {
+    const row = ref.current
+    if (!row || typeof MutationObserver === "undefined") return
+    const sync = () => setOpen(!!row.querySelector("[aria-expanded=true]"))
+    sync()
+    const observer = new MutationObserver(sync)
+    observer.observe(row, { subtree: true, attributes: true, attributeFilter: ["aria-expanded"] })
+    return () => observer.disconnect()
+  }, [])
+  return (
+    <div
+      ref={ref}
+      data-slot="conversation-item"
+      data-active={active || undefined}
+      data-state={open ? "open" : "closed"}
+      className={cn(
+        "group/conversation flex min-w-0 items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground",
+        active && "bg-card text-foreground shadow-card hover:bg-card data-[state=open]:bg-card",
+      )}
+    >
+      {children}
+    </div>
   )
 }
 

@@ -110,11 +110,7 @@ export interface UserChipProps extends Omit<React.ComponentProps<"div">, "color"
 /** Avatar + name + secondary line. In a sidebar collapsed to its icon rail, only the avatar shows. */
 function UserChip({ name, subtitle, avatarUrl, color, action, size = "default", className, ...props }: UserChipProps) {
   return (
-    <div
-      data-slot="user-chip"
-      className={cn("flex min-w-0 items-center gap-3 group-data-[collapsible=icon]:justify-center", className)}
-      {...props}
-    >
+    <div data-slot="user-chip" className={cn("flex min-w-0 items-center gap-3", className)} {...props}>
       <MemberAvatar name={name} avatarUrl={avatarUrl} color={color} size={size} aria-hidden="true" />
       <div className="min-w-0 flex-1 leading-snug group-data-[collapsible=icon]:hidden">
         <div className={cn("truncate font-medium", size === "lg" && "text-lg font-semibold")}>{name}</div>

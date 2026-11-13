@@ -44,11 +44,7 @@ export interface AppBrandProps extends React.ComponentProps<"div"> {
  */
 function AppBrand({ name, subtitle, icon, action, className, ...props }: AppBrandProps) {
   return (
-    <div
-      data-slot="app-brand"
-      className={cn("flex items-center gap-3 group-data-[collapsible=icon]:justify-center", className)}
-      {...props}
-    >
+    <div data-slot="app-brand" className={cn("flex items-center gap-3", className)} {...props}>
       {icon && (
         <div className="grid size-9 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground [&_svg]:size-[18px]">
           {icon}
@@ -117,9 +113,12 @@ function AppShell({
       sidebar={
         <div className="flex flex-1 flex-col gap-5">
           {nav.map((section, i) => (
-            <SidebarGroup key={section.label ?? i}>
+            <SidebarGroup
+              key={section.label ?? i}
+              className="transition-[padding] duration-200 ease-linear group-data-[collapsible=icon]:px-0 motion-reduce:transition-none"
+            >
               {section.label && <SidebarGroupLabel className="text-xs font-medium">{section.label}</SidebarGroupLabel>}
-              <SidebarMenu className="gap-1 group-data-[collapsible=icon]:items-center">
+              <SidebarMenu className="gap-1">
                 {section.items.map((item) => (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
@@ -127,17 +126,22 @@ function AppShell({
                       isActive={item.active}
                       onClick={item.onSelect}
                       tooltip={item.label}
+                      className="group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:px-3!"
                     >
                       {item.href ? (
                         <Link href={item.href}>
                           {item.icon}
-                          <span className="flex-1">{item.label}</span>
+                          <span className="flex-1 whitespace-nowrap transition-opacity duration-200 ease-linear group-data-[collapsible=icon]:opacity-0 motion-reduce:transition-none">
+                            {item.label}
+                          </span>
                           {item.badge !== undefined && <NavBadge>{item.badge}</NavBadge>}
                         </Link>
                       ) : (
                         <>
                           {item.icon}
-                          <span className="flex-1">{item.label}</span>
+                          <span className="flex-1 whitespace-nowrap transition-opacity duration-200 ease-linear group-data-[collapsible=icon]:opacity-0 motion-reduce:transition-none">
+                            {item.label}
+                          </span>
                           {item.badge !== undefined && <NavBadge>{item.badge}</NavBadge>}
                         </>
                       )}

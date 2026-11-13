@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   AuthForm,
   Celebration,
+  TaskRow,
   Combobox,
   ComboboxInput,
   CopyField,
@@ -252,6 +253,11 @@ describe("DetailSheet", () => {
   })
 })
 
+function CelebrationTaskRow() {
+  const [done, setDone] = useState(false)
+  return <TaskRow title="Take out the bins" checked={done} onCheckedChange={setDone} />
+}
+
 describe("Celebration", () => {
   it("shows one burst on celebrate() and removes it after it plays", () => {
     vi.useFakeTimers()
@@ -260,6 +266,19 @@ describe("Celebration", () => {
     act(() => celebrate())
     expect(document.querySelectorAll("[data-slot=celebration]")).toHaveLength(1)
     act(() => vi.advanceTimersByTime(2000))
+    expect(document.querySelector("[data-slot=celebration]")).toBeNull()
+  })
+
+  it("only plays on demand: ticking a TaskRow or CheckCircle does not fire it", async () => {
+    const user = userEvent.setup()
+    render(
+      <>
+        <Celebration />
+        <CelebrationTaskRow />
+      </>,
+    )
+    await user.click(screen.getByRole("checkbox", { name: "Take out the bins" }))
+    expect(screen.getByRole("checkbox", { name: "Take out the bins" })).toBeChecked()
     expect(document.querySelector("[data-slot=celebration]")).toBeNull()
   })
 
