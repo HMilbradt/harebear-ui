@@ -211,7 +211,7 @@ You should see a white card on a light grey page with Geist text and a blue butt
 | Flash of light theme on load (SSR)        | Render `<ThemeScript />` in `<head>`. If you pass `storageKey` or `defaultMode` to `ThemeProvider`, pass the same values to `ThemeScript`. |
 | Accent or radius flashes on load (SSR)    | `accent` and `radius` props apply after hydration. For SSR, set `--brand` and `--radius` in CSS instead (see [Theming](theming.md)).       |
 | Tooltips don't show                       | `TooltipProvider` is missing near the root.                                                                                                |
-| `toast()` does nothing                    | `<Toaster />` is not mounted. Import `toast` from `sonner`.                                                                                |
+| `toast()` does nothing                    | `<Toaster />` is not mounted. Import `toast` from `harebear-ui`.                                                                           |
 | `init` says several Tailwind entry files  | Pass the one your app loads: `npx harebear-ui init --css src/index.css`.                                                                   |
 
 Next: [Theming](theming.md) · [Working with AI agents](agents.md) · [Component catalog](../COMPONENTS.md)
