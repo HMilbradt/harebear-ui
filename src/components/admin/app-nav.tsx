@@ -266,6 +266,8 @@ function TabBar({ tabs, label, Link }: { tabs: AppNavPlace[]; label: string; Lin
     <nav
       aria-label={label}
       data-slot="app-nav-tabs"
+      // Named so a page change draws it steady instead of fading it with the page (see styles.css).
+      style={{ viewTransitionName: "hb-tab-bar" }}
       className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden"
     >
       <ul className="mx-auto flex max-w-lg">

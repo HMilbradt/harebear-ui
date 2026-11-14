@@ -399,7 +399,7 @@ Quiet note with an icon (sparkle by default). Props: `icon?`, `tone?` (`"muted" 
 
 ### `Celebration`, `celebrate`
 
-An occasional confetti burst, e.g. when the member ticks the last to-do of the day. It only plays when you call `celebrate()`: `CheckCircle`, `TaskRow` and `SectionedList` never fire it (a ticked check has its own small pop). Mount `<Celebration />` once near the root (like `Toaster`), then call `celebrate()` from anywhere. CSS only, about 1.5 s, renders nothing between bursts (`data-slot="celebration"` while it plays), and does nothing under `prefers-reduced-motion`. Keep it rare.
+An occasional confetti burst, e.g. when the member ticks the last to-do of the day. It only plays when you call `celebrate()`: `CheckCircle`, `TaskRow` and `SectionedList` never fire it (a ticked check has its own small pop). Mount `<Celebration />` once near the root (like `Toaster`), then call `celebrate()` from anywhere. Strips and squares in the category colours burst up from the middle of the screen, slow to a peak, then drift down slowly, swaying and fluttering, and fade out. CSS only, each piece 2.5 to 3.5 s (the layer is gone by 3.8 s), renders nothing between bursts (`data-slot="celebration"` while it plays), and does nothing under `prefers-reduced-motion`. Keep it rare.
 
 ### `LinkTile`
 
@@ -746,11 +746,27 @@ Three pulsing dots. Props: `label?` (text after the dots, e.g. "Working"), `vari
 Agent tool calls as a bordered, collapsible card. Titles, labels and details wrap instead of cutting off. `ToolStatus = "queued" | "waiting" | "running" | "done" | "error" | "stopped"`.
 `ToolGroup` props: `title`, `status`, `meta?` (e.g. time), `autoOpen?` (default open while active, until the user toggles), `open?`/`onOpenChange?`.
 `ToolStep` props: `icon?`, `kind` (verb column; with an empty `detail` it is the whole label, for plain-language steps such as "Added milk"), `detail` (monospace command or path, or `""`), `status`, `meta?` (default from status), `output?` (monospace, shown when expanded; omit for a fixed row), `autoOpen?` (default open while running).
+`ToolStep` also takes `items?: ToolStepItem[]` (`{ id, label, href?, onSelect? }`): what the step acted on, listed under its row whether or not it is expanded, e.g. the to-dos it read or the list it changed. An item with `href` renders through `linkComponent?` (default `a`, e.g. your router's `Link`, which gets `href`), one with `onSelect` as a link-styled button (e.g. to open a record's sheet), others as plain text. The first 5 show; a "Show N more" button shows the rest.
 `ToolStatusIcon`: spinner while running, else a toned dot. Lighter alternative: `Trace`.
 
 ```tsx
 ;<ToolGroup title="Ran 2 commands on services" status="done" meta="9:42">
   <ToolStep icon={<TerminalIcon />} kind="Run" detail="docker ps" status="done" meta="12 lines" output={out} />
+</ToolGroup>
+;<ToolGroup title="What I did" status="done">
+  <ToolStep
+    kind="Added a to-do"
+    detail=""
+    status="done"
+    items={[{ id: "t1", label: "Book the furnace service", onSelect: () => openTask("t1") }]}
+  />
+  <ToolStep
+    kind="Looked at lists"
+    detail=""
+    status="done"
+    items={[{ id: "2", label: "Groceries", href: "/lists/2" }]}
+    linkComponent={Link}
+  />
 </ToolGroup>
 ```
 
@@ -924,7 +940,12 @@ Put text on `bg-primary-soft` in `text-primary-soft-foreground`, not `text-prima
 
 Other theme values: `rounded-sm/md/lg/xl/2xl` scale from `--radius` (default 14px; cards use `xl`, buttons and inputs `md`), `shadow-card` (the one elevation), `font-sans` (Geist), `font-mono` (Geist Mono), `animate-typing`.
 
-Utilities: `focus-box` gives the box around a bare field the focus ring (primary border, card fill, 4px halo); pair it with `border border-transparent bg-muted`. `animate-check-pop` and `animate-listening` are the check and dictation animations. All motion is off under `prefers-reduced-motion`.
+Utilities: `focus-box` gives the box around a bare field the focus ring (primary border, card fill, 4px halo); pair it with `border border-transparent bg-muted`. `animate-check-pop` and `animate-listening` are the check and dictation animations. All motion is off under `prefers-reduced-motion`. View transitions (`document.startViewTransition`, or a router's `viewTransition` option) are styled by the base layer and are off under reduced motion, so apps write no `::view-transition` CSS. The page fades through: the old page fades out in 100 ms, then the new one fades in over 250 ms, so the two pages never show on top of each other. `SidebarLayout`'s sidebar and `AppNav`'s phone tab bar are named (`hb-sidebar`, `hb-tab-bar`) so they stay steady; give other chrome both pages share the same `view-transition-name` on both for the same effect. Named elements move over 400 ms on a decelerating curve. To move an element between two pages, give it the same `view-transition-name` on both, through `style` or `className`. For one element that changes shape (e.g. a box on a page that grows into a chat's composer), also set `viewTransitionClass: "morph"`: it moves as one clipped, rounded box, drawn unscaled from the top left, and the old look gives way to the new within 100 ms, so only one placeholder shows.
+
+```tsx
+<AskBox style={{ viewTransitionName: "composer", viewTransitionClass: "morph" }} />
+<PromptInput style={{ viewTransitionName: "composer", viewTransitionClass: "morph" }} />
+```
 
 Override any token in your CSS after the import:
 

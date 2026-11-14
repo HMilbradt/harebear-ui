@@ -87,7 +87,7 @@ Calendar views and SmartInput follow when a second app needs them.
 | :-------------------- | :----------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `toastUndo()` (built) | Standard wrapper around Sonner: action label, Undo, 9 second window, pause on hover, stacking and entry animation. | Sonner is already the toast layer. Check its current API before building.                                                                             |
 | Motion helpers        | Check pop, collapse without layout shift, an optimistic list hook (`useOptimisticList`).                           | Built as CSS with no new dependency: `animate-check-pop`, `Collapse`. `useOptimisticList` is still proposed (React 19 `useOptimistic` may be enough). |
-| Celebration (built)   | Occasional confetti when a day is cleared. Off under reduced motion.                                               | Built as CSS with no new dependency: `Celebration` + `celebrate()`.                                                                                   |
+| Celebration (built)   | Occasional confetti when a day is cleared. Off under reduced motion.                                               | Built as CSS with no new dependency: `Celebration` + `celebrate()`. Redrawn in 0.14.0: slower, drifting, fluttering fall (2.5 to 3.5 s per piece).    |
 
 ## 6. Foundations (`src/styles.css`)
 

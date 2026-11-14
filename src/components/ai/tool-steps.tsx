@@ -104,6 +104,21 @@ export interface ToolStepProps extends Omit<React.ComponentProps<"div">, "title"
   output?: React.ReactNode
   /** Open while true, until the user toggles it. Default: open while running. */
   autoOpen?: boolean
+  /**
+   * What the step acted on, listed under its row, e.g. the to-dos it read or the list it changed. An item with `href`
+   * renders through `linkComponent`, one with `onSelect` as a link-styled button, others as plain text. The first 5
+   * show; a "Show N more" button shows the rest.
+   */
+  items?: ToolStepItem[]
+  /** Component for item links, e.g. Next.js or React Router Link. Gets `href`. Default `a`. */
+  linkComponent?: React.ElementType
+}
+
+export interface ToolStepItem {
+  id: string
+  label: React.ReactNode
+  href?: string
+  onSelect?: () => void
 }
 
 const statusText: Record<ToolStatus, string> = {
@@ -115,10 +130,77 @@ const statusText: Record<ToolStatus, string> = {
   stopped: "stopped",
 }
 
-/** One tool call inside a ToolGroup: icon, verb, monospace detail, status text, expandable output. */
-function ToolStep({ icon, kind, detail, status, meta, output, autoOpen, className, ...props }: ToolStepProps) {
+const ITEMS_SHOWN = 5
+const itemLink =
+  "rounded-sm text-left text-primary underline-offset-2 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring/40 pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center"
+
+/** The things a step acted on: links, buttons or plain names, the first few shown. */
+function ToolStepItems({
+  items,
+  linkComponent: Link = "a",
+  indent,
+}: {
+  items: ToolStepItem[]
+  linkComponent?: React.ElementType
+  indent: boolean
+}) {
+  const [all, setAll] = React.useState(false)
+  const shown = all ? items : items.slice(0, ITEMS_SHOWN)
+  const hidden = items.length - shown.length
+  return (
+    <div
+      data-slot="tool-step-items"
+      className={cn("mr-2.5 mb-1.5 flex flex-col gap-1 text-[13px]", indent ? "ml-11.5" : "ml-2.5")}
+    >
+      <ul className="flex flex-col gap-1">
+        {shown.map((item) => (
+          <li key={item.id} className="min-w-0 wrap-anywhere">
+            {item.href !== undefined ? (
+              <Link href={item.href} className={itemLink}>
+                {item.label}
+              </Link>
+            ) : item.onSelect ? (
+              <button type="button" onClick={item.onSelect} className={itemLink}>
+                {item.label}
+              </button>
+            ) : (
+              item.label
+            )}
+          </li>
+        ))}
+      </ul>
+      {hidden > 0 && (
+        <button
+          type="button"
+          onClick={() => setAll(true)}
+          className="self-start rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40 pointer-coarse:min-h-11"
+        >
+          Show {hidden} more
+        </button>
+      )}
+    </div>
+  )
+}
+
+/** One tool call inside a ToolGroup: icon, verb, monospace detail, status text, expandable output, items. */
+function ToolStep({
+  icon,
+  kind,
+  detail,
+  status,
+  meta,
+  output,
+  autoOpen,
+  items,
+  linkComponent,
+  className,
+  ...props
+}: ToolStepProps) {
   const [open, setOpen] = useAutoOpen(autoOpen ?? status === "running")
   const expandable = output !== undefined && output !== null && output !== ""
+  const list = items && items.length > 0 && (
+    <ToolStepItems items={items} linkComponent={linkComponent} indent={Boolean(icon)} />
+  )
   const row = (
     <>
       {icon && (
@@ -149,10 +231,21 @@ function ToolStep({ icon, kind, detail, status, meta, output, autoOpen, classNam
   )
   const rowClass = "flex w-full min-w-0 items-center gap-2.5 rounded-md px-2.5 py-1.75 text-left"
   if (!expandable) {
+    if (!list) {
+      return (
+        <div data-slot="tool-step" data-status={status} className={cn(rowClass, className)} {...props}>
+          {row}
+          <span className="size-4 shrink-0" />
+        </div>
+      )
+    }
     return (
-      <div data-slot="tool-step" data-status={status} className={cn(rowClass, className)} {...props}>
-        {row}
-        <span className="size-4 shrink-0" />
+      <div data-slot="tool-step" data-status={status} className={className} {...props}>
+        <div className={rowClass}>
+          {row}
+          <span className="size-4 shrink-0" />
+        </div>
+        {list}
       </div>
     )
   }
@@ -173,6 +266,7 @@ function ToolStep({ icon, kind, detail, status, meta, output, autoOpen, classNam
           className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
         />
       </CollapsibleTrigger>
+      {list}
       <CollapsibleContent>
         <pre
           className={cn(
