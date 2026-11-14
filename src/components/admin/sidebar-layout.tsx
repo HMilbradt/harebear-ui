@@ -95,7 +95,12 @@ function SidebarLayout({
         onOpenChange={onOpenChange}
         style={{ "--sidebar-width": width, "--sidebar-width-icon": "4.25rem" } as React.CSSProperties}
       >
-        <Sidebar collapsible={collapsible === "none" ? "offcanvas" : collapsible} data-slot="sidebar-layout-sidebar">
+        <Sidebar
+          collapsible={collapsible === "none" ? "offcanvas" : collapsible}
+          data-slot="sidebar-layout-sidebar"
+          // Named so a page change draws it steady instead of fading it with the page (see styles.css).
+          style={{ viewTransitionName: "hb-sidebar" }}
+        >
           <SidebarHeader className="gap-5 px-3.5 pt-[max(1.25rem,env(safe-area-inset-top))] group-data-[collapsible=icon]:gap-3">
             <div className="flex min-w-0 items-center gap-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-start group-data-[collapsible=icon]:gap-3">
               {brand && <div className="min-w-0 flex-1 pl-2">{brand}</div>}
