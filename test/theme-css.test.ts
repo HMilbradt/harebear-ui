@@ -113,3 +113,61 @@ describe("page width", () => {
     expect(css).toMatch(/html body\[data-scroll-locked\]\s*{[^}]*margin-right:\s*0 !important/)
   })
 })
+
+describe("confetti keyframes (Celebration)", () => {
+  const frames = css.match(/@keyframes hb-confetti \{([\s\S]*?)\n\}/)?.[1] ?? ""
+  const stops = [...frames.matchAll(/^ {2}(\d+)% \{([\s\S]*?)^ {2}\}/gm)].map((m) => ({
+    at: Number(m[1]) / 100,
+    body: m[2] ?? "",
+  }))
+  // Share of the fall covered at each stop: (60vh - var(--hb-y)) * k.
+  const fall = stops
+    .map((s) => ({ at: s.at, k: Number(s.body.match(/\(60vh - var\(--hb-y\)\) \* ([\d.]+)/)?.[1] ?? Number.NaN) }))
+    .filter((s) => !Number.isNaN(s.k))
+
+  it("peaks within the first 35% and falls for at least twice as long as it rose", () => {
+    const peak = stops.find((s) => s.body.includes("translate(var(--hb-x), var(--hb-y))"))
+    expect(peak?.at).toBeLessThanOrEqual(0.35)
+    expect(1 - (peak?.at ?? 1)).toBeGreaterThanOrEqual(2 * (peak?.at ?? 1))
+    expect(fall[0]?.at).toBeGreaterThan(peak?.at ?? 1)
+  })
+
+  it("falls ever further, its speed levelling off, while it drifts, sways, spins and flutters", () => {
+    const speeds = fall.map((s, i) => {
+      const prev = fall[i - 1] ?? { at: 0.24, k: 0 }
+      return (s.k - prev.k) / (s.at - prev.at)
+    })
+    expect(speeds.every((v) => v > 0)).toBe(true)
+    const [a, b] = speeds.slice(-2) as [number, number]
+    expect(Math.abs(b - a) / a).toBeLessThan(0.15)
+    expect(speeds[0]).toBeLessThan(b / 2)
+    expect(fall.at(-1)?.k).toBe(1)
+    for (const v of ["--hb-drift", "--hb-sway", "--hb-r", "--hb-flip"]) expect(frames).toContain(`var(${v})`)
+    expect(frames).toContain("rotate3d(")
+  })
+
+  it("fades over the last quarter", () => {
+    expect(stops.find((s) => s.at === 0.75)?.body).toContain("opacity: 1;")
+    expect(stops.at(-1)?.body).toContain("opacity: 0;")
+  })
+
+  it("is off under reduced motion, as are view transitions", () => {
+    const reduce = [...css.matchAll(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n {0,2}\}/g)].map(
+      (m) => m[1] ?? "",
+    )
+    expect(reduce.some((r) => /\.animate-confetti[\s\S]*?animation: none/.test(r))).toBe(true)
+    expect(
+      reduce.some((r) =>
+        /::view-transition-group\(\*\)[\s\S]*?::view-transition-new\(\*\)[\s\S]*?animation: none/.test(r),
+      ),
+    ).toBe(true)
+  })
+})
+
+describe("view transitions", () => {
+  it("use the library's motion: 300 ms with the standard easing", () => {
+    const rule = css.match(/::view-transition-new\(\*\) \{([\s\S]*?)\}/)?.[1] ?? ""
+    expect(rule).toContain("animation-duration: 300ms")
+    expect(rule).toContain("animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1)")
+  })
+})

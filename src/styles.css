@@ -203,6 +203,22 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  /* View transitions (document.startViewTransition, a router's viewTransition option) use the library's motion. Apps
+     name the elements that should move with view-transition-name; everything else crossfades. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 300ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-image-pair(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none;
+    }
+  }
 }
 
 @keyframes hb-typing {
@@ -266,24 +282,64 @@
   animation: hb-listening 900ms infinite ease-in-out;
 }
 
-/* Confetti piece for Celebration: flies out to (--hb-x, --hb-y), then falls and fades. */
+/*
+ * Confetti piece for Celebration. One animation per piece, timed by the piece's inline duration and delay.
+ * Rise (0 to 24%): bursts out to (--hb-x, --hb-y) and slows to a stop at its highest point.
+ * Fall (24 to 100%): three times as long, picking up speed and then levelling off, drifting by --hb-drift, swaying
+ * by --hb-sway at each stop, spinning (--hb-r) and turning in 3D (--hb-flip) so it flutters. Fades over the last
+ * quarter. Positions go through the timing functions, so the stops below set the shape of the path.
+ */
 @keyframes hb-confetti {
   0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(0deg);
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(0px, 0px) rotate(0deg) rotate3d(1, var(--hb-tilt), 0, 0deg);
+    animation-timing-function: cubic-bezier(0.2, 0.75, 0.35, 1);
   }
-  35% {
+  5% {
     opacity: 1;
-    transform: translate(calc(var(--hb-x) * 0.7), var(--hb-y)) rotate(calc(var(--hb-r) * 0.4));
+  }
+  24% {
+    transform: translate(-50%, -50%) translate(var(--hb-x), var(--hb-y)) rotate(calc(var(--hb-r) * 0.24))
+      rotate3d(1, var(--hb-tilt), 0, calc(var(--hb-flip) * 0.24));
+    animation-timing-function: cubic-bezier(0.45, 0, 0.7, 0.85);
+  }
+  36% {
+    transform: translate(-50%, -50%) translate(calc(var(--hb-x) + var(--hb-drift) * 0.06 + var(--hb-sway) * 1), calc(var(--hb-y) + (60vh - var(--hb-y)) * 0.06)) rotate(calc(var(--hb-r) * 0.36))
+      rotate3d(1, var(--hb-tilt), 0, calc(var(--hb-flip) * 0.36));
+    animation-timing-function: cubic-bezier(0.3, 0.15, 0.7, 0.85);
+  }
+  48% {
+    transform: translate(-50%, -50%) translate(calc(var(--hb-x) + var(--hb-drift) * 0.19 + var(--hb-sway) * -1), calc(var(--hb-y) + (60vh - var(--hb-y)) * 0.19)) rotate(calc(var(--hb-r) * 0.48))
+      rotate3d(1, var(--hb-tilt), 0, calc(var(--hb-flip) * 0.48));
+    animation-timing-function: cubic-bezier(0.3, 0.15, 0.7, 0.85);
+  }
+  60% {
+    transform: translate(-50%, -50%) translate(calc(var(--hb-x) + var(--hb-drift) * 0.36 + var(--hb-sway) * 1), calc(var(--hb-y) + (60vh - var(--hb-y)) * 0.36)) rotate(calc(var(--hb-r) * 0.6))
+      rotate3d(1, var(--hb-tilt), 0, calc(var(--hb-flip) * 0.6));
+    animation-timing-function: cubic-bezier(0.3, 0.15, 0.7, 0.85);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(calc(var(--hb-x) + var(--hb-drift) * 0.58 + var(--hb-sway) * -1), calc(var(--hb-y) + (60vh - var(--hb-y)) * 0.58)) rotate(calc(var(--hb-r) * 0.75))
+      rotate3d(1, var(--hb-tilt), 0, calc(var(--hb-flip) * 0.75));
+    animation-timing-function: cubic-bezier(0.3, 0.15, 0.7, 0.85);
+  }
+  88% {
+    transform: translate(-50%, -50%) translate(calc(var(--hb-x) + var(--hb-drift) * 0.79 + var(--hb-sway) * 1), calc(var(--hb-y) + (60vh - var(--hb-y)) * 0.79)) rotate(calc(var(--hb-r) * 0.88))
+      rotate3d(1, var(--hb-tilt), 0, calc(var(--hb-flip) * 0.88));
+    animation-timing-function: cubic-bezier(0.3, 0.15, 0.7, 0.85);
   }
   100% {
     opacity: 0;
-    transform: translate(var(--hb-x), 40vh) rotate(var(--hb-r));
+    transform: translate(-50%, -50%) translate(calc(var(--hb-x) + var(--hb-drift) * 1 + var(--hb-sway) * -1), calc(var(--hb-y) + (60vh - var(--hb-y)) * 1)) rotate(calc(var(--hb-r) * 1))
+      rotate3d(1, var(--hb-tilt), 0, calc(var(--hb-flip) * 1));
   }
 }
 
 @utility animate-confetti {
-  animation: hb-confetti 1400ms cubic-bezier(0.2, 0.6, 0.4, 1) both;
+  animation-name: hb-confetti;
+  animation-duration: 3s;
+  animation-fill-mode: both;
 }
 
 @media (prefers-reduced-motion: reduce) {

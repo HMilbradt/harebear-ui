@@ -17,6 +17,7 @@
 - Agent-first apps (assistant on every page, undoable actions): AppNav + Page/PageHeader/PageSection + AssistantProvider/AssistantDock + SectionedList + toastUndo + SettingsDialog/SettingsSection (FocusLayout for setup flows). A page's own AskBox answers inline with `reply` from useAssistant and stops with `pending` + `onStop={stop}`. To queue follow-ups while it works, pass `queue` (AskBox, PromptInput, AssistantDock); a superseded send's `signal.reason` is "superseded", a Stop's is "stop"; after either, that send's later output is dropped, so the new send shows the rest. If your messages draw their own in-progress state (a "thinking" line in the reply placeholder), pass `typingIndicator={false}` to AssistantDock (and AskBox) so only one indicator shows. Recipe: `npx harebear-ui docs "Agent-first apps"`.
 - Icons: lucide-react elements, e.g. `<SearchIcon />`. Icon-only buttons need aria-label.
 - Touch: Button, Toggle and Input already meet 44px under `pointer: coarse` (buttons via an invisible ::after, which overflow-hidden ancestors clip: there, size the button itself with pointer-coarse:size-11).
+- Motion: view transitions (`document.startViewTransition`, a router's `viewTransition` option) are styled by the library (300 ms, off under reduced motion). To move an element between pages, give it the same `view-transition-name` on both via `style` or `className`; write no `::view-transition` CSS.
 - Change the brand with `<ThemeProvider accent="#hex" radius={14}>` or `--brand` / `--radius` in CSS.
 
 ## Docs

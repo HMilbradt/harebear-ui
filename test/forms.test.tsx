@@ -285,7 +285,40 @@ describe("Celebration", () => {
     expect(document.querySelector("[data-slot=celebration]")).toBeNull()
     act(() => celebrate())
     expect(document.querySelectorAll("[data-slot=celebration]")).toHaveLength(1)
-    act(() => vi.advanceTimersByTime(2000))
+    act(() => vi.advanceTimersByTime(2500))
+    expect(document.querySelector("[data-slot=celebration]")).not.toBeNull()
+    act(() => vi.advanceTimersByTime(1300))
+    expect(document.querySelector("[data-slot=celebration]")).toBeNull()
+  })
+
+  it("times each piece at 2.5 to 3.5 s, staggered by up to 200 ms, in at least two shapes", () => {
+    vi.useFakeTimers()
+    render(<Celebration />)
+    act(() => celebrate())
+    const pieces = [...document.querySelectorAll<HTMLElement>("[data-slot=celebration] > *")]
+    expect(pieces.length).toBeGreaterThanOrEqual(30)
+    const ms = (v: string) => Number(v.replace("ms", ""))
+    const ends = pieces.map((p) => {
+      const duration = ms(p.style.animationDuration)
+      const delay = ms(p.style.animationDelay)
+      expect(duration).toBeGreaterThanOrEqual(2500)
+      expect(duration).toBeLessThanOrEqual(3500)
+      expect(delay).toBeGreaterThanOrEqual(0)
+      expect(delay).toBeLessThanOrEqual(200)
+      expect(p).toHaveClass("animate-confetti")
+      for (const v of ["--hb-x", "--hb-y", "--hb-drift", "--hb-sway", "--hb-r", "--hb-flip"]) {
+        expect(p.style.getPropertyValue(v)).not.toBe("")
+      }
+      // Bursts upward.
+      expect(p.style.getPropertyValue("--hb-y")).toMatch(/^max\(-\d+px, -42vh\)$/)
+      return delay + duration
+    })
+    const shapes = new Set(pieces.map((p) => p.className.replace(/bg-category-\d/, "")))
+    expect(shapes.size).toBeGreaterThanOrEqual(2)
+    // The layer leaves as soon as the last piece ends.
+    act(() => vi.advanceTimersByTime(Math.max(...ends) - 1))
+    expect(document.querySelector("[data-slot=celebration]")).not.toBeNull()
+    act(() => vi.advanceTimersByTime(1))
     expect(document.querySelector("[data-slot=celebration]")).toBeNull()
   })
 
