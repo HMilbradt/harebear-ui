@@ -174,7 +174,7 @@ describe("view transitions", () => {
     expect(group).toContain("animation-timing-function: cubic-bezier(0.2, 0, 0, 1)")
   })
 
-  it("fade the new page in over the old one instead of crossfading, without plus-lighter blending", () => {
+  it("draw a named element's new image over the old one, without plus-lighter blending", () => {
     expect(rule("::view-transition-old\\(\\*\\)")).toContain("animation: none")
     const incoming = rule("::view-transition-new\\(\\*\\)")
     expect(incoming).toMatch(/animation: hb-view-fade-in 300ms /)
@@ -183,12 +183,20 @@ describe("view transitions", () => {
     expect(frames).toMatch(/from \{\s*opacity: 0;\s*\}/)
   })
 
-  it("draw a morph element as one clipped box whose new image covers the old within 150 ms", () => {
+  it("fade the page through: the old page is gone before the new one starts to show", () => {
+    expect(rule("::view-transition-old\\(root\\)")).toMatch(/animation: hb-view-fade-out 100ms .* both/)
+    expect(rule("::view-transition-new\\(root\\)")).toMatch(/animation: hb-view-fade-in 250ms .* 100ms both/)
+    const frames = css.match(/@keyframes hb-view-fade-out \{([\s\S]*?)\n\}/)?.[1] ?? ""
+    expect(frames).toMatch(/to \{\s*opacity: 0;\s*\}/)
+  })
+
+  it("draw a morph element as one clipped box whose old image gives way to the new within 100 ms", () => {
     const group = rule("::view-transition-group\\(\\*\\.morph\\)")
     expect(group).toContain("overflow: clip")
     expect(group).toContain("border-radius: var(--radius)")
     const images = rule("::view-transition-old\\(\\*\\.morph\\),\\n  ::view-transition-new\\(\\*\\.morph\\)")
     for (const decl of ["height: 100%", "object-fit: none", "object-position: left top"]) expect(images).toContain(decl)
-    expect(rule("::view-transition-new\\(\\*\\.morph\\)")).toContain("animation-duration: 150ms")
+    expect(rule("::view-transition-old\\(\\*\\.morph\\)")).toMatch(/animation: hb-view-fade-out 100ms /)
+    expect(rule("::view-transition-new\\(\\*\\.morph\\)")).toMatch(/animation: hb-view-fade-in 100ms /)
   })
 })

@@ -204,9 +204,10 @@
     cursor: pointer;
   }
   /* View transitions (document.startViewTransition, a router's viewTransition option) use the library's motion. Apps
-     name the elements that should move with view-transition-name. The new page fades in over the old one (no
-     crossfade), so chrome both pages share, such as a tab bar, does not dim halfway. Named elements move over 400 ms
-     on a decelerating curve. */
+     name the elements that should move with view-transition-name. The page fades through: the old page fades out in
+     100 ms, then the new one fades in over 250 ms, so the two pages never show on top of each other. A named element
+     the new page draws over the old one, so chrome both pages share and name, such as a tab bar, stays steady. Named
+     elements move over 400 ms on a decelerating curve. */
   ::view-transition-group(*) {
     animation-duration: 400ms;
     animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
@@ -218,9 +219,15 @@
     animation: hb-view-fade-in 300ms cubic-bezier(0.2, 0, 0, 1) both;
     mix-blend-mode: normal;
   }
+  ::view-transition-old(root) {
+    animation: hb-view-fade-out 100ms cubic-bezier(0.3, 0, 1, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: hb-view-fade-in 250ms cubic-bezier(0.2, 0, 0, 1) 100ms both;
+  }
   /* view-transition-class: morph, for one element that changes shape (a box that grows into a composer): its group
-     clips to a rounded box, both images are drawn unscaled from the top left, and the new one covers the old within
-     150 ms, so one box grows with one placeholder showing. */
+     clips to a rounded box, both images are drawn unscaled from the top left, and the old one fades out as the new one
+     fades in, both within 100 ms, so one box grows with one placeholder showing. */
   ::view-transition-group(*.morph) {
     overflow: clip;
     border-radius: var(--radius); /* rounded-lg: @theme inline does not emit --radius-lg */
@@ -231,8 +238,11 @@
     object-fit: none;
     object-position: left top;
   }
+  ::view-transition-old(*.morph) {
+    animation: hb-view-fade-out 100ms linear both;
+  }
   ::view-transition-new(*.morph) {
-    animation-duration: 150ms;
+    animation: hb-view-fade-in 100ms linear both;
   }
   @media (prefers-reduced-motion: reduce) {
     ::view-transition-group(*),
@@ -246,6 +256,12 @@
 
 @keyframes hb-view-fade-in {
   from {
+    opacity: 0;
+  }
+}
+
+@keyframes hb-view-fade-out {
+  to {
     opacity: 0;
   }
 }
