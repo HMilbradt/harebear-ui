@@ -97,7 +97,7 @@ Step-by-step setup for **Vite**, **Next.js** and **React Router**, plus troubles
 
 <img src=".github/assets/light-dark.webp" alt="The same admin dashboard split diagonally between light and dark mode" />
 
-Light, dark and system modes, accent, radius and font are `ThemeProvider` props, changeable live with `useTheme()`. Every component reads shadcn-named tokens, so you can override any of them in CSS:
+Light, dark and system modes, accent, radius and font are `ThemeProvider` props. Mode, accent and radius can also change at runtime with `useTheme()`. Every component reads shadcn-named tokens, so you can override any of them in CSS:
 
 ```css
 @import "tailwindcss";
@@ -131,7 +131,7 @@ Agents look up one component at a time instead of reading the whole catalog:
 
 ```bash
 npx harebear-ui docs DataTable StatCard   # exports
-npx harebear-ui docs Prompt               # prefix: PromptInput, PromptInputChip, PromptInputSelect
+npx harebear-ui docs Prompt               # prefix: every export starting with Prompt
 npx harebear-ui docs Tokens               # a section
 ```
 
@@ -146,7 +146,7 @@ Prompts that work, and what to check before you accept an agent's UI: [Working w
 | Assistant     | `AssistantProvider`, `AssistantDock`, `AskBox`, `DictationButton`, `ActionReceipt`, `toastUndo`                                               |
 | AI and chat   | `ChatShell`, `ChatPanel`, `ChatMessage`, `PromptInput`, `ModelPicker`, `ToolGroup`, `ApprovalCard`, `CodeSnippet`, `Prose`                    |
 | Auth          | `AuthLayout`, `LoginForm`, `SignupForm`                                                                                                       |
-| Primitives    | The full shadcn/ui registry: `Button`, `Dialog`, `Select`, `Sidebar`, `Tabs`, `Command`, `Chart`, and the rest                                |
+| Primitives    | The full shadcn/ui registry: `Button`, `Dialog`, `Select`, `Sidebar`, `Tabs`, `Command`, `ChartContainer`, and the rest                       |
 
 The full list with props: [docs/COMPONENTS.md](docs/COMPONENTS.md).
 

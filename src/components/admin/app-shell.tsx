@@ -152,12 +152,14 @@ function AppShell({
         </div>
       }
     >
-      {header !== undefined && (
-        <header data-slot="app-header" className="flex flex-wrap items-center gap-3 px-4 pt-5 md:px-8">
-          <SidebarTrigger className="md:hidden" />
-          {header}
-        </header>
-      )}
+      {/* Without `header` the bar still renders on phones: it holds the only trigger for the sidebar sheet. */}
+      <header
+        data-slot="app-header"
+        className={cn("flex flex-wrap items-center gap-3 px-4 pt-5 md:px-8", header === undefined && "md:hidden")}
+      >
+        <SidebarTrigger className="md:hidden" />
+        {header}
+      </header>
       <div data-slot="app-content" className="flex min-w-0 flex-col gap-7 px-4 pt-7 pb-12 md:px-8">
         {children}
       </div>
