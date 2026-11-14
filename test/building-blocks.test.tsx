@@ -427,6 +427,17 @@ describe("AppShell", () => {
     )
     expect(screen.queryByRole("button", { name: "Collapse sidebar" })).not.toBeInTheDocument()
   })
+
+  it("keeps the phone sidebar trigger without a header", () => {
+    render(
+      <AppShell nav={[]}>
+        <p>page</p>
+      </AppShell>,
+    )
+    const bar = document.querySelector("[data-slot=app-header]")
+    expect(bar).toHaveClass("md:hidden")
+    expect(bar?.querySelector("[data-slot=sidebar-trigger]")).toBeInTheDocument()
+  })
 })
 
 describe("P1 props", () => {

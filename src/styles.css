@@ -345,7 +345,8 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-check-pop,
   .animate-confetti,
-  .animate-listening {
+  .animate-listening,
+  .animate-typing {
     animation: none;
   }
   /* tw-animate enter/exit on dialogs, menus, popovers and sheets (any variant prefix). Unlayered, so it wins. */

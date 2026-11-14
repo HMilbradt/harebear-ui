@@ -4,7 +4,7 @@
 
 ## Setup in an app
 
-1. `npm i harebear-ui` (peers: react, react-dom 19; tailwindcss 4).
+1. `npm i harebear-ui` (peers: react, react-dom 19; tailwindcss 4.1 or later).
 2. `npx harebear-ui init` wires the CSS import and agent docs, or do it by hand: in the main CSS file, `@import "tailwindcss";` then `@import "harebear-ui/styles.css";`.
 3. Wrap the app: `<ThemeProvider><TooltipProvider>{app}<Toaster /></TooltipProvider></ThemeProvider>`.
 4. Import everything from the root: `import { Button, Card, DataTable } from "harebear-ui"`.
@@ -13,7 +13,7 @@
 
 - Use harebear-ui components before writing new UI. Primitives keep shadcn/ui names and props.
 - Style with theme tokens only: bg-background, bg-card, bg-muted, text-muted-foreground, bg-primary, bg-primary-soft (text on it: text-primary-soft-foreground), text-success, text-warning, text-destructive, border-border, shadow-card, rounded-md/lg/xl. No hex colors or Tailwind palette colors.
-- Status is a tone: success | warning | danger | info | neutral. Members, lists and calendars use category-1..6 (bg-category-3, or `color={3}` on MemberAvatar, CategoryDot, ColorSwatchPicker), never status colors.
+- Status is a tone: success | warning | danger | info | neutral. Members, lists and calendars use category-1..6 (bg-category-3, or `color={3}` on MemberAvatar and CategoryDot; ColorSwatchPicker picks one with `value`), never status colors.
 - Agent-first apps (assistant on every page, undoable actions): AppNav + Page/PageHeader/PageSection + AssistantProvider/AssistantDock + SectionedList + toastUndo + SettingsDialog/SettingsSection (FocusLayout for setup flows). A page's own AskBox answers inline with `reply` from useAssistant and stops with `pending` + `onStop={stop}`. To queue follow-ups while it works, pass `queue` (AskBox, PromptInput, AssistantDock); a superseded send's `signal.reason` is "superseded", a Stop's is "stop"; after either, that send's later output is dropped, so the new send shows the rest. If your messages draw their own in-progress state (a "thinking" line in the reply placeholder), pass `typingIndicator={false}` to AssistantDock (and AskBox) so only one indicator shows. Recipe: `npx harebear-ui docs "Agent-first apps"`.
 - Icons: lucide-react elements, e.g. `<SearchIcon />`. Icon-only buttons need aria-label.
 - Touch: Button, Toggle and Input already meet 44px under `pointer: coarse` (buttons via an invisible ::after, which overflow-hidden ancestors clip: there, size the button itself with pointer-coarse:size-11).
@@ -28,7 +28,7 @@
 - [Theming](docs/guides/theming.md): ThemeProvider props, CSS token overrides, fonts, SSR.
 - [Working with AI agents](docs/guides/agents.md): what init installs, per-tool setup, prompts, review checklist.
 - [Agent skill](skills/harebear-ui/SKILL.md): Claude Code skill, installed by `npx harebear-ui init`.
-- [Example screens](https://github.com/hmilbradt/harebear-ui/tree/main/playground/screens): admin dashboard, AI chat, data table + detail panel, status home page, auth pages, component catalog.
+- [Example screens](https://github.com/hmilbradt/harebear-ui/tree/main/playground/screens): admin dashboard, AI chat, agent with approvals, data table + detail panel, status home page, household app with an assistant, settings, auth pages, component catalog.
 - [Source](https://github.com/hmilbradt/harebear-ui)
 
 ## Component index
@@ -36,7 +36,7 @@
 Theme: ThemeProvider, useTheme, ThemeToggle, ThemeScript
 Layout/admin: SidebarLayout, SidebarCollapseButton, AppShell, AppNav, FocusLayout, SettingsSection, SettingsRow, SettingsDialog, AppBrand, PageHeader, Page, PageSection, StatCard, SearchInput, StatusDot, StatusBadge, UsageMeter, ActivityFeed, Timeline, KeyValueGrid, UserChip, UserMenu, MemberAvatar, AvatarStack, VisibilityBadge, CategoryDot, ColorSwatchPicker, AvatarUpload, Callout, LinkTile, ConfirmDialog, PromptDialog, CopyField, DetailSheet
 Layout and text: Stack, Row, Grid, Text, Heading, Metric, MetricGroup, MediaItem, ShowMore, Collapse
-Data: TaskRow, SectionedList, AgendaRow, DayStrip, DataTable, createDataTableColumnHelper, TrendChart, TrendLegend, BarList, Sparkline, StatusBars
+Data: TaskRow, SectionedList, AgendaRow, DayStrip, DataTable, createDataTableColumnHelper, dataTableFeatures, TrendChart, TrendLegend, BarList, Sparkline, smoothPath, StatusBars
 Assistant layer: AssistantProvider, useAssistant, useAssistantPage, AssistantDock, AskBox, DictationButton, useDictation, browserSpeechSource, ActionReceipt
 AI/chat composites: ChatShell, ChatPanel, ChatThread, ChatMessage, AssistantAvatar, MessageActions, PromptInput, PromptInputChip, PromptInputSelect, ModelPicker, ConversationList, NewConversationButton, groupByDate, formatWhen, ToolCall, ToolGroup, ToolStep, ToolStatusIcon, ApprovalCard, ApprovalResult, TypingIndicator, CodeSnippet, InlineCode, Prose, ProseBlockquote, Markdown
 AI/chat primitives (shadcn): Message, Bubble, MessageScroller, Attachment, Trace, Marker, Questionnaire, CodeBlock
@@ -44,4 +44,4 @@ Auth: AuthLayout, AuthForm, LoginForm, SignupForm, NewPasswordForm, GitHubIcon, 
 Forms: PasswordInput, DateTimePicker, TimeZonePicker, MarkdownEditor, ChecklistEditor, CommentThread
 Feedback: Toaster, toast, toastUndo, CheckCircle, Celebration, celebrate
 Primitives (the full shadcn/ui registry): Accordion, Alert, AlertDialog, AspectRatio, Attachment, Avatar, Badge, Breadcrumb, Bubble, Button, ButtonGroup, Calendar, Card, Carousel, Chart, Checkbox, CodeBlock, Collapsible, Combobox, Command, ContextMenu, Dialog, DirectionProvider, Drawer, DropdownMenu, Empty, Field, HoverCard, Input, InputGroup, InputOTP, Item, Kbd, Label, Marker, Menubar, Message, MessageScroller, NativeSelect, NavigationMenu, Pagination, Popover, Progress, Questionnaire, RadioGroup, Resizable, ScrollArea, Select, Separator, Sheet, Sidebar, Skeleton, Slider, Spinner, Switch, Table, Tabs, Textarea, Toaster, Toggle, ToggleGroup, Tooltip, Trace
-Hooks/utils: categoryBg, cropImageToSquare, useCopyToClipboard, useHighlightedCode, useIsMobile, useMediaQuery, useSidebarOptional, cn
+Hooks/utils: categoryBg, cropImageToSquare, initials, highlightCode, loadHighlighter, useCopyToClipboard, useHighlightedCode, useIsMobile, useMediaQuery, useSidebarOptional, cn
