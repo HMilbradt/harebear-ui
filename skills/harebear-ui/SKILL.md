@@ -23,6 +23,7 @@ This project uses `harebear-ui` for all UI. Its theme, tokens, and components ar
 - Icons are lucide-react elements passed as nodes: `icon={<UsersIcon />}`. Icon-only buttons need `aria-label`.
 - Touch: `Button`, `Toggle` and `Input` already meet 44px under `pointer: coarse` (buttons via an invisible `::after`, which `overflow-hidden` ancestors clip: there, size the button itself with `pointer-coarse:size-11`); don't override their size.
 - Compose `className` with `cn()` from harebear-ui.
+- Motion between pages: use view transitions (`document.startViewTransition` or the router's `viewTransition` option); the library styles them. Give an element that moves the same `view-transition-name` on both pages via `style`; for one that changes shape (a box growing into a composer) add `viewTransitionClass: "morph"`. Write no `::view-transition` CSS.
 - Lay out pages as columns of `Card`s with `gap-5`, page sections with `gap-7`. Use `PageHeader` for page titles and `AppShell` for sidebar apps. Every shell (`AppShell`, `ChatShell`) is built on `SidebarLayout`, which gives the collapsible icon rail; use it directly for other sidebar layouts instead of the raw Sidebar primitives.
 - DataTable columns: define with `createDataTableColumnHelper<Row>()` at module scope, pass `getRowId`.
 - Chat apps: `ChatShell` (sidebar: `AppBrand`, `NewConversationButton`, `ConversationList` + `groupByDate`, `UserMenu`; optional `details` panel) around a `ChatPanel` (title, actions, `notice`, `composer`). Don't hand-build the sidebar, rail or panel.

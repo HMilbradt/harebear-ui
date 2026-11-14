@@ -165,9 +165,30 @@ describe("confetti keyframes (Celebration)", () => {
 })
 
 describe("view transitions", () => {
-  it("use the library's motion: 300 ms with the standard easing", () => {
-    const rule = css.match(/::view-transition-new\(\*\) \{([\s\S]*?)\}/)?.[1] ?? ""
-    expect(rule).toContain("animation-duration: 300ms")
-    expect(rule).toContain("animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1)")
+  // A whole rule in the base layer: the selector list starts after the previous rule or comment.
+  const rule = (selector: string) => css.match(new RegExp(`(?:\\}|\\*/)\\n  ${selector} \\{([\\s\\S]*?)\\}`))?.[1] ?? ""
+
+  it("move named elements over 400 ms on a decelerating curve", () => {
+    const group = rule("::view-transition-group\\(\\*\\)")
+    expect(group).toContain("animation-duration: 400ms")
+    expect(group).toContain("animation-timing-function: cubic-bezier(0.2, 0, 0, 1)")
+  })
+
+  it("fade the new page in over the old one instead of crossfading, without plus-lighter blending", () => {
+    expect(rule("::view-transition-old\\(\\*\\)")).toContain("animation: none")
+    const incoming = rule("::view-transition-new\\(\\*\\)")
+    expect(incoming).toMatch(/animation: hb-view-fade-in 300ms /)
+    expect(incoming).toContain("mix-blend-mode: normal")
+    const frames = css.match(/@keyframes hb-view-fade-in \{([\s\S]*?)\n\}/)?.[1] ?? ""
+    expect(frames).toMatch(/from \{\s*opacity: 0;\s*\}/)
+  })
+
+  it("draw a morph element as one clipped box whose new image covers the old within 150 ms", () => {
+    const group = rule("::view-transition-group\\(\\*\\.morph\\)")
+    expect(group).toContain("overflow: clip")
+    expect(group).toContain("border-radius: var(--radius)")
+    const images = rule("::view-transition-old\\(\\*\\.morph\\),\\n  ::view-transition-new\\(\\*\\.morph\\)")
+    for (const decl of ["height: 100%", "object-fit: none", "object-position: left top"]) expect(images).toContain(decl)
+    expect(rule("::view-transition-new\\(\\*\\.morph\\)")).toContain("animation-duration: 150ms")
   })
 })

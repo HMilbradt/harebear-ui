@@ -940,7 +940,12 @@ Put text on `bg-primary-soft` in `text-primary-soft-foreground`, not `text-prima
 
 Other theme values: `rounded-sm/md/lg/xl/2xl` scale from `--radius` (default 14px; cards use `xl`, buttons and inputs `md`), `shadow-card` (the one elevation), `font-sans` (Geist), `font-mono` (Geist Mono), `animate-typing`.
 
-Utilities: `focus-box` gives the box around a bare field the focus ring (primary border, card fill, 4px halo); pair it with `border border-transparent bg-muted`. `animate-check-pop` and `animate-listening` are the check and dictation animations. All motion is off under `prefers-reduced-motion`. View transitions (`document.startViewTransition`, or a router's `viewTransition` option) run at 300 ms with the library's easing and are off under reduced motion; the base styles set this, so apps write no `::view-transition` CSS. To move an element between two pages (e.g. a composer that slides from a page into a chat), give it the same `view-transition-name` on both, through `style` or `className`; everything else crossfades.
+Utilities: `focus-box` gives the box around a bare field the focus ring (primary border, card fill, 4px halo); pair it with `border border-transparent bg-muted`. `animate-check-pop` and `animate-listening` are the check and dictation animations. All motion is off under `prefers-reduced-motion`. View transitions (`document.startViewTransition`, or a router's `viewTransition` option) are styled by the base layer and are off under reduced motion, so apps write no `::view-transition` CSS. The new page fades in over the old one in 300 ms (no crossfade, so chrome both pages share, such as a tab bar, stays still), and named elements move over 400 ms on a decelerating curve. To move an element between two pages, give it the same `view-transition-name` on both, through `style` or `className`. For one element that changes shape (e.g. a box on a page that grows into a chat's composer), also set `viewTransitionClass: "morph"`: it moves as one clipped, rounded box, drawn unscaled from the top left, and the new look covers the old within 150 ms, so only one placeholder shows.
+
+```tsx
+<AskBox style={{ viewTransitionName: "composer", viewTransitionClass: "morph" }} />
+<PromptInput style={{ viewTransitionName: "composer", viewTransitionClass: "morph" }} />
+```
 
 Override any token in your CSS after the import:
 
