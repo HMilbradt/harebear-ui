@@ -75,6 +75,10 @@ const itemMediaVariants = cva(
         icon: "[&_svg:not([class*='size-'])]:size-4",
         image:
           "size-10 overflow-hidden rounded-sm group-data-[size=sm]/item:size-8 group-data-[size=xs]/item:size-6 [&_img]:size-full [&_img]:object-cover",
+        // harebear: a large square tile for an icon that marks the row's kind. 96px is the height of a row with a
+        // title, a two-line description and one line of badges, so the tile fills such a row. CSS can't size a
+        // flex child's width from its stretched height, hence the fixed size.
+        tile: "size-24 translate-y-0! self-center! rounded-lg bg-primary-soft text-primary-soft-foreground group-data-[size=sm]/item:size-16 group-data-[size=xs]/item:size-10 [&_svg:not([class*='size-'])]:size-8",
       },
     },
     defaultVariants: {

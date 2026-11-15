@@ -18,6 +18,10 @@ import {
   DropdownMenuItem,
   FocusLayout,
   Heading,
+  Item,
+  ItemContent,
+  ItemMedia,
+  ItemTitle,
   Page,
   PageHeader,
   PageSection,
@@ -1172,6 +1176,40 @@ describe("Settings and FocusLayout", () => {
     expect(button).toHaveAttribute("aria-expanded", "false")
     await user.click(button)
     expect(screen.getByRole("button", { name: "Cancel" })).toHaveAttribute("aria-expanded", "true")
+  })
+})
+
+describe("FocusLayout footer", () => {
+  it("renders the footer after the main column", () => {
+    render(
+      <FocusLayout title="About" footer={<p>Made by Harrison</p>}>
+        <p>Body</p>
+      </FocusLayout>,
+    )
+    const footer = screen.getByRole("contentinfo")
+    expect(footer).toHaveTextContent("Made by Harrison")
+    expect(screen.getByRole("main").nextElementSibling).toBe(footer)
+  })
+
+  it("renders no footer element without the prop", () => {
+    render(<FocusLayout title="About">Body</FocusLayout>)
+    expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument()
+  })
+})
+
+describe("ItemMedia tile", () => {
+  it("marks the tile variant", () => {
+    render(
+      <Item>
+        <ItemMedia variant="tile">
+          <svg aria-label="Library" />
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>harebear-ui</ItemTitle>
+        </ItemContent>
+      </Item>,
+    )
+    expect(screen.getByLabelText("Library").closest("[data-slot=item-media]")).toHaveAttribute("data-variant", "tile")
   })
 })
 
