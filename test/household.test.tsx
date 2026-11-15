@@ -1173,6 +1173,24 @@ describe("Settings and FocusLayout", () => {
   })
 })
 
+describe("FocusLayout footer", () => {
+  it("renders the footer after the main column", () => {
+    render(
+      <FocusLayout title="About" footer={<p>Made by Harrison</p>}>
+        <p>Body</p>
+      </FocusLayout>,
+    )
+    const footer = screen.getByRole("contentinfo")
+    expect(footer).toHaveTextContent("Made by Harrison")
+    expect(screen.getByRole("main").nextElementSibling).toBe(footer)
+  })
+
+  it("renders no footer element without the prop", () => {
+    render(<FocusLayout title="About">Body</FocusLayout>)
+    expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument()
+  })
+})
+
 describe("UserMenu compact", () => {
   it("shows only the avatar and still opens the full menu", async () => {
     const user = userEvent.setup()

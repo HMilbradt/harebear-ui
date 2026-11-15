@@ -453,7 +453,7 @@ On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger`
 
 ### `FocusLayout`
 
-A page outside the app frame (settings, onboarding, setup): slim sticky top bar, one centred column. Props: `title?`, `back?` (close or back link; icon-only needs `aria-label`), `actions?`, `width?` (`sm | md | lg`, default `md` = 42rem).
+A page outside the app frame (settings, onboarding, setup): slim sticky top bar, one centred column. Props: `title?`, `back?` (close or back link; icon-only needs `aria-label`), `actions?`, `width?` (`sm | md | lg`, default `md` = 42rem), `footer?` (a `<footer>` under the column, the same width; on short pages it sits at the bottom of the screen).
 
 ### `SettingsSection`, `SettingsRow`
 
