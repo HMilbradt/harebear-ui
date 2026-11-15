@@ -88,7 +88,7 @@ export function ChatScreen() {
       sidebarFooter={
         <UserChip
           name="Harrison M"
-          subtitle="Local · Ollama"
+          subtitle="Hosted · GPT-6.1 Sol"
           action={
             <Button variant="ghost" size="icon" aria-label="Settings">
               <SettingsIcon />
