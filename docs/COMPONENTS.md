@@ -637,7 +637,7 @@ A chat screen is `ChatShell` (sidebar with `AppBrand`, `NewConversationButton`, 
 
 ### `ChatShell`
 
-Full-height chat layout on `SidebarLayout`, so the sidebar collapses to an icon rail on desktop (logo, actions, expand button, avatar) and is a sheet on mobile. Props: `brand?`, `sidebarActions?` (stays in the rail), `sidebar?` (hidden in the rail), `sidebarFooter?`, `collapsible?`, `details?` (right panel: inline at 1280px and up, a sheet below; `ChatPanel` gets a toggle button), `detailsTitle?` (default "Details"), `defaultDetailsOpen?`, `storageKey?` (remember collapsed state in localStorage), `defaultOpen?`, `children` (a `ChatPanel`). Includes a `TooltipProvider`.
+Full-height chat layout on `SidebarLayout`, so the sidebar collapses to an icon rail on desktop (logo, actions, expand button, avatar) and is a sheet on mobile. Props: `brand?`, `sidebarActions?` (stays in the rail), `sidebar?` (hidden in the rail), `sidebarFooter?`, `collapsible?`, `details?` (right panel: inline at 1280px and up, where it slides open and closed, a sheet below; `ChatPanel` gets a toggle button), `detailsTitle?` (default "Details"), `defaultDetailsOpen?`, `storageKey?` (remember collapsed state in localStorage), `defaultOpen?`, `children` (a `ChatPanel`). Includes a `TooltipProvider`.
 
 ```tsx
 ;<ChatShell

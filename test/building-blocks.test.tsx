@@ -352,6 +352,30 @@ describe("ChatShell", () => {
     expect(await screen.findByText("Model: x")).toBeInTheDocument()
   })
 
+  it("keeps the details panel mounted on wide screens so it can slide closed and open", async () => {
+    const user = userEvent.setup()
+    const realMatchMedia = window.matchMedia
+    window.matchMedia = (query: string) => ({ ...realMatchMedia(query), matches: query === "(min-width: 1280px)" })
+    try {
+      render(
+        <ChatShell details={<p>Model: x</p>} detailsTitle="Conversation details">
+          <ChatPanel title="Hello" />
+        </ChatShell>,
+      )
+      const panel = screen.getByRole("complementary", { name: "Conversation details" })
+      expect(panel).toHaveAttribute("data-state", "open")
+      expect(panel).not.toHaveAttribute("inert")
+      await user.click(screen.getByRole("button", { name: "Toggle conversation details" }))
+      // Same node, now closed and out of reach of focus and assistive tech while it slides away.
+      expect(document.querySelector("[data-slot=chat-shell-details]")).toBe(panel)
+      expect(panel).toHaveAttribute("data-state", "closed")
+      expect(panel).toHaveAttribute("inert")
+      expect(panel).toHaveClass("w-0", "motion-reduce:transition-none")
+    } finally {
+      window.matchMedia = realMatchMedia
+    }
+  })
+
   it("keeps the same New conversation button through collapse, so its icon does not jump", async () => {
     const user = userEvent.setup()
     localStorage.removeItem("test-new-chat")

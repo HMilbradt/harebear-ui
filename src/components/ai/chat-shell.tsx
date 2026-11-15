@@ -97,13 +97,20 @@ function ChatShell({
       <ChatShellContext.Provider value={ctx}>
         <div data-slot="chat-shell" className="flex h-full min-h-0 gap-3 p-2 sm:p-3 md:pl-0">
           {children}
-          {hasDetails && wide && inline && (
+          {hasDetails && wide && (
+            // Stays mounted so it can slide: closed, it is 0 wide, faded, inert, and its negative margin cancels the gap.
+            // The inner column keeps its width so the cards don't reflow while it moves.
             <aside
               data-slot="chat-shell-details"
+              data-state={inline ? "open" : "closed"}
               aria-label={detailsTitle}
-              className="flex w-75 shrink-0 flex-col gap-3 overflow-y-auto"
+              inert={!inline}
+              className={cn(
+                "shrink-0 overflow-hidden transition-[width,margin,opacity] duration-200 ease-out motion-reduce:transition-none",
+                inline ? "w-75 opacity-100" : "-ml-3 w-0 opacity-0",
+              )}
             >
-              {details}
+              <div className="flex h-full w-75 flex-col gap-3 overflow-y-auto">{details}</div>
             </aside>
           )}
         </div>
