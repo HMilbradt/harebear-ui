@@ -18,6 +18,10 @@ import {
   DropdownMenuItem,
   FocusLayout,
   Heading,
+  Item,
+  ItemContent,
+  ItemMedia,
+  ItemTitle,
   Page,
   PageHeader,
   PageSection,
@@ -1188,6 +1192,22 @@ describe("FocusLayout footer", () => {
   it("renders no footer element without the prop", () => {
     render(<FocusLayout title="About">Body</FocusLayout>)
     expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument()
+  })
+})
+
+describe("ItemMedia tile", () => {
+  it("marks the tile variant", () => {
+    render(
+      <Item>
+        <ItemMedia variant="tile">
+          <svg aria-label="Library" />
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>harebear-ui</ItemTitle>
+        </ItemContent>
+      </Item>,
+    )
+    expect(screen.getByLabelText("Library").closest("[data-slot=item-media]")).toHaveAttribute("data-variant", "tile")
   })
 })
 
