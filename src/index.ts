@@ -565,7 +565,7 @@ export type {
   PromptInputSelectProps,
 } from "./components/ai/prompt-input"
 export { ToolGroup, ToolStep, ToolStatusIcon } from "./components/ai/tool-steps"
-export type { ToolStatus, ToolGroupProps, ToolStepProps } from "./components/ai/tool-steps"
+export type { ToolStatus, ToolGroupProps, ToolStepProps, ToolStepItem } from "./components/ai/tool-steps"
 
 // Auth
 export {

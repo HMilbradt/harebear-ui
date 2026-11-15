@@ -113,3 +113,90 @@ describe("page width", () => {
     expect(css).toMatch(/html body\[data-scroll-locked\]\s*{[^}]*margin-right:\s*0 !important/)
   })
 })
+
+describe("confetti keyframes (Celebration)", () => {
+  const frames = css.match(/@keyframes hb-confetti \{([\s\S]*?)\n\}/)?.[1] ?? ""
+  const stops = [...frames.matchAll(/^ {2}(\d+)% \{([\s\S]*?)^ {2}\}/gm)].map((m) => ({
+    at: Number(m[1]) / 100,
+    body: m[2] ?? "",
+  }))
+  // Share of the fall covered at each stop: (60vh - var(--hb-y)) * k.
+  const fall = stops
+    .map((s) => ({ at: s.at, k: Number(s.body.match(/\(60vh - var\(--hb-y\)\) \* ([\d.]+)/)?.[1] ?? Number.NaN) }))
+    .filter((s) => !Number.isNaN(s.k))
+
+  it("peaks within the first 35% and falls for at least twice as long as it rose", () => {
+    const peak = stops.find((s) => s.body.includes("translate(var(--hb-x), var(--hb-y))"))
+    expect(peak?.at).toBeLessThanOrEqual(0.35)
+    expect(1 - (peak?.at ?? 1)).toBeGreaterThanOrEqual(2 * (peak?.at ?? 1))
+    expect(fall[0]?.at).toBeGreaterThan(peak?.at ?? 1)
+  })
+
+  it("falls ever further, its speed levelling off, while it drifts, sways, spins and flutters", () => {
+    const speeds = fall.map((s, i) => {
+      const prev = fall[i - 1] ?? { at: 0.24, k: 0 }
+      return (s.k - prev.k) / (s.at - prev.at)
+    })
+    expect(speeds.every((v) => v > 0)).toBe(true)
+    const [a, b] = speeds.slice(-2) as [number, number]
+    expect(Math.abs(b - a) / a).toBeLessThan(0.15)
+    expect(speeds[0]).toBeLessThan(b / 2)
+    expect(fall.at(-1)?.k).toBe(1)
+    for (const v of ["--hb-drift", "--hb-sway", "--hb-r", "--hb-flip"]) expect(frames).toContain(`var(${v})`)
+    expect(frames).toContain("rotate3d(")
+  })
+
+  it("fades over the last quarter", () => {
+    expect(stops.find((s) => s.at === 0.75)?.body).toContain("opacity: 1;")
+    expect(stops.at(-1)?.body).toContain("opacity: 0;")
+  })
+
+  it("is off under reduced motion, as are view transitions", () => {
+    const reduce = [...css.matchAll(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n {0,2}\}/g)].map(
+      (m) => m[1] ?? "",
+    )
+    expect(reduce.some((r) => /\.animate-confetti[\s\S]*?animation: none/.test(r))).toBe(true)
+    expect(
+      reduce.some((r) =>
+        /::view-transition-group\(\*\)[\s\S]*?::view-transition-new\(\*\)[\s\S]*?animation: none/.test(r),
+      ),
+    ).toBe(true)
+  })
+})
+
+describe("view transitions", () => {
+  // A whole rule in the base layer: the selector list starts after the previous rule or comment.
+  const rule = (selector: string) => css.match(new RegExp(`(?:\\}|\\*/)\\n  ${selector} \\{([\\s\\S]*?)\\}`))?.[1] ?? ""
+
+  it("move named elements over 400 ms on a decelerating curve", () => {
+    const group = rule("::view-transition-group\\(\\*\\)")
+    expect(group).toContain("animation-duration: 400ms")
+    expect(group).toContain("animation-timing-function: cubic-bezier(0.2, 0, 0, 1)")
+  })
+
+  it("draw a named element's new image over the old one, without plus-lighter blending", () => {
+    expect(rule("::view-transition-old\\(\\*\\)")).toContain("animation: none")
+    const incoming = rule("::view-transition-new\\(\\*\\)")
+    expect(incoming).toMatch(/animation: hb-view-fade-in 300ms /)
+    expect(incoming).toContain("mix-blend-mode: normal")
+    const frames = css.match(/@keyframes hb-view-fade-in \{([\s\S]*?)\n\}/)?.[1] ?? ""
+    expect(frames).toMatch(/from \{\s*opacity: 0;\s*\}/)
+  })
+
+  it("fade the page through: the old page is gone before the new one starts to show", () => {
+    expect(rule("::view-transition-old\\(root\\)")).toMatch(/animation: hb-view-fade-out 100ms .* both/)
+    expect(rule("::view-transition-new\\(root\\)")).toMatch(/animation: hb-view-fade-in 250ms .* 100ms both/)
+    const frames = css.match(/@keyframes hb-view-fade-out \{([\s\S]*?)\n\}/)?.[1] ?? ""
+    expect(frames).toMatch(/to \{\s*opacity: 0;\s*\}/)
+  })
+
+  it("draw a morph element as one clipped box whose old image gives way to the new within 100 ms", () => {
+    const group = rule("::view-transition-group\\(\\*\\.morph\\)")
+    expect(group).toContain("overflow: clip")
+    expect(group).toContain("border-radius: var(--radius)")
+    const images = rule("::view-transition-old\\(\\*\\.morph\\),\\n  ::view-transition-new\\(\\*\\.morph\\)")
+    for (const decl of ["height: 100%", "object-fit: none", "object-position: left top"]) expect(images).toContain(decl)
+    expect(rule("::view-transition-old\\(\\*\\.morph\\)")).toMatch(/animation: hb-view-fade-out 100ms /)
+    expect(rule("::view-transition-new\\(\\*\\.morph\\)")).toMatch(/animation: hb-view-fade-in 100ms /)
+  })
+})

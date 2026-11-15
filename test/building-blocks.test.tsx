@@ -223,6 +223,10 @@ function ToolHarness() {
   )
 }
 
+function RouterLink({ href, ...rest }: { href: string }) {
+  return <a href={href} data-router-link="" {...rest} />
+}
+
 describe("ToolStep", () => {
   it("opens while running and keeps the user's choice after a toggle", async () => {
     const user = userEvent.setup()
@@ -235,6 +239,48 @@ describe("ToolStep", () => {
     await user.click(screen.getByRole("button", { name: /uptime/ }))
     await user.click(screen.getByRole("button", { name: "finish" }))
     expect(screen.getByText("up 3 days")).toBeInTheDocument()
+  })
+
+  it("lists items as links, buttons or names, five at first, and keeps them after its group reopens", async () => {
+    const user = userEvent.setup()
+    const onSelect = vi.fn()
+    const items = [
+      { id: "l1", label: "Groceries", href: "/lists/1" },
+      { id: "t1", label: "Book the furnace service", onSelect },
+      { id: "e1", label: "Dentist" },
+      ...["a", "b", "c", "d", "e"].map((id) => ({ id, label: `Task ${id}` })),
+    ]
+    render(
+      <ToolGroup title="What I did" status="done" autoOpen>
+        <ToolStep kind="Looked at to-dos" detail="" status="done" items={items} linkComponent={RouterLink} />
+      </ToolGroup>,
+    )
+    const link = screen.getByRole("link", { name: "Groceries" })
+    expect(link).toHaveAttribute("href", "/lists/1")
+    expect(link).toHaveAttribute("data-router-link")
+    await user.click(screen.getByRole("button", { name: "Book the furnace service" }))
+    expect(onSelect).toHaveBeenCalledOnce()
+    expect(screen.getByText("Dentist").closest("a, button")).toBeNull()
+    expect(screen.queryByText("Task c")).not.toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Show 3 more" }))
+    expect(screen.getByText("Task e")).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /Show \d+ more/ })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: /What I did/ }))
+    expect(screen.queryByRole("link", { name: "Groceries" })).not.toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: /What I did/ }))
+    await user.tab()
+    expect(screen.getByRole("link", { name: "Groceries" })).toHaveFocus()
+    await user.tab()
+    expect(screen.getByRole("button", { name: "Book the furnace service" })).toHaveFocus()
+  })
+
+  it("lists items under an expandable step without opening its output", () => {
+    render(
+      <ToolStep kind="Read" detail="todo.md" status="done" output="file body" items={[{ id: "d", label: "Plan" }]} />,
+    )
+    expect(screen.getByText("Plan")).toBeInTheDocument()
+    expect(screen.queryByText("file body")).not.toBeInTheDocument()
   })
 })
 
@@ -380,6 +426,17 @@ describe("AppShell", () => {
       </AppShell>,
     )
     expect(screen.queryByRole("button", { name: "Collapse sidebar" })).not.toBeInTheDocument()
+  })
+
+  it("keeps the phone sidebar trigger without a header", () => {
+    render(
+      <AppShell nav={[]}>
+        <p>page</p>
+      </AppShell>,
+    )
+    const bar = document.querySelector("[data-slot=app-header]")
+    expect(bar).toHaveClass("md:hidden")
+    expect(bar?.querySelector("[data-slot=sidebar-trigger]")).toBeInTheDocument()
   })
 })
 

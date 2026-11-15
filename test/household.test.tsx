@@ -1103,6 +1103,8 @@ describe("AppNav", () => {
     const tabs = container.querySelector<HTMLElement>("[data-slot=app-nav-tabs]")!
     expect(within(sidebar).queryByRole("link", { name: "Lists" })).not.toBeInTheDocument()
     expect(within(tabs).getByRole("link", { name: "Lists" })).toHaveAttribute("href", "/lists")
+    // Named so view transitions draw the tab bar steady (L-50). jsdom renders the phone layout, so the desktop sidebar is not here.
+    expect(tabs.getAttribute("style")).toContain("view-transition-name: hb-tab-bar")
     const buttons = screen.getAllByRole("button", { name: "New chat" })
     expect(buttons).toHaveLength(1)
     expect(buttons[0]).toHaveAttribute("data-slot", "app-nav-fab")

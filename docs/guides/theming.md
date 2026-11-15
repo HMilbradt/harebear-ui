@@ -30,12 +30,12 @@ In dark mode `primary` is the accent mixed 26% toward white, so one accent reads
 import { useTheme } from "harebear-ui"
 
 function AccentPicker() {
-  const { accent, setAccent, radius, setRadius, mode, setMode } = useTheme()
+  const { accent, setAccent, radius, setRadius, toggleMode } = useTheme()
   return (
     <>
       <input type="color" value={accent ?? "#2f5bd3"} onChange={(e) => setAccent(e.target.value)} />
       <input type="range" min={0} max={24} value={radius ?? 14} onChange={(e) => setRadius(Number(e.target.value))} />
-      <button type="button" onClick={() => setMode(mode === "dark" ? "light" : "dark")}>
+      <button type="button" onClick={toggleMode}>
         Toggle mode
       </button>
     </>
@@ -64,7 +64,7 @@ Override tokens after the import. `:root` is light mode, `.dark` is dark mode:
 }
 ```
 
-Use CSS rather than props when the first paint must be right (SSR apps): `ThemeProvider` applies `accent` and `radius` in an effect, after hydration.
+Use CSS rather than props when the first paint must be right (SSR apps): `ThemeProvider` applies `accent`, `radius` and `font` in an effect, after hydration. For light or dark mode on first paint, render `ThemeScript` (see [Getting started](getting-started.md)).
 
 The full token list, with what each is for, is in the [component catalog](../COMPONENTS.md#tokens) (`npx harebear-ui docs Tokens`). The ones you will use most:
 

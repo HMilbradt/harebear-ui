@@ -1,6 +1,6 @@
 # Roadmap: components for household and agent-first apps
 
-Status: the "Build first" list shipped in 0.8.0 (2026-11-11). Everything else is still proposed. Built items name their exports; see `docs/COMPONENTS.md` and the "Agent-first apps" recipe there.
+Status: the "Build first" list shipped in 0.8.0 (2026-11-11). Items marked "(built)" in the tables below have shipped too; everything else is proposed. Built items name their exports; see `docs/COMPONENTS.md` and the "Agent-first apps" recipe there.
 
 These come from designing Homeclub, a household app with shared to-dos, calendars, docs and an assistant (HomeBot) on every page. The design and its notes live in the `HMilbradt/homeclub` repository (`design/`, `docs/missing-components.md`, `docs/research/`). Everything below was drawn there as plain markup with harebear-ui tokens. The aim is that the next app like it needs none of that markup: the library covers the common cases.
 
@@ -10,7 +10,7 @@ Judged against harebear-ui 0.7.0 (`src/components/`). Props of existing componen
 
 These already exist and the Homeclub designs map onto them; new work should extend them, not fork them.
 
-SidebarLayout, AppShell, UserMenu, ChatShell, ChatMessage, PromptInput, ConversationList, ToolSteps, TypingIndicator, ApprovalCard, Sheet, Drawer, Dialog, Popover, Sonner (Toaster), ToggleGroup, Tabs, Calendar, Empty, Avatar, Badge, Status, LinkTile, CopyField, Prose, AuthLayout.
+SidebarLayout, AppShell, UserMenu, ChatShell, ChatMessage, PromptInput, ConversationList, ToolSteps (ToolGroup, ToolStep), TypingIndicator, ApprovalCard, Sheet, Drawer, Dialog, Popover, Sonner (Toaster), ToggleGroup, Tabs, Calendar, Empty, Avatar, Badge, Status (StatusDot, StatusBadge), LinkTile, CopyField, Prose, AuthLayout.
 
 ## Build first
 
@@ -87,7 +87,7 @@ Calendar views and SmartInput follow when a second app needs them.
 | :-------------------- | :----------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `toastUndo()` (built) | Standard wrapper around Sonner: action label, Undo, 9 second window, pause on hover, stacking and entry animation. | Sonner is already the toast layer. Check its current API before building.                                                                             |
 | Motion helpers        | Check pop, collapse without layout shift, an optimistic list hook (`useOptimisticList`).                           | Built as CSS with no new dependency: `animate-check-pop`, `Collapse`. `useOptimisticList` is still proposed (React 19 `useOptimistic` may be enough). |
-| Celebration (built)   | Occasional confetti when a day is cleared. Off under reduced motion.                                               | Built as CSS with no new dependency: `Celebration` + `celebrate()`.                                                                                   |
+| Celebration (built)   | Occasional confetti when a day is cleared. Off under reduced motion.                                               | Built as CSS with no new dependency: `Celebration` + `celebrate()`. Redrawn in 0.14.0: slower, drifting, fluttering fall (2.5 to 3.5 s per piece).    |
 
 ## 6. Foundations (`src/styles.css`)
 

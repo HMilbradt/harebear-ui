@@ -191,7 +191,18 @@ export function AgentScreen() {
             meta="3 lines"
             output={df}
           />
-          <ToolStep icon={<FileTextIcon />} kind="Read" detail="docs/vms/services.md" status="done" meta="120 lines" />
+          <ToolStep
+            icon={<FileTextIcon />}
+            kind="Read"
+            detail="docs/vms/services.md"
+            status="done"
+            meta="120 lines"
+            items={[
+              { id: "services", label: "Services VM", href: "#agent" },
+              { id: "immich", label: "Immich", href: "#agent" },
+              { id: "backups", label: "Nightly backups" },
+            ]}
+          />
           <ToolStep
             icon={<TerminalIcon />}
             kind="Run"

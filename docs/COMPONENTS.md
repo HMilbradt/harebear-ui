@@ -6,7 +6,7 @@ Every export, what it is for, and the props that matter. All components import f
 import { Button, Card, DataTable, ChatMessage } from "harebear-ui"
 ```
 
-Full working screens that combine these live in the repo under `playground/screens/` (admin dashboard, AI chat, data table with detail panel, status home page). Copy from them.
+Full working screens that combine these (an admin dashboard, an AI chat, a household app, settings, sign-in and more) live in the repo under `playground/screens/`. Copy from them.
 
 ## Rules of thumb
 
@@ -163,7 +163,7 @@ Props: `brand?`, `sidebarActions?`, `sidebar?` (body), `sidebarFooter?`, `collap
 
 Admin layout on `SidebarLayout`: nav sidebar that collapses to an icon rail (nav items show their label as a tooltip there; badges and `sidebarExtra` hide) plus a main column with a top bar.
 
-Props: `brand` (node, usually `AppBrand`), `sidebarActions?`, `nav: AppNavSection[]`, `sidebarExtra` (node under the nav), `sidebarFooter` (node, usually `UserMenu`), `header` (top bar content), `linkComponent` (e.g. Next.js `Link`; default `"a"`), `collapsible?` (default `"icon"`), `storageKey?`, `defaultOpen`, `children` (page content, laid out in a column with 28px gaps).
+Props (all optional): `brand?` (node, usually `AppBrand`), `sidebarActions?`, `nav?: AppNavSection[]`, `sidebarExtra?` (node under the nav), `sidebarFooter?` (node, usually `UserMenu`), `header?` (top bar content; without it the top bar shows only on phones, holding the `SidebarTrigger`), `linkComponent?` (e.g. Next.js `Link`; default `"a"`), `collapsible?` (default `"icon"`), `storageKey?`, `defaultOpen?`, `className?` (main column), `children` (page content, laid out in a column with 28px gaps).
 
 `AppNavSection = { label?: string; items: AppNavItem[] }`
 `AppNavItem = { label: string; icon?: ReactNode; href?: string; onSelect?: () => void; active?: boolean; badge?: ReactNode }`
@@ -399,7 +399,7 @@ Quiet note with an icon (sparkle by default). Props: `icon?`, `tone?` (`"muted" 
 
 ### `Celebration`, `celebrate`
 
-An occasional confetti burst, e.g. when the member ticks the last to-do of the day. It only plays when you call `celebrate()`: `CheckCircle`, `TaskRow` and `SectionedList` never fire it (a ticked check has its own small pop). Mount `<Celebration />` once near the root (like `Toaster`), then call `celebrate()` from anywhere. CSS only, about 1.5 s, renders nothing between bursts (`data-slot="celebration"` while it plays), and does nothing under `prefers-reduced-motion`. Keep it rare.
+An occasional confetti burst, e.g. when the member ticks the last to-do of the day. It only plays when you call `celebrate()`: `CheckCircle`, `TaskRow` and `SectionedList` never fire it (a ticked check has its own small pop). Mount `<Celebration />` once near the root (like `Toaster`), then call `celebrate()` from anywhere. Strips and squares in the category colours burst up from the middle of the screen, slow to a peak, then drift down slowly, swaying and fluttering, and fade out. CSS only, each piece 2.5 to 3.5 s (the layer is gone by 3.8 s), renders nothing between bursts (`data-slot="celebration"` while it plays), and does nothing under `prefers-reduced-motion`. Keep it rare.
 
 ### `LinkTile`
 
@@ -440,7 +440,7 @@ Comments on a record, oldest first, then a box and a submit button (disabled whi
 
 One nav config, two renderings: on desktop a `SidebarLayout` sidebar (brand, action button, places, one collapsible group, footer; active place is a raised card; collapses to the icon rail), under 768px a bottom tab bar (first 5 places, 56px targets, `aria-current="page"`) plus a round floating action button. Use it instead of `AppShell` for consumer apps that need phone navigation.
 
-Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar, `sidebar?: false` for a tab-bar-only place such as Lists when the sidebar has a Lists group), `group?: AppNavGroup` (`label`, `href?` (heading becomes a link, e.g. to all lists; the chevron is a separate "Collapse Lists" button), `active?` (the heading link is the current page), `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect; sidebar?: false }` (`sidebar: false` keeps only the round phone button), `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?`, `fill?` (main column is exactly the screen height minus the tab bar (and the round action button's space when `action` is set) and does not scroll, for a chat: the child takes it with `flex-1 min-h-0`, which `ChatPanel` already has), `children`.
+Props: `places: AppNavPlace[]` (`label`, `icon?`, `href?` or `onSelect?`, `active?`, `count?`, `tab?: false` to keep out of the tab bar, `sidebar?: false` for a tab-bar-only place such as Lists when the sidebar has a Lists group), `group?: AppNavGroup` (`label`, `href?` (heading becomes a link, e.g. to all lists; the chevron is a separate "Collapse Lists" button), `active?` (the heading link is the current page), `items`, `defaultOpen?`, `onAdd?`, `addLabel?`), `action?: { label; icon; onSelect; sidebar?: false }` (`sidebar: false` keeps only the round phone button), `brand?`, `footer?` (usually `UserMenu`), `label?` (nav name, default "Main"), `linkComponent?`, `collapsible?`, `storageKey?`, `defaultOpen?`, `width?` (default `"15.75rem"`), `className?` (main column), `fill?` (main column is exactly the screen height minus the tab bar (and the round action button's space when `action` is set) and does not scroll, for a chat: the child takes it with `flex-1 min-h-0`, which `ChatPanel` already has), `children`.
 On phones the group and footer live in the sidebar sheet: put a `SidebarTrigger` in the page header if users need them there. With `action`, the main column's bottom padding also clears the round button, so a trailing control on the last row is not under it. Render `AssistantDock` inside `children` so it clears the tab bar. Toasts stack above the tab bar, the action button and the dock launcher on their own; no `Toaster` offset needed.
 
 ```tsx
@@ -518,7 +518,7 @@ Props instead of class names, for blocks that should look right without styling 
 
 ### `Metric`, `MetricGroup`
 
-A number with `value`, `unit`, `label` and an optional `delta` in percent, green when it improves (`lowerIsBetter` for latency and the like). `MetricGroup` sets metrics side by side, evenly spaced.
+A number with `value`, `unit`, `label` and an optional `delta` in percent, green when it improves (`lowerIsBetter` for latency and the like). `align?` is `center` (default) or `start`. `MetricGroup` sets metrics side by side, evenly spaced.
 
 ### `MediaItem`
 
@@ -526,7 +526,7 @@ Thumbnail (`image`, `imageShape`: `poster | square | wide`), a two-line `title` 
 
 ### `ShowMore`
 
-Shows the first `initial` children (default 5) and a "Show N more" button for the rest.
+Shows the first `initial` children (default 5) and a "Show N more" button for the rest. `gap?` takes the `Stack` names (default `md`).
 
 ### `Collapse`
 
@@ -723,7 +723,7 @@ Pill showing the active model with a status dot, opening a menu. Props: `models:
 
 ### `ConversationList`
 
-Grouped thread list. Props: `groups: { label; items: Conversation[] }[]`, `activeId?`, `onSelect?(id)`, `onDelete?(conversation)` (adds a delete button per row that confirms first; `deleteDescription?` is the confirmation body), `renderAction?(conversation)` (any other trailing control, e.g. a "…" `DropdownMenu`; wins over `onDelete`; on desktop it shows on hover, keyboard focus, or while its menu is open), `empty?`. A row (`data-slot="conversation-item"`) has `data-state="open"` and keeps its hover highlight while a menu or popover opened from its action is open (any descendant with `aria-expanded="true"`).
+Grouped thread list. Props: `groups: { label; items: Conversation[] }[]`, `activeId?`, `onSelect?(id)`, `onDelete?(conversation)` (adds a delete button per row that confirms first; `deleteDescription?` is the confirmation body), `renderAction?(conversation)` (any other trailing control, e.g. a "…" `DropdownMenu`; wins over `onDelete`), `empty?` (default "No conversations yet"). On devices that can hover, the row's action (the delete button or `renderAction`) shows on hover, keyboard focus, or while its menu is open; on touch screens it is always shown. A row (`data-slot="conversation-item"`) has `data-state="open"` and keeps its hover highlight while a menu or popover opened from its action is open (any descendant with `aria-expanded="true"`) or its delete confirmation is open.
 `Conversation = { id; title; description?; tone?; pulse?; deleteDisabled? }`: `description` is the second line (time, or a live state with a `tone` dot); `deleteDisabled` blocks delete for that row (a string is the reason, shown as the tooltip).
 Inside a `Sidebar` it closes the mobile sheet on select and hides in the icon rail.
 `groupByDate(items, getDate, toConversation, options?)` buckets items into Today / Yesterday / Previous 7 days / Earlier, newest first. `options` is `{ now?, buckets? }` (or just `now`); `buckets: "week"` gives Today / This week (the 6 days before today) / Earlier.
@@ -746,11 +746,27 @@ Three pulsing dots. Props: `label?` (text after the dots, e.g. "Working"), `vari
 Agent tool calls as a bordered, collapsible card. Titles, labels and details wrap instead of cutting off. `ToolStatus = "queued" | "waiting" | "running" | "done" | "error" | "stopped"`.
 `ToolGroup` props: `title`, `status`, `meta?` (e.g. time), `autoOpen?` (default open while active, until the user toggles), `open?`/`onOpenChange?`.
 `ToolStep` props: `icon?`, `kind` (verb column; with an empty `detail` it is the whole label, for plain-language steps such as "Added milk"), `detail` (monospace command or path, or `""`), `status`, `meta?` (default from status), `output?` (monospace, shown when expanded; omit for a fixed row), `autoOpen?` (default open while running).
+`ToolStep` also takes `items?: ToolStepItem[]` (`{ id, label, href?, onSelect? }`): what the step acted on, listed under its row whether or not it is expanded, e.g. the to-dos it read or the list it changed. An item with `href` renders through `linkComponent?` (default `a`, e.g. your router's `Link`, which gets `href`), one with `onSelect` as a link-styled button (e.g. to open a record's sheet), others as plain text. The first 5 show; a "Show N more" button shows the rest.
 `ToolStatusIcon`: spinner while running, else a toned dot. Lighter alternative: `Trace`.
 
 ```tsx
 ;<ToolGroup title="Ran 2 commands on services" status="done" meta="9:42">
   <ToolStep icon={<TerminalIcon />} kind="Run" detail="docker ps" status="done" meta="12 lines" output={out} />
+</ToolGroup>
+;<ToolGroup title="What I did" status="done">
+  <ToolStep
+    kind="Added a to-do"
+    detail=""
+    status="done"
+    items={[{ id: "t1", label: "Book the furnace service", onSelect: () => openTask("t1") }]}
+  />
+  <ToolStep
+    kind="Looked at lists"
+    detail=""
+    status="done"
+    items={[{ id: "2", label: "Groceries", href: "/lists/2" }]}
+    linkComponent={Link}
+  />
 </ToolGroup>
 ```
 
@@ -769,7 +785,7 @@ The assistant as a floating panel over the page (never reflows it): header (icon
 
 ### `AskBox`
 
-Large rounded composer: auto-growing text, `chips` shown while there is text, suggestion pills, `DictationButton`. The focus ring is on the box (`focus-box`). Props: `value`, `onValueChange`, `onSubmit(text)`, `placeholder?` (also the label, default "Ask anything"), `chips?`, `suggestions?`, `onSuggestion?` (default submits), `dictation?` (`SpeechSource`, or `false` to hide the mic), `lang?`, `disabled?`, `pending?` (blocks sending; with `onStop?` the send button becomes Stop), `queue?` (sending works while `pending`, with send beside Stop, so the app can queue a follow-up), `reply?` (the answer under the box; passing it, even `null`, shows "Working" while `pending`), `typingIndicator?` (default true; `false` skips that "Working" line when your `reply` draws its own in-progress state), `chatHref?` (an "Open chat" link under the reply).
+Large rounded composer: auto-growing text, `chips` shown while there is text, suggestion pills, `DictationButton`. The focus ring is on the box (`focus-box`). Props: `value`, `onValueChange`, `onSubmit(text)`, `placeholder?` (also the label, default "Ask anything"), `chips?`, `suggestions?`, `onSuggestion?` (default submits), `dictation?` (`SpeechSource`, or `false` to hide the mic), `lang?`, `disabled?`, `autoFocus?`, `pending?` (blocks sending; with `onStop?` the send button becomes Stop), `queue?` (sending works while `pending`, with send beside Stop, so the app can queue a follow-up), `reply?` (the answer under the box; passing it, even `null`, shows "Working" while `pending`), `typingIndicator?` (default true; `false` skips that "Working" line when your `reply` draws its own in-progress state), `chatHref?` (an "Open chat" link under the reply).
 
 ```tsx
 // Inline answer under the box (no dock), e.g. a Today page
@@ -790,7 +806,7 @@ const { send, pending, stop, reply } = useAssistant()
 
 ### `DictationButton`, `useDictation`, `browserSpeechSource`
 
-`DictationButton`: one round button that is a mic when the text is empty, stop with listening bars while listening (announces "Listening" politely), send once there is text. Props: `value`, `onTranscript(text)`, `onSend?` (else it submits the form), `source?`, `lang?`, `disabled?`. Without a supported source the mic is hidden.
+`DictationButton`: one round button that is a mic when the text is empty, stop with listening bars while listening (announces "Listening" politely), send once there is text. Props: `value`, `onTranscript(text)`, `onSend?` (else it submits the form), `sendLabel?` (default "Send message"), `source?`, `lang?`, `disabled?`. Without a supported source the mic is hidden.
 `SpeechSource` is `{ isSupported(); start(handlers, { lang }) => stop }`; `browserSpeechSource` (default) uses the Web Speech API. `useDictation({ source?, lang?, onTranscript })` returns `{ supported, listening, interim, error, start, stop }` for custom controls.
 
 ### `ActionReceipt`
@@ -799,7 +815,7 @@ What the assistant did, as a compact card: round check, `title` (past tense), `m
 
 ### `CodeSnippet`, `InlineCode`, `Prose`, `ProseBlockquote`
 
-`CodeSnippet`: one-prop code panel with language label, copy button and shiki syntax highlighting (each language loads on first use). Props: `code`, `language?` (`bash`, `tsx`, `ts`, `js`, `json`, `python`, `sql`, `yaml`, `css`, `html`, `markdown`, `diff`; others render plain), `highlight?` (default true), `lineNumbers?`, `hideCopy?`. Built on the `CodeBlock` primitives; drop to those for diffs or highlighted lines.
+`CodeSnippet`: one-prop code panel with language label, copy button and shiki syntax highlighting (each language loads on first use). Props: `code`, `language?` (`bash`, `tsx`, `ts`, `jsx`, `js`, `json`, `python`, `sql`, `yaml`, `css`, `html`, `markdown`, `diff`; others render plain), `highlight?` (default true), `lineNumbers?`, `hideCopy?`. Built on the `CodeBlock` primitives; drop to those for diffs or highlighted lines.
 `InlineCode`: monospace span. `truncate?: number` cuts longer string children with an ellipsis and puts the full text in the tooltip.
 `Prose`: typography for model output and markdown. Styles plain `p, ul, ol, li, strong, a, code, pre, h1-h4, blockquote, table` children.
 Tip boxes: a blockquote whose first word is `Tip:` (`> Tip: Turn the power off first.`) renders as a `Callout` without the word. Prose does this for plain `<blockquote>` children; with your own react-markdown pass `components={{ blockquote: ProseBlockquote }}`.
@@ -924,7 +940,12 @@ Put text on `bg-primary-soft` in `text-primary-soft-foreground`, not `text-prima
 
 Other theme values: `rounded-sm/md/lg/xl/2xl` scale from `--radius` (default 14px; cards use `xl`, buttons and inputs `md`), `shadow-card` (the one elevation), `font-sans` (Geist), `font-mono` (Geist Mono), `animate-typing`.
 
-Utilities: `focus-box` gives the box around a bare field the focus ring (primary border, card fill, 4px halo); pair it with `border border-transparent bg-muted`. `animate-check-pop` and `animate-listening` are the check and dictation animations. All motion is off under `prefers-reduced-motion`.
+Utilities: `focus-box` gives the box around a bare field the focus ring (primary border, card fill, 4px halo); pair it with `border border-transparent bg-muted`. `animate-check-pop` and `animate-listening` are the check and dictation animations. All motion is off under `prefers-reduced-motion`. View transitions (`document.startViewTransition`, or a router's `viewTransition` option) are styled by the base layer and are off under reduced motion, so apps write no `::view-transition` CSS. The page fades through: the old page fades out in 100 ms, then the new one fades in over 250 ms, so the two pages never show on top of each other. `SidebarLayout`'s sidebar and `AppNav`'s phone tab bar are named (`hb-sidebar`, `hb-tab-bar`) so they stay steady; give other chrome both pages share the same `view-transition-name` on both for the same effect. Named elements move over 400 ms on a decelerating curve. To move an element between two pages, give it the same `view-transition-name` on both, through `style` or `className`. For one element that changes shape (e.g. a box on a page that grows into a chat's composer), also set `viewTransitionClass: "morph"`: it moves as one clipped, rounded box, drawn unscaled from the top left, and the old look gives way to the new within 100 ms, so only one placeholder shows.
+
+```tsx
+<AskBox style={{ viewTransitionName: "composer", viewTransitionClass: "morph" }} />
+<PromptInput style={{ viewTransitionName: "composer", viewTransitionClass: "morph" }} />
+```
 
 Override any token in your CSS after the import:
 

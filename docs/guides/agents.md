@@ -20,7 +20,7 @@ harebear-ui is built to be used by coding agents (Claude Code, Codex, Cursor, Co
 npx harebear-ui init
 ```
 
-This writes two things your agent reads automatically:
+Besides adding `@import "harebear-ui/styles.css";` to your Tailwind entry CSS file, this writes two things your agent reads automatically:
 
 1. **A harebear-ui section in `AGENTS.md`** (or in `CLAUDE.md` if that file exists and `AGENTS.md` does not). It points at the catalog and states the rules: import from the package root, tokens only, check light and dark mode and phone width. The section sits between `<!-- harebear-ui:start -->` and `<!-- harebear-ui:end -->` markers, and running `init` again after an upgrade replaces it in place.
 2. **A Claude Code skill** at `.claude/skills/harebear-ui/SKILL.md`. Claude Code loads it on UI tasks; it adds the composition rules (which composite to use for which screen) and the visual checks.
@@ -58,18 +58,18 @@ The instructions already cover style rules, so prompts can stay about the produc
 - "Make a chat UI for our support bot with a conversation list, tool calls shown as ToolSteps and approval prompts for refunds."
 - "Start from the admin reference screen and adapt it to our metrics endpoint."
 
-Pointing at a reference screen is the fastest way to a good result. The playground has six, built only from public exports: [`playground/screens/`](https://github.com/HMilbradt/harebear-ui/tree/main/playground/screens) (admin dashboard, AI chat, agent with approvals, records table with detail panel, status home, auth).
+Pointing at a reference screen is the fastest way to a good result. The playground's reference screens are built only from public exports, one file each in [`playground/screens/`](https://github.com/HMilbradt/harebear-ui/tree/main/playground/screens): admin dashboard, AI chat, agent with approvals, records table with detail panel, status home, household app with an assistant, settings, and auth.
 
 ## Review what the agent built
 
 Things to check before you accept a UI change:
 
 - **Both modes.** Toggle light and dark. Anything that only works in one used a palette color instead of a token.
-- **Phone width.** At 375px rows wrap, tables scroll inside their card, and the sidebar becomes a sheet.
+- **Phone width.** At 375px rows wrap, tables scroll inside their card, and the sidebar becomes a sheet (or a tab bar with `AppNav`).
 - **No forks.** The agent imported from `harebear-ui` rather than copying component source into the app.
 - **No color overrides.** `className` on harebear components is for layout. A `bg-*` or `text-*` color override on a library component means the agent hit a gap; ask it to report the gap instead.
 - **Accessible icons.** Icon-only buttons have an `aria-label`.
 
 ## Working on harebear-ui itself
 
-Agents contributing to this repo should read [AGENTS.md](../../AGENTS.md) at the repo root. It covers the layout, the conventions for new components, the checks (`pnpm check`), and how to regenerate the README images (`pnpm shots`).
+Agents contributing to this repo should read [AGENTS.md](../../AGENTS.md) at the repo root. It covers the conventions for new components, the checks (`pnpm check`), and how to regenerate the README images (`pnpm shots`).
